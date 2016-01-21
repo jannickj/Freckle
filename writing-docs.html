@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Writing documentation
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="A prototypical .NET solution (file system layout and tooling), recommended by the F# Foundation."/>
+    <meta name="author" content="F# Foundation"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="./content/style.css" />
+    <script type="text/javascript" src="./content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://github.com/fsprojects/ProjectScaffold">github page</a></li>
+        </ul>
+        <h3 class="muted"><a href="./index.html">ProjectScaffold</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+<h1><a name="Writing-documentation" class="anchor" href="#Writing-documentation">Writing documentation</a></h1>
+
+<p>ProjectScaffold allows to you generate HTML documentation similar to this page using <a href="https://github.com/tpetricek/FSharp.Formatting">FSharp.Formatting</a>.</p>
+
+<p>The <code>docs/tools/generate.fsx</code> file controls the generation of narrative and API documentation.
+For most projects, you'll simply need to edit some values located at the top of the file.</p>
+
+<p>The relevant settings are as follows:</p>
+
+<ul>
+<li><code>referenceBinaries</code> - A list of the binaries for which documentation should be created. The files listed should each have a corresponding XMLDoc file emitted into the <code>bin</code> folder as part of the build process.</li>
+<li><code>website</code> - The root URL to which the generated documentation should be uploaded. In the included example, this points to the GitHub Pages root for this project.</li>
+<li><code>info</code> - A list of key/value pairs which further describe the details of your project. This list is exporteded to <code>docs/tools/templates/template.cshtml</code> file for data-binding purposes.</li>
+</ul>
+
+<h2><a name="Markdown-files" class="anchor" href="#Markdown-files">Markdown files</a></h2>
+
+<p>The project is configured to convert all <code>*.md</code> and <code>*.fsx</code> files in <code>docs/content</code> to HTML pages and emit the results into <code>docs/output</code>.
+The <code>docs/content/index.fsx</code> file acts as a starting point. Use this file to provide a narrative overview of your project.</p>
+
+<p>You can include <em>Markdown</em> and <strong>actual executable F# code</strong> in the files.</p>
+
+<p>The process for editing documentation is to start a continuous documentation generation loop:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="o">$</span> <span class="i">build</span> <span class="i">KeepRunning</span></pre>
+</td>
+</tr>
+</table>
+
+<p>This starts the <a href="https://github.com/tpetricek/FSharp.Formatting">FSharp.Formatting</a> process.</p>
+
+<p><img src="img/keep-running.png" alt="alt text" title="Keep running in order to edit docs" /></p>
+
+<p>Now open <code>docs/output/index.html</code> and start to edit the files in <code>docs/content</code>. The build script will continuously sync the output automatically; you just have to refresh the browser.</p>
+
+<p>Press any key in command line window to end the loop.</p>
+
+<h2><a name="API-docs" class="anchor" href="#API-docs">API docs</a></h2>
+
+<p>ProjectScaffold generates a build target that automatically generates nice looking API docs for your assemblies.</p>
+
+<p>To configure this process look into <code>docs/tools/generate.fsx</code> and look for:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="k">let</span> <span class="i">referenceBinaries</span> <span class="o">=</span> [ <span class="s">&quot;</span><span class="s">#</span><span class="s">#</span><span class="s">ProjectName</span><span class="s">#</span><span class="s">#</span><span class="s">.</span><span class="s">dll</span><span class="s">&quot;</span> ]</pre>
+</td>
+</tr>
+</table>
+
+<p>This will be configured automatically during the init process, but you can add more libraries if you want. In order to trigger the generation process run:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="o">$</span> <span class="i">build</span> <span class="i">GenerateReferenceDocs</span></pre>
+</td>
+</tr>
+</table>
+
+<p>The result will be nice looking docs like the following sample:</p>
+
+<p><img src="img/api-docs.png" alt="alt text" title="API docs with Github Links" /></p>
+
+<p>As you can see it can even create links back to your source code on <a href="http://github.com">GitHub.com</a>.</p>
+
+<h2><a name="Changing-the-layout" class="anchor" href="#Changing-the-layout">Changing the layout</a></h2>
+
+<p>The layout is determined by the <code>docs/tools/templates/template.cshtml</code> file. 
+It uses the Razor templating engine, and leverages jQuery and Bootstrap. 
+Change this file to alter the non-content aspects of your documentation.</p>
+
+<h2><a name="Release-process" class="anchor" href="#Release-process">Release process</a></h2>
+
+<p>Make sure you have a <code>gh-pages</code> branch locally. If it doesn't exist, then just create it.</p>
+
+<p>In order to release the docs run:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="o">$</span> <span class="i">build</span> <span class="i">ReleaseDocs</span></pre>
+</td>
+</tr>
+</table>
+
+<p>This will start the build process and <a href="https://github.com/tpetricek/FSharp.Formatting">FSharp.Formatting</a> again. 
+The output will then be pushed to your <code>gh-pages</code> branch where <a href="http://www.github.com">GitHub</a> will pick it up and complete the release process.</p>
+
+<p>The release of the documentation is also done during the <a href="release-process.html">Release process</a>.</p>
+
+
+        </div>
+        <div class="span3">
+          <img src="./img/logo.png" alt="F# Project" style="width:150px;margin:10px" />
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">ProjectScaffold</li>
+            <li><a href="./index.html">Home page</a></li>
+            <li class="divider"></li>
+            <li><a href="http://github.com/fsprojects/ProjectScaffold">Source Code on GitHub</a></li>
+            <li><a href="http://github.com/fsprojects/ProjectScaffold/issues">Report an issue</a></li>
+            <li><a href="./license.html">License</a></li>
+
+            <li class="nav-header">Documentation</li>
+            <li><a href="./index.html#Getting-started">Getting started</a></li>
+            <li><a href="./fake-build.html">Running builds</a></li>
+            <li><a href="./running-tests.html">Running tests</a></li>
+            <li><a href="./paket-package-management.html">Package management</a></li>
+            <li><a href="./writing-docs.html">Writing docs</a></li>
+            <li><a href="./build-servers.html">Using build servers</a></li>
+            <li><a href="./release-process.html">Release process</a></li>
+            <li class="divider"></li>
+            <li><a href="./structure.html">Project structure</a></li>
+            <li><a href="./technologies.html">Technologies</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <a href="http://github.com/fsprojects/ProjectScaffold"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
+  </body>
+</html>

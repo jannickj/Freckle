@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Running tests
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="A prototypical .NET solution (file system layout and tooling), recommended by the F# Foundation."/>
+    <meta name="author" content="F# Foundation"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="./content/style.css" />
+    <script type="text/javascript" src="./content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://github.com/fsprojects/ProjectScaffold">github page</a></li>
+        </ul>
+        <h3 class="muted"><a href="./index.html">ProjectScaffold</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+<h1><a name="Running-tests" class="anchor" href="#Running-tests">Running tests</a></h1>
+
+<p>By default ProjectScaffold uses <a href="http://www.nunit.org/">NUnit</a> as test framework. You can run the test suite by calling:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="o">$</span> <span class="i">build</span> <span class="i">RunTests</span></pre>
+</td>
+</tr>
+</table>
+
+<h2><a name="Changing-the-test-framework" class="anchor" href="#Changing-the-test-framework">Changing the test framework</a></h2>
+
+<p><a href="http://fsharp.github.io/FAKE/">FAKE</a> supports many different test frameworks including <a href="http://xunit.github.io/">xUnit</a>, <a href="https://github.com/machine/machine.specifications">Machine.Specifications</a> and many more.</p>
+
+<p>If you wish to use a different test framework, look for the <code>RunTest</code> target in the <code>build.fsx</code> file:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip">
+<span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre>
+</td>
+<td class="snippet"><pre class="fssnip">
+<span class="i">Target</span> <span class="s">&quot;</span><span class="s">RunTests</span><span class="s">&quot;</span> (<span class="k">fun</span> _ <span class="k">-&gt;</span>
+    <span class="o">!!</span> <span class="i">testAssemblies</span>
+    <span class="o">|&gt;</span> <span class="i">NUnit</span> (<span class="k">fun</span> <span class="i">p</span> <span class="k">-&gt;</span>
+        { <span class="i">p</span> <span class="k">with</span>
+            <span class="i">DisableShadowCopy</span> <span class="o">=</span> <span class="k">true</span>
+            <span class="i">TimeOut</span> <span class="o">=</span> <span class="i">TimeSpan</span><span class="o">.</span><span class="i">FromMinutes</span> <span class="n">20.</span>
+            <span class="i">OutputFile</span> <span class="o">=</span> <span class="s">&quot;</span><span class="s">TestResults</span><span class="s">.</span><span class="s">xml</span><span class="s">&quot;</span> })
+)</pre>
+</td>
+</tr>
+</table>
+
+<p>You will also ant to change the testing framework in the <code>paket.dependencies</code> file and run the <a href="paket-package-management.html#Updating-packages">update process</a>.</p>
+
+<p>More details regarding these aspects can be found in the <a href="http://fsharp.github.io/FAKE/">FAKE</a> and <a href="http://fsprojects.github.io/Paket/">Paket</a> documentation sites.</p>
+
+
+        </div>
+        <div class="span3">
+          <img src="./img/logo.png" alt="F# Project" style="width:150px;margin:10px" />
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">ProjectScaffold</li>
+            <li><a href="./index.html">Home page</a></li>
+            <li class="divider"></li>
+            <li><a href="http://github.com/fsprojects/ProjectScaffold">Source Code on GitHub</a></li>
+            <li><a href="http://github.com/fsprojects/ProjectScaffold/issues">Report an issue</a></li>
+            <li><a href="./license.html">License</a></li>
+
+            <li class="nav-header">Documentation</li>
+            <li><a href="./index.html#Getting-started">Getting started</a></li>
+            <li><a href="./fake-build.html">Running builds</a></li>
+            <li><a href="./running-tests.html">Running tests</a></li>
+            <li><a href="./paket-package-management.html">Package management</a></li>
+            <li><a href="./writing-docs.html">Writing docs</a></li>
+            <li><a href="./build-servers.html">Using build servers</a></li>
+            <li><a href="./release-process.html">Release process</a></li>
+            <li class="divider"></li>
+            <li><a href="./structure.html">Project structure</a></li>
+            <li><a href="./technologies.html">Technologies</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <a href="http://github.com/fsprojects/ProjectScaffold"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
+  </body>
+</html>
