@@ -53,7 +53,6 @@ let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
 // Git configuration (used for publishing documentation in gh-pages branch)
 // The profile where the project is posted
 let gitOwner = "##GitHome##"
-let gitHome = "https://github.com/" + gitOwner
 
 // The name of the project on GitHub
 let gitName = "##GitName##"
@@ -64,10 +63,41 @@ let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/##GitHome##"
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
 // --------------------------------------------------------------------------------------
+let user =
+    match getBuildParam "github-user" with
+    | s when not (String.IsNullOrWhiteSpace s) -> s
+    | _ -> ""
+let pw =
+    match getBuildParam "github-pw" with
+    | s when not (String.IsNullOrWhiteSpace s) -> s
+    | _ -> ""
+
+let gitHome =
+    if user = ""
+        then "https://github.com/" + gitOwner
+        else "https://" + user + ":" + pw + "@" + "github.com/" + gitOwner
 
 // Read additional information from the release notes document
 let release = LoadReleaseNotes "RELEASE_NOTES.md"
 
+let describeTag repositoryDir =
+    let _,tagHash,errorHash = runGitCommand repositoryDir "rev-list --tags --max-count=1"
+    if Seq.length tagHash = 1
+        then
+            let _,msg,error = runGitCommand repositoryDir <| sprintf "describe --tags %s" (tagHash |> Seq.head)
+            if error <> "" then failwithf "git describe failed: %s" error
+            msg |> Seq.head |> Some
+    else None
+
+let currentVersionIsAlreadyReleased =
+    let optGetLastTags = (describeTag "")
+    let splited = optGetLastTags |> Option.toList
+    match splited |> Seq.tryHead with
+    | Some lastTag ->
+        printfn "tag: %A, release: %A" lastTag release.NugetVersion
+        lastTag = release.NugetVersion
+    | None -> false
+    
 // Helper active pattern for project types
 let (|Fsproj|Csproj|Vbproj|Shproj|) (projFileName:string) =
     match projFileName with
@@ -181,9 +211,12 @@ Target "NuGet" (fun _ ->
 )
 
 Target "PublishNuget" (fun _ ->
-    Paket.Push(fun p ->
-        { p with
-            WorkingDir = "bin" })
+    if not currentVersionIsAlreadyReleased
+        then
+            Paket.Push(fun p ->
+                { p with
+                    WorkingDir = "bin" })
+        else trace "Warning: Will not publish nuget, RELEASE_NOTES must be updated first"
 )
 
 
@@ -323,46 +356,45 @@ Target "AddLangDocs" (fun _ ->
 
 Target "ReleaseDocs" (fun _ ->
     let tempDocsDir = "temp/gh-pages"
+    let docsOutDir = "docs/output"
     CleanDir tempDocsDir
     Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
 
-    CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"
+    ensureDirectory docsOutDir
+    CopyRecursive docsOutDir tempDocsDir true |> tracefn "%A"
     StageAll tempDocsDir
     Git.Commit.Commit tempDocsDir (sprintf "Update generated documentation for version %s" release.NugetVersion)
-    Branches.push tempDocsDir
+    Branches.pushBranch tempDocsDir "origin" "gh-pages"
 )
 
 #load "paket-files/build/fsharp/FAKE/modules/Octokit/Octokit.fsx"
 open Octokit
 
 Target "Release" (fun _ ->
-    let user =
-        match getBuildParam "github-user" with
-        | s when not (String.IsNullOrWhiteSpace s) -> s
-        | _ -> getUserInput "Username: "
-    let pw =
-        match getBuildParam "github-pw" with
-        | s when not (String.IsNullOrWhiteSpace s) -> s
-        | _ -> getUserPassword "Password: "
-    let remote =
-        Git.CommandHelper.getGitResult "" "remote -v"
-        |> Seq.filter (fun (s: string) -> s.EndsWith("(push)"))
-        |> Seq.tryFind (fun (s: string) -> s.Contains(gitOwner + "/" + gitName))
-        |> function None -> gitHome + "/" + gitName | Some (s: string) -> s.Split().[0]
+    if not currentVersionIsAlreadyReleased
+        then
+            let remote =
+                Git.CommandHelper.getGitResult "" "remote -v"
+                |> Seq.filter (fun (s: string) -> s.EndsWith("(push)"))
+                |> Seq.tryFind (fun (s: string) -> s.Contains(gitOwner + "/" + gitName))
+                |> function None -> gitHome + "/" + gitName | Some (s: string) -> s.Split().[0]
+    
+            StageAll ""
+            Git.Commit.Commit "" (sprintf "Bump version to %s" release.NugetVersion)
+            Branches.pushBranch "" remote (Information.getBranchName "")
+    
+    
+            Branches.tag "" release.NugetVersion
+            Branches.pushTag "" remote release.NugetVersion
+    
+            // release on github
+            createClient user pw
+            |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
+            // TODO: |> uploadFile "PATH_TO_FILE"
+            |> releaseDraft
+            |> Async.RunSynchronously
+        else trace "Warning: Will not make a release tag, RELEASE_NOTES must be updated first"
 
-    StageAll ""
-    Git.Commit.Commit "" (sprintf "Bump version to %s" release.NugetVersion)
-    Branches.pushBranch "" remote (Information.getBranchName "")
-
-    Branches.tag "" release.NugetVersion
-    Branches.pushTag "" remote release.NugetVersion
-
-    // release on github
-    createClient user pw
-    |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
-    // TODO: |> uploadFile "PATH_TO_FILE"
-    |> releaseDraft
-    |> Async.RunSynchronously
 )
 
 Target "BuildPackage" DoNothing
