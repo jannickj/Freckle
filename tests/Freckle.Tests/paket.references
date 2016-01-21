@@ -1,0 +1,7 @@
+FSPowerPack.Core.Community
+
+group Test
+xunit
+FsUnit.xUnit
+FsCheck
+FsCheck.Xunit
