@@ -16,7 +16,7 @@ environment:
     secure: ANJVg76+ZG8oux3kZiS8MazTByIDILozxNJfQGa0zD3+1+jXaPN152mDu4JFyuka
 
 build_script:
-- cmd: "build.cmd Build"
+- cmd: "build.cmd RunTests"
 
 deploy:
 - provider: Local
