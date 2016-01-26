@@ -8,7 +8,7 @@ A library for something good.
 * Fearures 2
 * Fearures 3
 
-Documentation: http://###github-username###.github.io/
+Documentation: http://###github-username###.github.io/###github-name###
 
 
 ## Build Status
