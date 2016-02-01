@@ -370,14 +370,24 @@ Target "ReleaseDocs" (fun _ ->
 #load "paket-files/build/fsharp/FAKE/modules/Octokit/Octokit.fsx"
 open Octokit
 
-Target "Release" (fun _ ->
+let remote () =
+    Git.CommandHelper.getGitResult "" "remote -v"
+    |> Seq.filter (fun (s: string) -> s.EndsWith("(push)"))
+    |> Seq.tryFind (fun (s: string) -> s.Contains(gitOwner + "/" + gitName))
+    |> function None -> gitHome + "/" + gitName | Some (s: string) -> s.Split().[0]
+
+Target "SetupGithubAccess" (fun _ ->
+    
+    let remote = remote () 
+    runGitCommand "" <| sprintf "config remote.%s.url %s/%s" remote gitHome gitName
+    |> ignore
+
+)
+
+Target "ReleaseGithub" (fun _ ->
     if not currentVersionIsAlreadyReleased
         then
-            let remote =
-                Git.CommandHelper.getGitResult "" "remote -v"
-                |> Seq.filter (fun (s: string) -> s.EndsWith("(push)"))
-                |> Seq.tryFind (fun (s: string) -> s.Contains(gitOwner + "/" + gitName))
-                |> function None -> gitHome + "/" + gitName | Some (s: string) -> s.Split().[0]
+            let remote = remote ()
     
             StageAll ""
             Git.Commit.Commit "" (sprintf "Bump version to %s" release.NugetVersion)
@@ -403,6 +413,7 @@ Target "BuildPackage" DoNothing
 // Run all targets by default. Invoke 'build <Target>' to override
 
 Target "All" DoNothing
+Target "Release" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
@@ -436,7 +447,11 @@ Target "All" DoNothing
 "ReleaseDocs"
   ==> "Release"
 
+"SetupGithubAccess"
+  ==> "ReleaseGithub"
+
 "BuildPackage"
+  ==> "ReleaseGithub"
   ==> "PublishNuget"
   ==> "Release"
 
