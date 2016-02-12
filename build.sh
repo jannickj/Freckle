@@ -35,7 +35,6 @@ fi
 
 run $PAKET_EXE restore
 
-[ ! -e config.fsx ] && run $PAKET_EXE update
 [ ! -e config.fsx ] && run $FAKE_EXE init.fsx
 run $FAKE_EXE "$@" $FSIARGS build.fsx
 
