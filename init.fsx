@@ -28,8 +28,8 @@ let move p1 p2 =
   else
     failwithf "Could not move %s to %s" p1 p2
 let localFile f = combine f __SOURCE_DIRECTORY__
-let buildTemplatePath = localFile "build.template"
-let outputPath = localFile "build.fsx"
+let buildTemplatePath = localFile "config.template"
+let outputPath = localFile "config.fsx"
 
 let prompt (msg:string) =
   Console.Write(msg)
@@ -56,7 +56,7 @@ let rec promptYesNo msg =
   | Some "N" | Some "n" -> false
   | _ -> Console.WriteLine("Sorry, invalid answer"); promptYesNo msg
 
-failfUnlessExists buildTemplatePath "Cannot find build template file %s"
+failfUnlessExists buildTemplatePath "Cannot find config template file %s"
   (Path.GetFullPath buildTemplatePath)
 
 // User input
@@ -73,6 +73,7 @@ print """
 # Please answer a few questions and we will generate
 # two files:
 #
+# config.fsx              This will be your config file
 # build.fsx               This will be your build script
 # docs/tools/generate.fsx This script will generate your
 #                         documentation
@@ -183,18 +184,18 @@ let generate templatePath generatedFilePath =
   let newContent =
     File.ReadAllLines(templatePath) |> Array.toSeq
     |> replace "##ProjectName##" projectName
-    |> replaceWithVarOrMsg "##Summary##" "Project has no summmary; update build.fsx"
-    |> replaceWithVarOrMsg "##Description##" "Project has no description; update build.fsx"
-    |> replaceWithVarOrMsg "##Author##" "Update Author in build.fsx"
+    |> replaceWithVarOrMsg "##Summary##" "Project has no summmary; update config.fsx"
+    |> replaceWithVarOrMsg "##Description##" "Project has no description; update config.fsx"
+    |> replaceWithVarOrMsg "##Author##" "Update Author in config.fsx"
     |> replaceWithVarOrMsg "##Tags##" ""
-    |> replaceWithVarOrMsg "##GitHome##" "Update GitHome in build.fsx"
+    |> replaceWithVarOrMsg "##GitHome##" "Update GitHome in config.fsx"
     |> replaceWithVarOrMsg "##GitName##" projectName
 
   File.WriteAllLines(generatedFilePath, newContent)
   File.Delete(templatePath)
   print (sprintf "# Generated %s" generatedFilePath)
 
-generate (localFile "build.template") (localFile "build.fsx")
+generate (localFile "config.template") (localFile "config.fsx")
 generate (localFile "docs/tools/generate.template") (localFile "docs/tools/generate.fsx")
 
 //Handle source control
