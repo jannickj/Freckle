@@ -11,7 +11,7 @@ if errorlevel 1 (
   exit /b %errorlevel%
 )
 
-IF NOT EXIST build.fsx (
+IF NOT EXIST config.fsx (
   .paket\paket.exe update
   packages\build\FAKE\tools\FAKE.exe init.fsx
 )
