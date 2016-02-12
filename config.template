@@ -44,4 +44,4 @@ let gitOwner = "##GitHome##"
 let gitName = "##GitName##"
 
 // The url for the raw files hosted
-let gitRaw = "https://raw.github.com/##GitHome##"
+let gitRawDefault = "https://raw.github.com/##GitHome##"
