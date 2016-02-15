@@ -19,6 +19,8 @@ open SourceLink
 #endif
 
 
+let gitRawDefault = sprintf "https://raw.github.com/%s" gitOwner
+
 let gitRaw = environVarOrDefault "gitRaw" gitRawDefault
 
 let user =
