@@ -19,6 +19,8 @@ open SourceLink
 #endif
 
 
+let gitRawDefault = sprintf "https://raw.github.com/%s" gitOwner
+
 let gitRaw = environVarOrDefault "gitRaw" gitRawDefault
 
 let user =
@@ -173,6 +175,8 @@ Target "PublishNuget" (fun _ ->
         then
             Paket.Push(fun p ->
                 { p with
+                    PublishUrl = nugetUrl
+                    EndPoint   = nugetFeed
                     WorkingDir = "bin" })
         else trace "Warning: Will not publish nuget, RELEASE_NOTES must be updated first"
 )
@@ -409,8 +413,8 @@ Target "Release" DoNothing
   ==> "ReleaseGithub"
 
 "BuildPackage"
-  ==> "ReleaseGithub"
   ==> "PublishNuget"
+  ==> "ReleaseGithub"
   ==> "Release"
 
 RunTargetOrDefault "All"

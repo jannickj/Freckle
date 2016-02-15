@@ -43,5 +43,5 @@ let gitOwner = "##GitHome##"
 // The name of the project on GitHub
 let gitName = "##GitName##"
 
-// The url for the raw files hosted
-let gitRawDefault = "https://raw.github.com/##GitHome##"
+let nugetUrl = "https://nuget.org/" 
+let nugetFeed = "api/v2/package" 
