@@ -1,4 +1,4 @@
-﻿namespace FSharp.ProjectTemplate
+namespace Freckle
 
 /// Documentation for my library
 ///

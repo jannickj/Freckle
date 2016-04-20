@@ -7,13 +7,13 @@ init:
 version: 1.0.{build}
 environment:
   SecretGithubUser:
-    secure: z3TsP5/PRDg4wIedgeRAtR8edLoACEuSmbToUTXzcf4=
+    secure: 
 
   SecretGithubPassword:
-    secure: Fu6p8pFA2CEmOLfszUJf3ayF3dL9DsorBluoiQKJUNkpCcAlxlubScpvGDgxFAyH
+    secure: 
 
   SecretNugetApiKey:
-    secure: ANJVg76+ZG8oux3kZiS8MazTByIDILozxNJfQGa0zD3+1+jXaPN152mDu4JFyuka
+    secure: 
 
 build_script:
 - cmd: "build.cmd RunTests"

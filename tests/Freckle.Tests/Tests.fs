@@ -1,6 +1,6 @@
-﻿module FSharp.ProjectScaffold.Tests
+module Freckle.Tests
 
-open FSharp.ProjectTemplate
+open Freckle
 open NUnit.Framework
 
 [<Test>]

@@ -1,0 +1,23 @@
+type project
+owners
+    Jannick Johnsen
+authors 
+    Jannick Johnsen
+projectUrl
+    http://github.com/jannickj/Freckle
+iconUrl
+    https://raw.githubusercontent.com/jannickj/Freckle/master/docs/files/img/logo.png
+licenseUrl
+    http://github.com/jannickj/Freckle/blob/master/LICENSE.txt
+requireLicenseAcceptance
+    false
+copyright
+    Copyright 2015
+tags
+    FRP reactive ui event behavior functional freckle
+summary
+    A Functional Reactive Programming Library for FSharp
+description
+    Functional Reactive Programming library [D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[C[C[C[C[C[C[C[C[C[C[C[C[C[CHandle
+
+
