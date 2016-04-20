@@ -64,9 +64,9 @@
                 do! airlock.OpenDoor InnerDoor
                 return IsPressurized
 
-            | Depressurized, IsDepressurized -> 
+            | Depressurized, Depressurizing -> 
                 do! airlock.OpenDoor OuterDoor
-                return IsPressurized
+                return IsDepressurized
 
             | _ -> 
                 do! airlock.ShowTerminal <| sprintf "Event %A is not supported in State %A" evt state
