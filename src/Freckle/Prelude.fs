@@ -5,6 +5,15 @@ module Prelude =
 
     let inline undefined<'a> : 'a = failwith "undefined"
 
+    let inline const' k = fun _ -> k
+
+    module List =
+
+        let tryHead l =
+            match l with
+            | a :: _ -> Some a
+            | [] -> None
+
     module Option =
         
         let pure' x = Some x

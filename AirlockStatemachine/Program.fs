@@ -23,7 +23,7 @@
         | IsDepressurized
 
     type Knowledge = int
-    type Time = DateTime
+    type Time = int
     type AirlockEvent = Events<Time, AirLockEvent>
     type AirlockBehavior<'a>     = Behavior<Time, Knowledge,'a>
     type AirlockReactive<'a>     = Reactive<AirLockEvent, Time, Knowledge,'a>
@@ -32,7 +32,6 @@
     module Wishes =        
         module Reactive =
             let react : AirlockReactive<AirLockEvent> = undefined 
-            let skip<'a> : AirlockReactive<'a> = fun _ _ k -> (k,None)
 
         module StateMachine =
             let spoolEvents<'s> : ('s -> AirlockReactive<'s>) -> StateMachine<'s, AirLockEvent, Time, Knowledge,unit> = undefined
@@ -41,12 +40,20 @@
     open Wishes
 
     type Airlock =
-        { OpenDoor : Door -> AirlockBehavior<unit>
-          OpenClose : Door -> AirlockBehavior<unit>
-          Pressurize : AirlockBehavior<unit>
-          Depressurize : AirlockBehavior<unit> 
-          ShowTerminal : string -> AirlockBehavior<unit> 
+        { OpenDoor : Door -> AirlockReactive<unit>
+          OpenClose : Door -> AirlockReactive<unit>
+          Pressurize : AirlockReactive<unit>
+          Depressurize : AirlockReactive<unit> 
+          ShowTerminal : string -> AirlockReactive<unit> 
         }
+    
+    let tt  () : AirlockReactive<int> =        
+        Reactive.event
+        |> Reactive.filter ((=) (DoorOpened InnerDoor))
+        |> Reactive.map (const' 1)        
+        |> Reactive.foldp (+) 0
+    
+            
 
     let transition (airlock : Airlock) state : AirlockReactive<AirLockState> =
         reactive {
@@ -79,8 +86,13 @@
                 |> StateMachine.spoolEvents
             return ()
         }
-        
+
+open FrpAirlockExample
+open Freckle
+
 [<EntryPoint>]
 let main argv = 
+    let evts = [(DoorOpened InnerDoor, 1);(DoorOpened InnerDoor, 2);(DoorOpened InnerDoor, 3)]
+    let res = tt () (Events evts) 0
     printfn "%A" argv
     0 // return an integer exit code
