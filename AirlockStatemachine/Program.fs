@@ -26,7 +26,7 @@
     type Time = int
     type AirlockEvent = Events<Time, AirLockEvent>
     type AirlockBehavior<'a>     = Behavior<Time, Knowledge,'a>
-    type AirlockReactive<'a>     = Reactive<AirLockEvent, Time, Knowledge,'a>
+    type AirlockReactive<'a>     = Reactive<AirLockEvent, Time,'a>
     type AirlockStateMachine<'a> = StateMachine<AirLockState, AirLockEvent, Time, Knowledge,'a>
     
     module Wishes =        

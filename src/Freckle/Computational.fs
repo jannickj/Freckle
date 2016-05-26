@@ -19,7 +19,6 @@ module Computation =
             member inline this.Return(x : 'T) = pure' x
             member inline this.ReturnFrom(x) = x
             member inline this.Bind(ma, f) = bind f ma
-            member inline this.Combine(a,b) = combine a b
             member inline this.Zero () = pure' ()
 
     let reactive = Reactive.Builder()
