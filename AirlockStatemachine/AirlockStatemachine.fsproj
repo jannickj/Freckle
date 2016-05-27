@@ -51,6 +51,7 @@
     <Compile Include="Program.fs" />
     <None Include="App.config" />
     <None Include="paket.references" />
+    <Compile Include="FrpAirlockExample.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\src\Freckle\Freckle.fsproj">

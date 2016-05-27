@@ -18,6 +18,11 @@ module Prelude =
         
         let pure' x = Some x
 
+        let default' x o =
+            match o with
+            | Some a -> a
+            | None -> x
+
         let ap mf ma = 
             match mf, ma with
             | Some f, Some a -> Some (f a)

@@ -4,26 +4,59 @@ type Reactive<'e, 't, 'a> = Core.Reactive<'e, 't, 'a option>
 type Signal<'t,'e> = Reactive<'e,'t,'e>
 
 type TimeSpan = TimeSpan of uint64
+type Time = uint64
 
-type Strip = Strip of uint64 * obj
-    with 
-        static member time (t,_) = t
-type Tape = Tape of List<uint64 * obj>
-    with 
-        static member find (s,_) t = 
-            match List.partition (fun (t,_) -> t > s) t with
-            | (_::older, newer) -> (older, newer)
-            | _ -> failwith "missing tape is broken"
-        static member attach (Strip (t,s)) (Tape tape) = (Tape ((t,s) :: tape))
-        static member asList (Tape tape) = (List.map Strip tape)
 
-type Recorder<'a> = Tape -> Strip -> 'a
+type Strip<'d> = Strip of Time * 'd
 
-type Journey<'a> = List<Strip * 'a>
+module Strip =
+    let time (Strip (t,_)) = t
+    let data (Strip (_,d)) = d
+    let timeData (Strip (t,d)) = (t,d)
 
-module Reactive =
-    open System
+type TapeHead = TapeHead of Time
+    with
+        static member fromStrip (Strip (t,_)) = TapeHead t 
+        static member isBefore (Strip (s, _)) (TapeHead t) = t < s //Option.default' false <| Option.map (fun t -> ) ot 
+        static member isAt (Strip (s, _)) (TapeHead t) =  t = s   //Option.default' false <| Option.map (fun t -> ) ot
+        static member time (TapeHead t) = t
+        static member ofTime t = TapeHead t
+
+type Tape<'d> = Tape of List<Time * 'd>
+
+module Tape =
+    let ofList strips = Tape (List.map Strip.timeData strips)
+
+    let asList (Tape tape) = (List.map Strip tape)
+
+    let find head tape = 
+        match List.partition (fun strip -> TapeHead.isBefore strip head) (asList tape) with
+        | (newer, current::older) when (TapeHead.isAt current head) -> (ofList older, current, ofList newer)
+        | _ -> failwith <| sprintf "missing strip at %A, tape is broken" (TapeHead.time head)
+
+    let findCurrent head tape =
+        let (_,cur,_) = find head tape
+        Strip.data cur
+
+    let attach (Strip (t,s)) (Tape tape) = (Tape ((t,s) :: tape))
+
+    let asHeads (Tape tape) = (List.map (TapeHead.ofTime << fst) tape)
+
+    let empty = Tape []
+
+    let choose f (Tape tape) = Tape <| List.choose (fun (t,d) -> Option.map (fun d' -> (t,d')) (f d)) tape
+
+type Recorder<'a> = Tape<obj> -> 'a list
+
+type Track<'d,'a> = Track of List<Strip<'d> * 'a>
     
+module Track =
+    let append strip value (Track j) = (Track ((strip, value) :: j))
+    let fresh<'d,'a> : Track<'d,'a> = Track []
+
+module Recorder =
+    open System
+
 //    let private mapEvent f (t,e) = (t, f e)
 //
 //    let inline map f t =
@@ -31,21 +64,50 @@ module Reactive =
 //
 //    let inline foldp (f : 'ping -> 'state ->'state) (state : 'state) (m : Signal<'ping>) : Signal<'state> =
 //        [List.foldBack (fun (t,p) (_,s) -> (t, f p s)) m (0uL, state)]
-    let play fullTape  (recoder : Recorder<'a>) : Journey<'a> =
-        let folder strip (tape, journey) =
-            let tape' = Tape.attach strip tape
-            let journey' = (strip, recoder tape strip) :: journey
-            (tape', journey')
-        List.foldBack folder (Tape.asList fullTape) []
+    
+    let map f (recorder : Recorder<'a>) : Recorder<'b> =
+        //fun tape h -> f (recorder tape h) 
+        undefined
 
-    let filter (f : 'a -> bool) (r : Recorder<'a>) : Recorder<'a> =
-        fun tape _ -> undefined
-            
+    let foldp (f: )
+//    let read<'a> : Recorder<'a> =
+//        fun tape h -> Tape.findCurrent h tape
 
-    let stepBack (f : 'a -> 'b )  (r : Recorder<'a>) : Recorder<'b>  = 
-        fun tape strip ->
-            //let (older, newer) = Tape.find strip tape
-            undefined
+    let record fullTape  (recorder : Recorder<'a>) : Track<'d,'a> =
+//        let folder strip (tape, journey) =
+//            let tape' = Tape.attach strip tape
+//            let head = TapeHead.fromStrip strip
+//            let journey' = Track.append strip (recorder tape' head) journey
+//            (tape', journey')
+//        snd <| List.foldBack folder (Tape.asList fullTape) (Tape.empty, Track.fresh)
+        undefined
+
+    let spoolBackwardUntil (f : 'a -> bool) (recorder : Recorder<'a>) : Recorder<'a> =
+//        fun tape head ->
+//           let (older,_,_) = Tape.find head tape
+//           let head = List.find (f << (recorder tape)) (Tape.asHeads older)
+//           recorder tape head
+        undefined
+
+    let choose (recorder : List<Recorder<'a option>>) : Recorder<'a> =
+//        fun tape _ ->
+//            let heads = Tape.asHeads tape
+//            let res = List.zip heads <| List.map (recorder tape) heads
+//            undefined
+        undefined
+
+    let when' (f : 'a -> bool) (recorder : Recorder<'a>) : Recorder<bool> =
+        
+//        let ff a = if f a then Some a else None
+//        map ff recorder
+//        |> choose 
+        undefined
+
+//    let find (f : 'a -> Option<'b>) (r : Recorder<'a>)
+//    let stepBack (f : 'a -> 'b )  (r : Recorder<'a>) : Recorder<'b>  = 
+//        fun tape strip ->
+//            //let (older, newer) = Tape.find strip tape
+//            undefined
 //    let inline skip<'e, 't, 'a> : Reactive<'e, 't, 'a> = 
 //        fun _ -> None 
 //            
@@ -89,5 +151,5 @@ module Reactive =
 //    let inline time<'e, 't> : Reactive<'e, 't, 't> = 
 //        map snd timedEvent
 
-    let inline filter (p : 'a -> bool) (m : Reactive<'e, 't, 'a>) : Reactive<'e, 't, 'a> = 
-        bind (fun a -> if p a then pure' a else skip) m
+//    let inline filter (p : 'a -> bool) (m : Reactive<'e, 't, 'a>) : Reactive<'e, 't, 'a> = 
+//        bind (fun a -> if p a then pure' a else skip) m
