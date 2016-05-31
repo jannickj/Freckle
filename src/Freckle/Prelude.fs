@@ -6,6 +6,11 @@ module Prelude =
     let inline undefined<'a> : 'a = failwith "undefined"
 
     let inline const' k = fun _ -> k
+    
+    let safeUnbox (o : obj) =
+        match o with
+        | :? 'a as a -> Some a
+        | _ -> None
 
     module List =
 

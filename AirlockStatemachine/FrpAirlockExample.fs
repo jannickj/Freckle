@@ -62,7 +62,7 @@ module FrpAirlockExample =
 //        |> Reactive.map (const' 1)        
 //        |> Reactive.foldp (+) 0
 //    
-    let events : Recorder<AirLockEvent> = undefined
+    let events : Recorder<AirLockState * AirLockEvent> = undefined
 
     let stm state event =
         match state, event with
@@ -78,8 +78,14 @@ module FrpAirlockExample =
 
         | _                                     -> (state          , DoNothing)
 
-    let actions state =
-        Recorder.map (stm state) <| events
+    let actions =
+        Recorder.map (fun (s,e) -> stm s e) <| events
+
+    let program () =
+        
+
+
+        ()
 
 //    let transition (airlock : Airlock) state : AirlockReactive<AirLockState> =
 //        reactive {

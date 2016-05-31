@@ -65,11 +65,18 @@ module Recorder =
 //    let inline foldp (f : 'ping -> 'state ->'state) (state : 'state) (m : Signal<'ping>) : Signal<'state> =
 //        [List.foldBack (fun (t,p) (_,s) -> (t, f p s)) m (0uL, state)]
     
-    let map f (recorder : Recorder<'a>) : Recorder<'b> =
+    let read : Recorder<obj> =
+        fun tape -> List.map Strip.data (Tape.asList tape)
+
+//    let read<'a> : Recorder<'a> =
+//        fun tape -> List.choose (safeUnbox << Strip.data) (Tape.asList tape)
+//            
+
+    let map (f : 'a -> 'b) (recorder : Recorder<'a>) : Recorder<'b> =
         //fun tape h -> f (recorder tape h) 
         undefined
-
-    let foldp (f: )
+//
+//    let foldp (f: )
 //    let read<'a> : Recorder<'a> =
 //        fun tape h -> Tape.findCurrent h tape
 
