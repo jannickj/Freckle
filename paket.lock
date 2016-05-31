@@ -1,4 +1,7 @@
-
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    FSPowerPack.Core.Community (3.0)
 
 GROUP Build
 NUGET

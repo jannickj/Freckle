@@ -4,20 +4,20 @@ type Reactive<'e, 't, 'a> = Core.Reactive<'e, 't, 'a option>
 type Signal<'t,'e> = Reactive<'e,'t,'e>
 
 type TimeSpan = TimeSpan of uint64
-type Time = uint64
+type Time2 = uint64
 
-type Narrative = Narrative of Time
+type Narrative = Narrative of Time2
     with 
         static member beginNew = Narrative 0uL
 
-type Strip<'d> = Strip of Time * 'd
+type Strip<'d> = Strip of Time2 * 'd
 
 module Strip =
     let time (Strip (t,_)) = t
     let data (Strip (_,d)) = d
     let timeData (Strip (t,d)) = (t,d)
 
-type TapeHead = TapeHead of Time
+type TapeHead = TapeHead of Time2
     with
         static member fromStrip (Strip (t,_)) = TapeHead t 
         static member isBefore (Strip (s, _)) (TapeHead t) = t < s //Option.default' false <| Option.map (fun t -> ) ot 
@@ -25,7 +25,7 @@ type TapeHead = TapeHead of Time
         static member time (TapeHead t) = t
         static member ofTime t = TapeHead t
 
-type Event<'d> = Event of List<Time * 'd>
+type Event<'d> = Event of List<Time2 * 'd>
 type Freckle<'a> = Event<obj> -> Narrative -> 'a list
 
 module Event =
