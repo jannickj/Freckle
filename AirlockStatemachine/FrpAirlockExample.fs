@@ -24,12 +24,12 @@ module FrpAirlockExample =
         | IsPressurized
         | IsDepressurized
 
-    type Action =
-        | DoNothing
-        | Pressurize
-        | Depressurize
-        | Open of Door
-        | Close of Door
+//    type Action =
+//        | DoNothing
+//        | Pressurize
+//        | Depressurize
+//        | Open of Door
+//        | Close of Door
 
 //    type Knowledge = int
 //    type Time = int
@@ -48,13 +48,13 @@ module FrpAirlockExample =
 //
 //    open Wishes
 //
-//    type Airlock =
-//        { OpenDoor : Door -> AirlockReactive<unit>
-//          OpenClose : Door -> AirlockReactive<unit>
-//          Pressurize : AirlockReactive<unit>
-//          Depressurize : AirlockReactive<unit> 
-//          ShowTerminal : string -> AirlockReactive<unit> 
-//        }
+    type Airlock =
+        { Open : Door -> Async<unit>
+          Close : Door -> Async<unit>
+          Pressurize : Async<unit>
+          Depressurize : Async<unit>
+          ShowTerminal : string -> Async<unit>
+        }
     
 //    let tt  () : AirlockReactive<int> =        
 //        Reactive.event
@@ -62,24 +62,31 @@ module FrpAirlockExample =
 //        |> Reactive.map (const' 1)        
 //        |> Reactive.foldp (+) 0
 //    
-    let events : Recorder<AirLockEvent> = undefined
+    open Async
 
-    let stm state event =
+    let stm (airlock : Airlock) event state =
         match state, event with
-        | IsPressurized  , PressButton          -> (Depressurizing , Close InnerDoor)
-        | Depressurizing , DoorClosed InnerDoor -> (Depressurizing , Depressurize)
-        | Depressurizing , Depressurized        -> (Depressurizing , Open OuterDoor)
-        | Depressurizing , DoorOpened OuterDoor -> (IsDepressurized, DoNothing)
+        | IsPressurized  , PressButton          -> (Depressurizing , airlock.Close InnerDoor)
+        | Depressurizing , DoorClosed InnerDoor -> (Depressurizing , airlock.Depressurize *>> airlock.ShowTerminal "Depressurizing")
+        | Depressurizing , Depressurized        -> (Depressurizing , airlock.Open OuterDoor)
+        | Depressurizing , DoorOpened OuterDoor -> (IsDepressurized, airlock.ShowTerminal "Depressurization completed")
 
-        | IsDepressurized, PressButton          -> (Pressurizing   , Close OuterDoor)
-        | Pressurizing   , DoorClosed OuterDoor -> (Pressurizing   , Pressurize)
-        | Pressurizing   , Pressurized          -> (Pressurizing   , Open InnerDoor)        
-        | Pressurizing   , DoorOpened InnerDoor -> (IsPressurized  , DoNothing)
+        | IsDepressurized, PressButton          -> (Pressurizing   , airlock.Close OuterDoor)
+        | Pressurizing   , DoorClosed OuterDoor -> (Pressurizing   , airlock.Pressurize *>> airlock.ShowTerminal "Pressurizing")
+        | Pressurizing   , Pressurized          -> (Pressurizing   , airlock.Open InnerDoor)        
+        | Pressurizing   , DoorOpened InnerDoor -> (IsPressurized  , airlock.ShowTerminal "Pressurization completed")
 
-        | _                                     -> (state          , DoNothing)
+        | _ -> (state, airlock.ShowTerminal <| sprintf "event %A in state %A is not supported" event state)
+    
+    let asyncStm f state =
+        let (state', action) = f state
+        action *>> async.Return state'
+    
 
-    let actions state =
-        Recorder.map (stm state) <| events
+    let program (airlock : Airlock) eventUpdater =
+        Freckle.assembleStatemachine eventUpdater (asyncStm << stm airlock) Freckle.listenTo<AirLockEvent>
+        
+
 
 //    let transition (airlock : Airlock) state : AirlockReactive<AirLockState> =
 //        reactive {
