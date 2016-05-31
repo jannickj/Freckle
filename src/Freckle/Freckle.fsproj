@@ -51,6 +51,7 @@
     <Compile Include="Core.fs" />
     <Compile Include="Knowledge.fs" />
     <Compile Include="Behavior.fs" />
+    <Compile Include="Event.fs" />
     <Compile Include="Reactive.fs" />
     <Compile Include="StateMachine.fs" />
     <Compile Include="Computational.fs" />

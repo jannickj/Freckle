@@ -94,8 +94,7 @@ module Freckle =
         //fun tape h -> f (recorder tape h) 
         undefined
 
-    let bind (f : 'a -> Freckle<'b>) (fr : Freckle<'a>) : Freckle<'b> =
-        undefined
+    let bind (f : 'a -> Freckle<'b>) (fr : Freckle<'a>) : Freckle<'b> =  undefined
     
     let step (events : Event<_>) (nt : Narrative) (fr : Freckle<'a>) : (Narrative * Event<'a>) =
         undefined

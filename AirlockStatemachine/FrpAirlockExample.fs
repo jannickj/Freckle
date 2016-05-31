@@ -87,7 +87,6 @@ module FrpAirlockExample =
         Freckle.assembleStatemachine eventUpdater (asyncStm << stm airlock) Freckle.listenTo<AirLockEvent>
         
 
-
 //    let transition (airlock : Airlock) state : AirlockReactive<AirLockState> =
 //        reactive {
 //            let! evt = Reactive.react
