@@ -62,7 +62,7 @@ module FrpAirlockExample =
             let! a = ma
             return s'
         }
-        
+
         
     let doublePress evts =
         let (buttonEvts, others) = Freck.partition ((=) PressButton) evts
