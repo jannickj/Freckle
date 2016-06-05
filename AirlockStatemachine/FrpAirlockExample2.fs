@@ -24,13 +24,6 @@ module FrpAirlockExample =
         | IsPressurized
         | IsDepressurized
 
-    type Action =
-        | DoNothing
-        | Pressurize
-        | Depressurize
-        | Open of Door
-        | Close of Door
-
     type Airlock =
         { Open : Door -> Async<unit>
           Close : Door -> Async<unit>
@@ -69,8 +62,7 @@ module FrpAirlockExample =
 
         buttonEvts
         |> Freck.interval (Time2 200)
-        |> Freck.map (((=) 2) << List.length)
-        |> Freck.filter id
+        |> Freck.filter (((>=) 2) << List.length)
         |> Freck.map (const' PressButton)
         |> Freck.combine others
 

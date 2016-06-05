@@ -13,15 +13,15 @@ module Computation =
 
     let behavior = Behavior.Builder()
 
-//    module Reactive =
-//        open Reactive
-//        type Builder() =
-//            member inline this.Return(x : 'T) = pure' x
-//            member inline this.ReturnFrom(x) = x
-//            member inline this.Bind(ma, f) = bind f ma
-//            member inline this.Zero () = pure' ()
-//
-//    let reactive = Reactive.Builder()
+    module Freckle =
+        open Freckle
+        type Builder() =
+            member inline this.Return(x : 'T) = pure' x
+            member inline this.ReturnFrom(x) = x
+            member inline this.Bind(ma, f) = bind f ma
+            member inline this.Zero () = pure' ()
+
+    let freckle = Freckle.Builder()
 
     module Freck =
         open Freck

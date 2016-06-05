@@ -4,17 +4,20 @@ type Reactive<'e, 't, 'a> = Core.Reactive<'e, 't, 'a option>
 type Signal<'t,'e> = Reactive<'e,'t,'e>
 
 type TimeSpan = TimeSpan of uint64
-type Time = uint64
+type Time2 = uint64
 
+type Narrative = Narrative of Time2
+    with 
+        static member beginNew = Narrative 0uL
 
-type Strip<'d> = Strip of Time * 'd
+type Strip<'d> = Strip of Time2 * 'd
 
 module Strip =
     let time (Strip (t,_)) = t
     let data (Strip (_,d)) = d
     let timeData (Strip (t,d)) = (t,d)
 
-type TapeHead = TapeHead of Time
+type TapeHead = TapeHead of Time2
     with
         static member fromStrip (Strip (t,_)) = TapeHead t 
         static member isBefore (Strip (s, _)) (TapeHead t) = t < s //Option.default' false <| Option.map (fun t -> ) ot 
@@ -22,12 +25,15 @@ type TapeHead = TapeHead of Time
         static member time (TapeHead t) = t
         static member ofTime t = TapeHead t
 
-type Tape<'d> = Tape of List<Time * 'd>
+type Event<'d> = Event of List<Time2 * 'd>
+type Freckle<'a> = Event<obj> -> Narrative -> 'a list
 
-module Tape =
-    let ofList strips = Tape (List.map Strip.timeData strips)
+module Event =
+    let ofList strips = Event (List.map Strip.timeData strips)
 
-    let asList (Tape tape) = (List.map Strip tape)
+    let asList (Event tape) = (List.map Strip tape)
+    
+    let box (Event evt) = Event (List.map (fun (t, e) -> (t, e :> obj)) evt)
 
     let find head tape = 
         match List.partition (fun strip -> TapeHead.isBefore strip head) (asList tape) with
@@ -38,77 +44,76 @@ module Tape =
         let (_,cur,_) = find head tape
         Strip.data cur
 
-    let attach (Strip (t,s)) (Tape tape) = (Tape ((t,s) :: tape))
+    let attach (Strip (t,s)) (Event tape) = (Event ((t,s) :: tape))
 
-    let asHeads (Tape tape) = (List.map (TapeHead.ofTime << fst) tape)
+    let asHeads (Event tape) = (List.map (TapeHead.ofTime << fst) tape)
 
-    let empty = Tape []
+    let empty = Event []
 
-    let choose f (Tape tape) = Tape <| List.choose (fun (t,d) -> Option.map (fun d' -> (t,d')) (f d)) tape
+    let choose f (Event tape) = Event <| List.choose (fun (t,d) -> Option.map (fun d' -> (t,d')) (f d)) tape
 
-type Recorder<'a> = Tape<obj> -> 'a list
-
-type Track<'d,'a> = Track of List<Strip<'d> * 'a>
+    let append strip value (Event j) = (Event ((strip, value) :: j))
     
-module Track =
-    let append strip value (Track j) = (Track ((strip, value) :: j))
-    let fresh<'d,'a> : Track<'d,'a> = Track []
+    let plan (Event p : Event<Async<'a>>) : Async<Event<'a>> =
+        let prog (s, result) =
+            async {
+                match s with
+                | (t,ma) :: rest ->
+                    let! a = ma
+                    return Some (rest, (t,a) :: result)
+                | [] -> return None
+            }
+        Async.recursion prog (List.rev p, []) 
+        |> Async.map (snd >> Event)
 
-module Recorder =
-    open System
+    let statemachine (Event stm :  Event<'s -> Async<'s>>) (intialState : 's) : Async<'s> =
+        let prog (l, s) =
+            async {
+                match l with
+                | f :: rest -> 
+                    let! s' = f s
+                    return Some (rest, s')
+                | [] -> return None
+            }
+        Async.recursion prog (List.map snd <| List.rev stm, intialState)
+        |> Async.map snd
 
-//    let private mapEvent f (t,e) = (t, f e)
-//
-//    let inline map f t =
-//        List.map (mapEvent f) t
-//
-//    let inline foldp (f : 'ping -> 'state ->'state) (state : 'state) (m : Signal<'ping>) : Signal<'state> =
-//        [List.foldBack (fun (t,p) (_,s) -> (t, f p s)) m (0uL, state)]
+module Freckle =
     
-    let read : Recorder<obj> =
-        fun tape -> List.map Strip.data (Tape.asList tape)
+    let listenTo<'s> : Freckle<'s> =
+        fun (Event evt) _ ->
+            let up (e : obj) =
+                match e with
+                | :? 's as ev -> Some ev
+                | _ -> None
+            List.choose (up << snd) evt
 
-//    let read<'a> : Recorder<'a> =
-//        fun tape -> List.choose (safeUnbox << Strip.data) (Tape.asList tape)
-//            
+    let pure' (a : 'a) : Freckle<'a> = undefined
 
-    let map (f : 'a -> 'b) (recorder : Recorder<'a>) : Recorder<'b> =
+    let map (f : 'a -> 'b) (fr : Freckle<'a>) : Freckle<'b> =
         //fun tape h -> f (recorder tape h) 
         undefined
-//
-//    let foldp (f: )
-//    let read<'a> : Recorder<'a> =
-//        fun tape h -> Tape.findCurrent h tape
 
-    let record fullTape  (recorder : Recorder<'a>) : Track<'d,'a> =
-//        let folder strip (tape, journey) =
-//            let tape' = Tape.attach strip tape
-//            let head = TapeHead.fromStrip strip
-//            let journey' = Track.append strip (recorder tape' head) journey
-//            (tape', journey')
-//        snd <| List.foldBack folder (Tape.asList fullTape) (Tape.empty, Track.fresh)
+    let bind (f : 'a -> Freckle<'b>) (fr : Freckle<'a>) : Freckle<'b> =  undefined
+    
+    let step (events : Event<_>) (nt : Narrative) (fr : Freckle<'a>) : (Narrative * Event<'a>) =
         undefined
 
-    let spoolBackwardUntil (f : 'a -> bool) (recorder : Recorder<'a>) : Recorder<'a> =
-//        fun tape head ->
-//           let (older,_,_) = Tape.find head tape
-//           let head = List.find (f << (recorder tape)) (Tape.asHeads older)
-//           recorder tape head
-        undefined
+    
+    let assemble (updateEvents : Event<_> -> Async<Event<_>>) (stepper : Event<'e> -> 's  -> Async<'s>) (fr : Freckle<'e>) (state : 's) : Async<_> =
+        let prog (evts, nt, s) =
+            async {
+                let! evts' = updateEvents evts
+                let (nt', step) = step evts' nt fr
+                let! s' = stepper step s
+                return (evts', nt', s')
+            }
+        Async.forever prog (Event.empty, Narrative.beginNew, state)
 
-    let choose (recorder : List<Recorder<'a option>>) : Recorder<'a> =
-//        fun tape _ ->
-//            let heads = Tape.asHeads tape
-//            let res = List.zip heads <| List.map (recorder tape) heads
-//            undefined
-        undefined
+    let assembleStatemachine eventUpdater stm fr =
+        let fr = map stm fr
+        assemble eventUpdater Event.statemachine fr
 
-    let when' (f : 'a -> bool) (recorder : Recorder<'a>) : Recorder<bool> =
-        
-//        let ff a = if f a then Some a else None
-//        map ff recorder
-//        |> choose 
-        undefined
 
 //    let find (f : 'a -> Option<'b>) (r : Recorder<'a>)
 //    let stepBack (f : 'a -> 'b )  (r : Recorder<'a>) : Recorder<'b>  = 

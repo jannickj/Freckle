@@ -12,6 +12,40 @@ module Prelude =
         | :? 'a as a -> Some a
         | _ -> None
 
+    module Async =
+        
+        let (>>=) ma f = async.Bind(ma, f)
+        let ( *>>) ma mb = async.Bind(ma, (fun _ -> mb))
+
+        let doNothing = async.Zero()
+
+        let recursion (f : 's -> Async<'s option>) (state : 's)  : Async<'s> =
+            async {
+                let mutable s = state
+                let mutable sad = true
+                while sad do
+                    let! sa = f s
+                    match sa with
+                    | Some a -> s <- a
+                    | None -> sad <- false
+                return s
+            }
+
+        let forever (f : 's -> Async<'s>) (state : 's)  : Async<_> =
+            async {
+                let mutable s = state
+                while true do
+                    let! s' = f s
+                    s <- s'
+                return undefined
+            }
+
+        let map f ma =
+            async {
+                let! a = ma
+                return f a
+            }
+            
     module List =
 
         let tryHead l =

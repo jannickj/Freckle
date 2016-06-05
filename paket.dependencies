@@ -1,5 +1,7 @@
 source https://nuget.org/api/v2
 
+  nuget FSPowerPack.Core.Community ~> 3
+
 group Build
   source https://nuget.org/api/v2
   
