@@ -57,13 +57,13 @@ module FrpAirlockExample =
         }
         
         
-    let doublePress evts =
+    let doublePress evts clickState  =
         let (buttonEvts, others) = Freck.partition ((=) PressButton) evts
 
         buttonEvts
-        |> Freck.interval (Time2 200)
-        |> Freck.filter (((>=) 2) << List.length)
-        |> Freck.map (const' PressButton)
+        |> Freck.timed
+        |> Freck.foldNow (fun s a -> s) clickState
+        |> Freck.map snd
         |> Freck.combine others
 
     let airlockProg (airlock : Airlock) events s =
