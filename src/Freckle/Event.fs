@@ -27,8 +27,11 @@ module Freck =
 
     let partition (f : 'a -> bool) (fr : Freck<'a>) : (Freck<'a> * Freck<'a>) = (filter f fr, filter (not << f) fr)
 
-    let foldNow (f : 's -> 'a -> 's) (s : 's) (fr : Freck<'a>) : Freck<'s> = 
+    let mapAccumNow (f : 's -> 'a -> ('s * 'b)) (s : 's) (fr : Freck<'a>) : ('s * Freck<'b>) = 
         undefined
+
+    let inline mapAccumNow' (f : 's -> 'a -> 's) (s : 's) (fr : Freck<'a>) : (Freck<'s>) = 
+        snd <| mapAccumNow (fun s a -> let s' = f s a in (s', s')) s fr
 
     let foldNowAsync (f : 's -> 'a -> Async<'s>) (s : 's) (fr : Freck<'a>) : Freck<Async<'s>> = 
         undefined

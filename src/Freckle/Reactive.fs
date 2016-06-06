@@ -60,8 +60,8 @@ module Event =
                 match s with
                 | (t,ma) :: rest ->
                     let! a = ma
-                    return Some (rest, (t,a) :: result)
-                | [] -> return None
+                    return Async.Continue (rest, (t,a) :: result)
+                | [] -> return Async.Stop
             }
         Async.recursion prog (List.rev p, []) 
         |> Async.map (snd >> Event)
@@ -72,8 +72,8 @@ module Event =
                 match l with
                 | f :: rest -> 
                     let! s' = f s
-                    return Some (rest, s')
-                | [] -> return None
+                    return Async.Continue (rest, s')
+                | [] -> return Async.Stop
             }
         Async.recursion prog (List.map snd <| List.rev stm, intialState)
         |> Async.map snd
