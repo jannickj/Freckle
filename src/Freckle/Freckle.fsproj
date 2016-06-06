@@ -9,8 +9,8 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Freckle</RootNamespace>
     <AssemblyName>Freckle</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFSharpCoreVersion>4.3.0.0</TargetFSharpCoreVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
     <Name>Freckle</Name>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -55,6 +55,7 @@
     <Compile Include="Reactive.fs" />
     <Compile Include="StateMachine.fs" />
     <Compile Include="Computational.fs" />
+    <Compile Include="Psync.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

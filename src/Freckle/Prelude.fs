@@ -12,6 +12,8 @@ module Prelude =
         | :? 'a as a -> Some a
         | _ -> None
 
+    let tuple fst snd = (fst, snd)
+
     module Async =
         
         let (>>=) ma f = async.Bind(ma, f)
@@ -19,15 +21,22 @@ module Prelude =
 
         let doNothing = async.Zero()
 
-        let recursion (f : 's -> Async<'s option>) (state : 's)  : Async<'s> =
+        type Signal<'a> = Continue of 'a
+                        | Completed of 'a
+                        | Stop
+
+        let recursion (f : 's -> Async<Signal<'s>>) (state : 's)  : Async<'s> =
             async {
                 let mutable s = state
                 let mutable sad = true
                 while sad do
                     let! sa = f s
                     match sa with
-                    | Some a -> s <- a
-                    | None -> sad <- false
+                    | Continue a -> s <- a
+                    | Stop -> sad <- false
+                    | Completed a -> 
+                        s <- a
+                        sad <- false
                 return s
             }
 
@@ -45,6 +54,8 @@ module Prelude =
                 let! a = ma
                 return f a
             }
+
+        let bind f ma = async.Bind(ma, f)
             
     module List =
 
