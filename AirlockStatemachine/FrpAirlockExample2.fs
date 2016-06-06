@@ -33,6 +33,10 @@ module FrpAirlockExample =
           DoNothing : Async<unit>
         }
      
+     type State =
+        { Click   : DateTime option
+          Airlock : AirLockState
+        }
     
 
     let stm (airlock : Airlock) state event =
@@ -57,22 +61,34 @@ module FrpAirlockExample =
         }
 
         
-    let doublePress evts clickState  =
+    let doublePress clickState evts  =
         let (buttonEvts, others) = Freck.partition ((=) PressButton) evts
-        let doubleClickTime = TimeSpan.FromMilliseconds 200.0
+        let doubleClickTime = TimeSpan.FromMilliseconds 500.0
+        
+        let isDoubleClick cs (time,e) =
+            match cs with
+            | Some lastTime when time - lastTime < doubleClickTime -> (None, Some e)
+            | _ -> (Some time, None)
+
         let (clickState', doublePresses) =
             buttonEvts
             |> Freck.timed
-            |> Freck.mapAccumNow (fun last (time,e) -> (time, if time - last < doubleClickTime then Some e else None)) clickState
+            |> Freck.mapAccumNow isDoubleClick clickState
         doublePresses
+        |> Freck.choose id
         |> Freck.combine others
+        |> tuple clickState'
 
-    let airlockProg (airlock : Airlock) events s =
+    let airlockProg (airlock : Airlock) events (s : State) =
         let folder = asyncStm (stm airlock)
-        events
-        |> doublePress
-        |> Freck.foldNowAsync folder s
+        let (clickState', events') =
+            events
+            |> doublePress s.Click
+        events'
+        |> Freck.foldNowAsync folder s.Airlock
         |> Freck.planNow
+        |> (Async.map Freck.latest)
+        |> Async.map (fun airlock -> { s with Airlock = airlock; Click = clickState'})
 
 
     let program (airlock : Airlock) clock newEvents (events, state) =
@@ -81,5 +97,5 @@ module FrpAirlockExample =
             let! time = clock
             let events' = Freck.moveForward time evts events
             let! state' = airlockProg airlock events' state
-            return (events', Freck.latest state')
+            return (events', state')
         }
