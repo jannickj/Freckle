@@ -4,9 +4,8 @@ open System
 
 type Time = 
     | Indeterminable
-    | Time of DateTime
-type Fvent<'e> = Time * 'e
-type Freck<'e> = Freck of LazyList<Fvent<'e>>
+    | Time of int64
+type Freck<'e> = Freck of LazyList<Time * 'e>
 
 module Fvent =
     
@@ -17,22 +16,44 @@ module Fvent =
 module Freck =  
     open LazyList
 
-    let join (fr : Freck<Freck<'a>>) : Freck<'a> = undefined
+    let rec private merge l1 l2 : LazyList<Time *'e> =
+        match (l1, l2) with
+        | Nil, vs -> vs
+        | us, Nil -> us
+        | LazyList.Cons((ta,a), ps), LazyList.Cons((tb,_), _) when ta >= tb ->           
+            let mergePs () = merge ps l2
+            LazyList.consDelayed (ta,a) mergePs
+        | _, LazyList.Cons((tb,b), qs) ->           
+            let mergeQs () = merge l1 qs
+            LazyList.consDelayed (tb,b) mergeQs
 
-    let pure' (a : 'a) : Freck<'a> = Freck <| LazyList.ofList [(Indeterminable, a)]
+    let pure' (a : 'a) : Freck<'a> = 
+        Freck <| LazyList.ofList [(Indeterminable, a)]
 
-    let map (f : 'a -> 'b) (Freck fr : Freck<'a>) : Freck<'b> = fr |> LazyList.map (Fvent.map f) |> Freck
-
-    let bind (f : 'a -> Freck<'b>) (Freck fr : Freck<'a>) : Freck<'b> =
-        join <| Freck (LazyList.map (Fvent.map f) fr) 
+    let map (f : 'a -> 'b) (Freck fr : Freck<'a>) : Freck<'b> = 
+        fr |> LazyList.map (Fvent.map f) |> Freck
 
     let filter (f : 'a -> bool) (fr : Freck<'a>) : Freck<'a> = undefined
     
-    let timed (fr : Freck<'a>) : Freck<DateTime * 'a> = undefined
+    let choose (f : 'a -> 'b option): Freck<'a> -> Freck<'b> = 
+        map f >> filter ((<>) None) >> map Option.get
+    
 
+    let timed (fr : Freck<'a>) : Freck<Time * 'a> = undefined 
+    
+    let dateTimed (Freck fr : Freck<'a>) : Freck<DateTime * 'a> = undefined
+
+    let join (Freck fr : Freck<Freck<'a>>) : Freck<'a> = 
+       LazyList.map (fun (t, Freck cfr) -> LazyList.map (tuple t) (LazyList.map snd cfr)) fr
+       |> LazyList.concat
+       |> Freck
+    
+    let bind (f : 'a -> Freck<'b>) : Freck<'a> -> Freck<'b> =
+        join << (map f) 
+
+            
     let partition (f : 'a -> bool) (fr : Freck<'a>) : (Freck<'a> * Freck<'a>) = (filter f fr, filter (not << f) fr)
 
-    let choose (f : 'a -> 'b option) (fr : Freck<'a>) : Freck<'b> = undefined
                 
     let listenTo<'a> (fr : Freck<obj>) : Freck<'a> = undefined
 
