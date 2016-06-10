@@ -4,6 +4,8 @@
 module Prelude =
 
     let inline undefined<'a> : 'a = failwith "undefined"
+    
+    let inline swap (a,b) = (b,a)
 
     let inline const' k = fun _ -> k
     

@@ -1,4 +1,4 @@
-﻿namespace Freckle
+﻿namespace FSharp
 
 module FrpAirlockExample =
     open Freckle
@@ -60,42 +60,93 @@ module FrpAirlockExample =
             return s'
         }
 
-        
-    let doublePress clickState evts  =
+    let doubleClickTime = TimeSpan.FromMilliseconds 500.0
+
+    let isDoubleClick cs (time,e) =
+        match cs with
+        | Some lastTime when time - lastTime < doubleClickTime -> (None, Some e)
+        | _ -> (Some time, None)
+    
+    let doublePress evts = 
         let (buttonEvts, others) = Freck.partition ((=) PressButton) evts
-        let doubleClickTime = TimeSpan.FromMilliseconds 500.0
-        
-        let isDoubleClick cs (time,e) =
-            match cs with
-            | Some lastTime when time - lastTime < doubleClickTime -> (None, Some e)
-            | _ -> (Some time, None)
+        buttonEvts
+        |> Freck.dateTimed
+        |> StateFreck.ofFreck
+        |> StateFreck.mapFold isDoubleClick
+        |> StateFreck.choose id
+        |> StateFreck.mapFreck (Freck.combine others)
 
-        let (clickState', doublePresses) =
-            buttonEvts
-            |> Freck.timed
-            |> Freck.mapAccumNow isDoubleClick clickState
-        doublePresses
-        |> Freck.choose id
-        |> Freck.combine others
-        |> tuple clickState'
 
-    let airlockProg (airlock : Airlock) events (s : State) =
-        let folder = asyncStm (stm airlock)
-        let (clickState', events') =
-            events
-            |> doublePress s.Click
-        events'
-        |> Freck.foldNowAsync folder s.Airlock
-        |> Freck.planNow
-        |> (Async.map Freck.latest)
-        |> Async.map (fun airlock -> { s with Airlock = airlock; Click = clickState'})
+//    let doublePress time clickState evts  =
+//        let (buttonEvts, others) = Freck.partition ((=) PressButton) evts
+//        
+//        let (clickState', doublePresses) =
+//            buttonEvts
+//            |> Freck.dateTimed
+//            |> Freck.mapFoldp time isDoubleClick clickState
+//        doublePresses
+//        |> Freck.choose id
+//        |> Freck.combine others
+//        |> tuple clickState'
 
+
+    let astm airlock ms e =
+        async {
+            let! s = ms
+            let (s', ma) = stm airlock s e
+            do! ma
+            return s'
+        }
+    let test : StateFreck<int,int> = undefined
+
+    let airlockProg (airlock : Airlock) evts =
+        statefreck {
+            let! e = doublePress evts
+                     |> StateFreck.attachAsTuple
+            
+            let! (s, c) = StateFreck.get
+            let (s', ma) = stm airlock s e
+            do! StateFreck.put (s', c)
+            return ma
+        }
+    
+    let airlockProg2 (airlock : Airlock) evts =
+        statefreck {
+            let! e = doublePress evts
+                     |> StateFreck.attachAsTuple
+            let! (
+            return async {
+                        let! s = astm airlock s e
+                        return  
+                   }
+        }
+
+
+
+    
+//    let airlockProg (airlock : Airlock) events (s : State) =
+//        let folder = asyncStm (stm airlock)
+//        let (clickState', events') =
+//            events
+//            |> doublePress s.Click
+//        events'
+//        |> Freck.foldNowAsync folder s.Airlock
+//        |> Freck.planNow
+//        |> (Async.map Freck.latest)
+//        |> Async.map (fun airlock -> { s with Airlock = airlock; Click = clickState'})
+
+    
+    let program2 (airlock : Airlock) clock event =
+        let transform (a, c) = (async.Return a, c)
+        StateFreck.execute (airlockProg2 airlock) clock event
 
     let program (airlock : Airlock) clock newEvents (events, state) =
         async {
             let! evts = newEvents
             let! time = clock
-            let events' = Freck.moveForward time evts events
-            let! state' = airlockProg airlock events' state
-            return (events', state')
+            let sss = airlockProg2 airlock evts state time
+            return ()
+//            let events' = Freck.moveForward time evts events
+//            let! state' = airlockProg airlock events' state
+//            return (events', state')
         }
