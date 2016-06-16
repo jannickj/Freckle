@@ -1,6 +1,5 @@
-module Freckle.Tests
+module FSharp.Freckle.Tests
 
-open Freckle
 open NUnit.Framework
 
 [<Test>]

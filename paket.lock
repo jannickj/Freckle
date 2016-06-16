@@ -21,13 +21,19 @@ NUGET
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
     Octokit (0.19)
-      Microsoft.Net.Http  - framework: net10, net11, net20, net30, net35, net40, net40-full
+      Microsoft.Net.Http
     SourceLink.Fake (1.1)
 GITHUB
   remote: fsharp/FAKE
   specs:
     modules/Octokit/Octokit.fsx (60acb2f035cb39f2bd40a6c58a4de10d915da248)
       Octokit
+GROUP Example
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    Microsoft.Tpl.Dataflow (4.5.24)
+
 GROUP Test
 NUGET
   remote: https://www.nuget.org/api/v2

@@ -1,4 +1,4 @@
-﻿namespace Freckle
+﻿namespace FSharp
 
 type ThreadMax = int
 
@@ -10,6 +10,7 @@ type Psync<'a> =  ThreadMax -> ThreadsUsed * Async< 'a>
 
 module Psync =
     open System.Threading.Tasks
+    open FSharp.Helpers
     
     let pure' (x : 'a) : Psync<'a> = fun s -> (1, async.Return x)
 

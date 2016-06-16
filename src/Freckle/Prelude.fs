@@ -1,7 +1,6 @@
-﻿namespace Freckle
+﻿namespace FSharp
 
-[<AutoOpen>]
-module Prelude =
+module Helpers =
 
     let inline undefined<'a> : 'a = failwith "undefined"
     
@@ -17,6 +16,7 @@ module Prelude =
     let tuple fst snd = (fst, snd)
 
     module Async =
+        open System.Threading
         
         let (>>=) ma f = async.Bind(ma, f)
         let ( *>>) ma mb = async.Bind(ma, (fun _ -> mb))
@@ -32,13 +32,39 @@ module Prelude =
                 let mutable s = state
                 let mutable sad = true
                 while sad do
-                    let! sa = f s
+                    let! sa = Async.TryCancelled(f s, fun _ -> ())
                     match sa with
                     | Continue a -> s <- a
                     | Stop -> sad <- false
                     | Completed a -> 
                         s <- a
                         sad <- false
+                return s
+            }
+
+        let recursionWithCancel (cancel : CancellationToken) (f : 's -> Async<Signal<'s>>) (state : 's)  : Async<'s> =
+            async {
+                let! cancelSelf = Async.CancellationToken
+                let source = CancellationTokenSource.CreateLinkedTokenSource(cancelSelf, cancel)
+                let token = source.Token
+                let mutable s = state
+                let mutable sad = true
+                while sad do
+                    let sa = Async.StartAsTask(f s, cancellationToken = token)
+                    sa.Wait token
+                    if sa.IsCompleted 
+                        then let sa' = sa.Result
+                             match sa' with
+                             | Continue a -> s <- a
+                             | Stop -> sad <- false
+                             | Completed a -> 
+                                 s <- a
+                                 sad <- false
+                    elif sa.IsCanceled
+                        then sad <- false                       
+                    elif sa.IsFaulted
+                        then raise sa.Exception
+                    else failwith <| sprintf "unknonwn fail state for task %A" sa
                 return s
             }
 

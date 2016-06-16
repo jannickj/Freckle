@@ -47,14 +47,7 @@
     <None Include="paket.template" />
     <None Include="paket.references" />
     <Compile Include="Prelude.fs" />
-    <Compile Include="Types.fs" />
-    <Compile Include="Core.fs" />
-    <Compile Include="Knowledge.fs" />
-    <Compile Include="Behavior.fs" />
-    <Compile Include="Event.fs" />
-    <Compile Include="Reactive.fs" />
-    <Compile Include="StateMachine.fs" />
-    <Compile Include="Computational.fs" />
+    <Compile Include="Freckle.fs" />
     <Compile Include="Psync.fs" />
   </ItemGroup>
   <PropertyGroup>
