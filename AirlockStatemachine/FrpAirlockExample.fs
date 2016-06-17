@@ -78,5 +78,4 @@
     
     let setup airlock evts s =
         doublePress evts s.Click
-        |> Freck.update (airlockProg airlock)
-        |> Freck.transitionNow s
+        |> Freck.transitionNow (airlockProg airlock) s

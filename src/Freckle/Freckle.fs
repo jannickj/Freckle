@@ -103,13 +103,13 @@ module Freckle =
                 }
             Async.map (Freck << (fun l -> (l, ct))) <| (Seq.foldBack folder l) (async.Return LazyList.empty)
         
-        let transitionNow (state : 's) (fr : Freck<'s -> Async<'s>>)  : Async<Freck<'s>> = undefined
+        let transitionNow (f : 's -> 'a -> Async<'s>) (state : 's) (fr : Freck<'a>)  : Async<Freck<'s>> = undefined
 
         let foldNow (f : 's -> 'a -> 's) (s : 's) (fr : Freck<'a>) : Freck<'s> =
             map fst <| mapFoldNow (fun s a -> let s' = f s a in (s', ())) s fr
 
-        let update (f : 's -> 'a -> Async<'s>) (fr : Freck<'a>) : Freck<'s -> Async<'s>> =
-            map (flip f) fr
+//        let update  (fr : Freck<'a>) : Freck<'s -> Async<'s>> =
+//            map (flip f) fr
                 
 
         let tryHead (Freck (l, _)) =
