@@ -5,6 +5,8 @@ module Helpers =
     let inline undefined<'a> : 'a = failwith "undefined"
     
     let inline swap (a,b) = (b,a)
+    
+    let inline flip f a b = f b a
 
     let inline const' k = fun _ -> k
     
@@ -45,12 +47,18 @@ module Helpers =
         let recursionWithCancel (cancel : CancellationToken) (f : 's -> Async<Signal<'s>>) (state : 's)  : Async<'s> =
             async {
                 let! cancelSelf = Async.CancellationToken
-                let source = CancellationTokenSource.CreateLinkedTokenSource(cancelSelf, cancel)
+                use source = CancellationTokenSource.CreateLinkedTokenSource(cancelSelf, cancel)
                 let token = source.Token
                 let mutable s = state
                 let mutable sad = true
+                let mutable first = true
                 while sad do
-                    let sa = Async.StartAsTask(f s, cancellationToken = token)
+                    let asyncSa = f s
+                    let sa = 
+                        if first 
+                        then Async.StartAsTask(asyncSa, cancellationToken = cancelSelf)
+                        else Async.StartAsTask(asyncSa, cancellationToken = token)
+                    first <- false
                     sa.Wait token
                     if sa.IsCompleted 
                         then let sa' = sa.Result

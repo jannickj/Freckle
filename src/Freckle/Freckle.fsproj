@@ -46,7 +46,7 @@
   <ItemGroup>
     <None Include="paket.template" />
     <None Include="paket.references" />
-    <Compile Include="Prelude.fs" />
+    <Compile Include="Helpers.fs" />
     <Compile Include="Freckle.fs" />
     <Compile Include="Psync.fs" />
   </ItemGroup>

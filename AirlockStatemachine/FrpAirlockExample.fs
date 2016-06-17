@@ -52,7 +52,7 @@
 
         | _                                     -> (state          , Async.doNothing)
 
-
+    
     let doubleClickTime = TimeSpan.FromMilliseconds 500.0
 
     let isDoubleClick (ClickState cs) (time,e) =
@@ -69,14 +69,14 @@
         |> Freck.merge (fun (s, _) b -> (s, b)) others
 
         
-    let airlockProg (airlock : Airlock) (s : State, e)  =
-        freckle {            
+    let airlockProg (airlock : Airlock) s (cs,e) =
+        async {
             let (airlock, ma) = stm airlock s.Airlock e
-            return Async.bind (fun _ -> async.Return { s with Airlock = airlock } ) ma
+            do! ma
+            return { s with Airlock = airlock; Click = cs }
         }
     
-    let setup airlock evts (s : State) =
+    let setup airlock evts s =
         doublePress evts s.Click
-        |> Freck.map (fun (cs,e) -> { s with Click = cs }, e)
-        |> Freck.bind (airlockProg airlock)
-
+        |> Freck.update (airlockProg airlock)
+        |> Freck.transitionNow s

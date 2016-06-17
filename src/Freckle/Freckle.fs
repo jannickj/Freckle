@@ -102,43 +102,49 @@ module Freckle =
                     return LazyList.cons (t,a) newV'
                 }
             Async.map (Freck << (fun l -> (l, ct))) <| (Seq.foldBack folder l) (async.Return LazyList.empty)
-
+        
+        let transitionNow (state : 's) (fr : Freck<'s -> Async<'s>>)  : Async<Freck<'s>> = undefined
 
         let foldNow (f : 's -> 'a -> 's) (s : 's) (fr : Freck<'a>) : Freck<'s> =
             map fst <| mapFoldNow (fun s a -> let s' = f s a in (s', ())) s fr
+
+        let update (f : 's -> 'a -> Async<'s>) (fr : Freck<'a>) : Freck<'s -> Async<'s>> =
+            map (flip f) fr
+                
 
         let tryHead (Freck (l, _)) =
             match l with
             | LazyList.Cons ((_,h), _) -> Some h
             | _ -> None
-        
+
         let push t e (Freck (l, ct)) = Freck (LazyList.consDelayed (t,e) (fun () -> l), ct)
         
         let private setNow t (Freck (l, _)) = Freck (l, CurrentTime t)
 
-        let execute (fs : Freck<'e> -> 's -> Freck<Async<'s>>) (state : 's) (timer : Async<Time>) (events : Async<'e>) : Async<unit> =
+        let execute (fs : Freck<'e> -> 's -> Async<Freck<'s>>) (state : 's) (timer : Async<Time>) (events : Async<'e>) : Async<unit> =
             let manyEvents evts =
                 async  {                    
                     let! evt = events
                     let! time = timer
-                    return Async.Signal.Continue <| push time evt evts 
+                    return Async.Continue <| push time evt evts 
                 }
             
             let folder (evts, s) =
                 async {
-                    let source = System.Threading.CancellationTokenSource()
+                    use source = new System.Threading.CancellationTokenSource()
+
+                    let! now = timer
+
                     let! childrenEvts = Async.StartChild (Async.recursionWithCancel source.Token manyEvents evts)
                                     
-                    let! frS = planNow (fs evts s)
+                    let! frS = fs evts s
                     let optS = tryHead frS
 
                     source.Cancel()
                     let! evts' = childrenEvts
                     
-                    let! now = timer
                     let evts'' = setNow now evts'
                     
-
                     return Async.Continue (evts'', Option.default' s optS)
                 }
             

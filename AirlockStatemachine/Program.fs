@@ -51,6 +51,6 @@ let main argv =
     Async.Start readConsole
     let state = { Click = ClickState None; Airlock = AirLockState.IsDepressurized }
     Freck.execute (setup airlock) state currentTime events
-    |> Async.Start
+    |> Async.RunSynchronously
     printfn "%A" argv
     0 // return an integer exit code
