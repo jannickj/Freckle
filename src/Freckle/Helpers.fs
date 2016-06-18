@@ -19,6 +19,7 @@ module Helpers =
 
     module Async =
         open System.Threading
+        open System.Threading.Tasks
         
         let (>>=) ma f = async.Bind(ma, f)
         let ( *>>) ma mb = async.Bind(ma, (fun _ -> mb))
@@ -48,31 +49,36 @@ module Helpers =
             async {
                 let! cancelSelf = Async.CancellationToken
                 use source = CancellationTokenSource.CreateLinkedTokenSource(cancelSelf, cancel)
-                let token = source.Token
+                let cancelOutside = source.Token
                 let mutable s = state
                 let mutable sad = true
                 let mutable first = true
                 while sad do
                     let asyncSa = f s
-                    let sa = 
-                        if first 
-                        then Async.StartAsTask(asyncSa, cancellationToken = cancelSelf)
-                        else Async.StartAsTask(asyncSa, cancellationToken = token)
+                    let usetoken =
+                        if first
+                        then cancelSelf
+                        else cancelOutside
                     first <- false
-                    sa.Wait token
-                    if sa.IsCompleted 
-                        then let sa' = sa.Result
-                             match sa' with
-                             | Continue a -> s <- a
-                             | Stop -> sad <- false
-                             | Completed a -> 
-                                 s <- a
-                                 sad <- false
-                    elif sa.IsCanceled
-                        then sad <- false                       
-                    elif sa.IsFaulted
-                        then raise sa.Exception
-                    else failwith <| sprintf "unknonwn fail state for task %A" sa
+                    let sa = Async.StartAsTask(asyncSa, cancellationToken = usetoken)
+                    try
+                        sa.Wait usetoken
+                    with _ -> ()
+
+                    match sa.Status with
+                    | TaskStatus.RanToCompletion ->
+                        let sa' = sa.Result
+                        match sa' with
+                        | Continue a -> s <- a
+                        | Stop -> sad <- false
+                        | Completed a -> 
+                            s <- a
+                            sad <- false
+                    | TaskStatus.Canceled -> 
+                        sad <- false 
+                    | TaskStatus.Faulted ->
+                        raise sa.Exception
+                    | _ -> failwith <| sprintf "unknonwn fail state for task %A" sa
                 return s
             }
 

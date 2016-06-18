@@ -21,6 +21,7 @@ let main argv =
         | "openedDoorOuter" -> DoorOpened OuterDoor
         | "closedDoorInner" -> DoorClosed InnerDoor
         | "closedDoorOuter" -> DoorClosed OuterDoor
+        | "pressbutton" -> PressButton
         | evt -> failwith <| sprintf "unknown event %s" evt
 
     let events = Async.map eventMap ExternalAirlock.dequeue
