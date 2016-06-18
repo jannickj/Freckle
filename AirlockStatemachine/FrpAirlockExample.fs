@@ -66,7 +66,7 @@
         Freck.dateTimed buttonEvts
         |> Freck.mapFoldNow isDoubleClick clickState
         |> Freck.choose sndOpt
-        |> Freck.merge (fun (s, _) b -> (s, b)) others
+        |> Freck.weave (fun (s, _) b -> (s, b)) others
 
         
     let airlockProg (airlock : Airlock) s (cs,e) =

@@ -67,7 +67,15 @@ module Freckle =
                 
         let listenTo<'a> (fr : Freck<obj>) : Freck<'a> = choose safeUnbox fr
 
-        let merge (f : 'a -> 'b -> 'a) (fb : Freck<'b>) (fa : Freck<'a>) : Freck<'a> = undefined
+        let weave (f : 'a -> 'b -> 'a) (Freck (listb, ctb) : Freck<'b>) (Freck (lista, cta) : Freck<'a>) : Freck<'a> = 
+            let rec inner lb la =
+                match lb, la with
+                | (Cons ((tb,_), _), Cons ((ta,va), rest)) when ta > tb -> LazyList.consDelayed (ta,va) (fun () -> inner lb rest)
+                | (Cons ((tb,vb), rest), Cons ((_,va), _)) -> LazyList.consDelayed (tb,f va vb) (fun () -> inner rest la)
+                | _, Nil -> LazyList.empty
+                | Nil, _ -> la
+            let ct = if cta > ctb then cta else ctb
+            Freck (inner listb lista, ct)
 
         let combine (Freck (lA,cta) : Freck<'a>) (Freck (lB,ctb) : Freck<'a>) : Freck<'a> = 
             let ct' = if cta > ctb then cta else ctb
