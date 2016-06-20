@@ -9,6 +9,7 @@ let main argv =
         async {
             while true do
                 let s = System.Console.ReadLine()
+                System.Console.SetCursorPosition(0, (System.Console.CursorTop - 1))
                 do! ExternalAirlock.press
         }
 
@@ -22,6 +23,7 @@ let main argv =
         | "closedDoorOuter" -> DoorClosed OuterDoor
         | "pressbutton"     -> PressButton
         | evt -> failwith <| sprintf "unknown event %s" evt
+
 
     let events = Async.map eventMap ExternalAirlock.dequeue
     
@@ -42,7 +44,6 @@ let main argv =
           Depressurize = ExternalAirlock.depressurize
           ShowTerminal = fun str -> async { return printfn "%s" str |> ignore }
         }
-    
     Async.Start readConsole
     let state = { Click = ClickState None; Airlock = AirLockState.IsDepressurized }
     Freck.execute (setup airlock) state events

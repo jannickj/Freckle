@@ -25,7 +25,7 @@ let vent = { ObjectInUse = ref false
              Name = "Vent"
              Status = ref false 
            }
-           
+   
 let enqueue evt =
     async {
         let! _ =  eventQueue.SendAsync(evt) |> Async.AwaitTask
@@ -40,7 +40,7 @@ let dequeue =
   
 let press =
     async { 
-        printfn "button pressed"
+        //printfn "button pressed"
         do! enqueue "pressbutton"
     } 
 
@@ -64,7 +64,7 @@ let pressurize =
 
 let depressurize =
     async { 
-        if not !vent.Status then
+        if not !vent.Status then        
             failwith "room was already depressuarized YOU HAVE LOST"
                         
         if !vent.ObjectInUse then
@@ -83,7 +83,7 @@ let depressurize =
 
 let open' (door : BlockImp) = 
     async { 
-        if !door.Status then
+        if !door.Status then            
             failwith "door was already open YOU HAVE LOST"
                         
         if !door.ObjectInUse then
