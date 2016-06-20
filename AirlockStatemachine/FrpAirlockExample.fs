@@ -12,6 +12,7 @@
                     | Closed
     
     type AirLockEvent = PressButton
+                      | DoublePressButton
                       | DoorOpened of Door
                       | DoorClosed of Door
                       | Pressurized
@@ -24,11 +25,11 @@
         | IsDepressurized
 
     type Airlock =
-        { Open : Door -> Async<unit>
-          Close : Door -> Async<unit>
-          Pressurize : Async<unit>
-          Depressurize : Async<unit> 
-          ShowTerminal : string -> Async<unit>
+        { Open          : Door -> Async<unit>
+          Close         : Door -> Async<unit>
+          Pressurize    : Async<unit>
+          Depressurize  : Async<unit> 
+          ShowTerminal  : string -> Async<unit>
         }
      
      type ClickState = ClickState of DateTime option
@@ -40,15 +41,15 @@
 
     let stm (airlock : Airlock) state event =
         match state, event with
-        | IsPressurized  , PressButton          -> (Depressurizing , airlock.Close InnerDoor)
+        | IsPressurized  , DoublePressButton    -> (Depressurizing , airlock.Close InnerDoor)
         | Depressurizing , DoorClosed InnerDoor -> (Depressurizing , airlock.Depressurize)
         | Depressurizing , Depressurized        -> (Depressurizing , airlock.Open OuterDoor)
-        | Depressurizing , DoorOpened OuterDoor -> (IsDepressurized, Async.doNothing)
+        | Depressurizing , DoorOpened OuterDoor -> (IsDepressurized, airlock.ShowTerminal "Depressurized room")
 
-        | IsDepressurized, PressButton          -> (Pressurizing   , airlock.Close OuterDoor)
+        | IsDepressurized, DoublePressButton    -> (Pressurizing   , airlock.Close OuterDoor)
         | Pressurizing   , DoorClosed OuterDoor -> (Pressurizing   , airlock.Pressurize)
         | Pressurizing   , Pressurized          -> (Pressurizing   , airlock.Open InnerDoor)        
-        | Pressurizing   , DoorOpened InnerDoor -> (IsPressurized  , Async.doNothing)
+        | Pressurizing   , DoorOpened InnerDoor -> (IsPressurized  , airlock.ShowTerminal "Pressurized room")
 
         | _                                     -> (state          , Async.doNothing)
 
@@ -57,22 +58,21 @@
 
     let isDoubleClick (ClickState cs) (time,e) =
         match cs with
-        | Some lastTime when time - lastTime < doubleClickTime -> (ClickState None, Some e)
-        | _ -> (ClickState <| Some time, None)
+        | Some lastTime when time - lastTime < doubleClickTime -> (ClickState None, DoublePressButton)
+        | _ -> (ClickState <| Some time, PressButton)
     
     let doublePress evts clickState =
         let (buttonEvts, others) = Freck.partition ((=) PressButton) evts
         let sndOpt (s,d) = Option.map (fun d' -> (s,d')) d
         Freck.dateTimed buttonEvts
         |> Freck.mapFoldNow isDoubleClick clickState
-        |> Freck.choose sndOpt
-        |> Freck.weave (fun (s, _) b -> (s, b)) others
+        |> Freck.weave (fun a b -> (Option.mapDefault clickState fst a, b)) others
 
         
     let airlockProg (airlock : Airlock) s (cs,e) =
         async {
             let (airlock, ma) = stm airlock s.Airlock e
-            do! ma
+            let! _ = ma //Async.StartChild ma
             return { s with Airlock = airlock; Click = cs }
         }
     

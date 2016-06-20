@@ -18,19 +18,14 @@ let doorInner = { ObjectInUse = ref false
             
 let doorOuter = { ObjectInUse = ref false
                   Name = "DoorOuter"
-                  Status = ref false 
+                  Status = ref true 
                 }
 
 let vent = { ObjectInUse = ref false
              Name = "Vent"
              Status = ref false 
            }
-
-let button = { ObjectInUse = ref false
-               Name = "Button"
-               Status = ref false 
-             }
-
+           
 let enqueue evt =
     async {
         let! _ =  eventQueue.SendAsync(evt) |> Async.AwaitTask
@@ -39,7 +34,8 @@ let enqueue evt =
 
 let dequeue =
     async {
-        return! eventQueue.ReceiveAsync() |> Async.AwaitTask
+        let! msg = eventQueue.ReceiveAsync() |> Async.AwaitTask
+        return msg
     }
   
 let press =
@@ -58,61 +54,68 @@ let pressurize =
             failwith (vent.Name + " already in use YOU HAVE LOST")
                                             
         vent.ObjectInUse.Value <- true
-        printfn "Beginning to pressurize"
+        printfn "@@@ Beginning to pressurize"
+        vent.Status := true
         do! Async.Sleep 5000
         vent.ObjectInUse.Value <- false
-        printfn "room has been pressuarized"
+        printfn "@@@ Room has been pressuarized"
         do! enqueue "pressuarized"
     }
 
 let depressurize =
-    async { if not !vent.Status then
-                failwith "room was already depressuarized YOU HAVE LOST"
+    async { 
+        if not !vent.Status then
+            failwith "room was already depressuarized YOU HAVE LOST"
                         
-            if !vent.ObjectInUse then
-                failwith (vent.Name + " already in use YOU HAVE LOST")
+        if !vent.ObjectInUse then
+            failwith (vent.Name + " already in use YOU HAVE LOST")
 
-            vent.ObjectInUse.Value <- true                        
-            printfn "Beginning to depressurize"
-            do! Async.Sleep 5000
-            vent.ObjectInUse.Value <- false
-            printfn "room has been depressurized"
-            do! enqueue "depressurized"
+        vent.ObjectInUse.Value <- true
+        vent.Status := false
+        printfn "@@@ Beginning to depressurize"
+        do! Async.Sleep 5000
+        printfn "@@@ Room has been depressurized"
+        vent.ObjectInUse.Value <- false
+        do! enqueue "depressurized"
 
     }
 
 
 let open' (door : BlockImp) = 
-    async { if !door.Status then
-                failwith "door was already open YOU HAVE LOST"
+    async { 
+        if !door.Status then
+            failwith "door was already open YOU HAVE LOST"
                         
-            if !door.ObjectInUse then
-                failwith (door.Name + " already in use YOU HAVE LOST")
+        if !door.ObjectInUse then
+            failwith (door.Name + " already in use YOU HAVE LOST")
                             
-            door.ObjectInUse.Value <- true                         
-            printfn "Opening %s" door.Name 
-            do! Async.Sleep 2000
-            door.ObjectInUse.Value <- false 
-            printfn "Door %s has opened" door.Name 
-            do! enqueue ("opened" + door.Name)
+        door.ObjectInUse.Value <- true                         
+        printfn "@@@ Opening %s" door.Name 
+        door.Status := true
+        do! Async.Sleep 2000
+        printfn "@@@ Door %s has opened" door.Name 
+        door.ObjectInUse.Value <- false 
+        do! enqueue ("opened" + door.Name)
     }
             
 let openInner = open' doorInner
 let openOuter = open' doorOuter
 
 let close (door : BlockImp) = 
-    async { if not !door.Status then
-                failwith "door was already closed YOU HAVE LOST"
+    async { 
+        if not !door.Status then
+            failwith "door was already closed YOU HAVE LOST"
                         
-            if !door.ObjectInUse || !door.Status then
-                failwith (door.Name + " already in use YOU HAVE LOST")
+        if !door.ObjectInUse then
+            failwith (door.Name + " already in use YOU HAVE LOST")
                         
-            door.ObjectInUse.Value <- true 
-            printfn "Closing %s" door.Name 
-            do! Async.Sleep 2000
-            door.ObjectInUse.Value <- false 
-            printfn "Door %s has closed" door.Name 
-            do! enqueue ("closed" + door.Name)
+        door.ObjectInUse.Value <- true 
+        printfn "@@@ Closing %s" door.Name 
+        door.Status := false
+        do! Async.Sleep 2000
+        printfn "@@@ Door %s has closed" door.Name 
+        door.ObjectInUse.Value <- false 
+        do! enqueue ("closed" + door.Name)
     }
 
 let closeInner = close doorInner

@@ -45,43 +45,6 @@ module Helpers =
                 return s
             }
 
-        let recursionWithCancel (cancel : CancellationToken) (f : 's -> Async<Signal<'s>>) (state : 's)  : Async<'s> =
-            async {
-                let! cancelSelf = Async.CancellationToken
-                use source = CancellationTokenSource.CreateLinkedTokenSource(cancelSelf, cancel)
-                let cancelOutside = source.Token
-                let mutable s = state
-                let mutable sad = true
-                let mutable first = true
-                while sad do
-                    let asyncSa = f s
-                    let usetoken =
-                        if first
-                        then cancelSelf
-                        else cancelOutside
-                    first <- false
-                    let sa = Async.StartAsTask(asyncSa, cancellationToken = usetoken)
-                    try
-                        sa.Wait usetoken
-                    with _ -> ()
-
-                    match sa.Status with
-                    | TaskStatus.RanToCompletion ->
-                        let sa' = sa.Result
-                        match sa' with
-                        | Continue a -> s <- a
-                        | Stop -> sad <- false
-                        | Completed a -> 
-                            s <- a
-                            sad <- false
-                    | TaskStatus.Canceled -> 
-                        sad <- false 
-                    | TaskStatus.Faulted ->
-                        raise sa.Exception
-                    | _ -> failwith <| sprintf "unknonwn fail state for task %A" sa
-                return s
-            }
-
         let forever (f : 's -> Async<'s>) (state : 's)  : Async<_> =
             async {
                 let mutable s = state
@@ -114,6 +77,9 @@ module Helpers =
             match o with
             | Some a -> a
             | None -> x
+
+        let mapDefault x f o =
+            Option.map f o |> default' x
 
         let ap mf ma = 
             match mf, ma with

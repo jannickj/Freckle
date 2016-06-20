@@ -5,7 +5,6 @@ open FSharp.Freckle
 
 [<EntryPoint>]
 let main argv = 
-    
     let readConsole =
         async {
             while true do
@@ -15,22 +14,17 @@ let main argv =
 
     let eventMap s =
         match s with
-        | "depressurized" -> Depressurized
-        | "pressuarized" -> Pressurized
+        | "depressurized"   -> Depressurized
+        | "pressuarized"    -> Pressurized
         | "openedDoorInner" -> DoorOpened InnerDoor
         | "openedDoorOuter" -> DoorOpened OuterDoor
         | "closedDoorInner" -> DoorClosed InnerDoor
         | "closedDoorOuter" -> DoorClosed OuterDoor
-        | "pressbutton" -> PressButton
+        | "pressbutton"     -> PressButton
         | evt -> failwith <| sprintf "unknown event %s" evt
 
     let events = Async.map eventMap ExternalAirlock.dequeue
-
-    let currentTime =
-        async {
-            return Time (DateTime.UtcNow.Ticks)
-        }
-
+    
     let openDoor door =
         match door with
         | InnerDoor -> ExternalAirlock.openInner
@@ -46,12 +40,12 @@ let main argv =
           Close = closeDoor
           Pressurize = ExternalAirlock.pressurize
           Depressurize = ExternalAirlock.depressurize
-          ShowTerminal = fun str -> async { return printf "%s" str |> ignore }
+          ShowTerminal = fun str -> async { return printfn "%s" str |> ignore }
         }
-        
+    
     Async.Start readConsole
     let state = { Click = ClickState None; Airlock = AirLockState.IsDepressurized }
-    Freck.execute (setup airlock) state currentTime events
+    Freck.execute (setup airlock) state events
     |> Async.RunSynchronously
     printfn "%A" argv
     0 // return an integer exit code

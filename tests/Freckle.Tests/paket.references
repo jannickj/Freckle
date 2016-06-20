@@ -1,3 +1,4 @@
 group Test
-NUnit
-NUnit.Runners
+xunit
+xunit.runner.visualstudio
+FsUnit.xUnit
