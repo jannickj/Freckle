@@ -1,7 +1,7 @@
 ﻿open FrpAirlockExample
 open System
 open FSharp.Helpers
-open FSharp.Freckle
+open Freckle
 
 [<EntryPoint>]
 let main argv = 

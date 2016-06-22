@@ -1,4 +1,7 @@
+FSPowerPack.Core.Community
+
 group Test
 xunit
 xunit.runner.visualstudio
 FsUnit.xUnit
+xunit.runner.console

@@ -1,8 +1,8 @@
 ﻿module FrpAirlockExample
-    open FSharp.Freckle
     open FSharp
     open System
     open FSharp.Helpers
+    open Freckle
 
 
     type Door = InnerDoor
@@ -78,7 +78,7 @@
         }
     
     let setup airlock evts s =        
-        (Freck.trace evts)
+        (Freck.Debug.trace evts)
         |> doublePress s.Click
         |> Freck.now
         |> Freck.transitionNow (airlockProg airlock) s

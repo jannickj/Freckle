@@ -1,6 +1,7 @@
 module Tests.Freckle.Freck
-open FSharp.Freckle
+open Freckle
 open FSharp.Helpers
+open Freckle.Internal
 open Xunit
 open FsUnit.Xunit
 open System.Threading
