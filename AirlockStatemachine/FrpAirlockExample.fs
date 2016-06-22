@@ -61,24 +61,23 @@
         | Some lastTime when time - lastTime < doubleClickTime -> (ClickState None, DoublePressButton)
         | _ -> (ClickState <| Some time, PressButton)
     
-    let doublePress clickState evts =
+    let doublePress now clickState evts =
         let (buttonEvts, others) = Freck.partition ((=) PressButton) evts
         let sndOpt (s,d) = Option.map (fun d' -> (s,d')) d
         Freck.dateTimed buttonEvts
-        |> Freck.mapFoldNow isDoubleClick clickState
+        |> Freck.mapFold now isDoubleClick clickState
         |> Freck.weave (fun a b -> (Option.mapDefault clickState fst a, b)) others
 
 
    
-    let airlockProg (airlock : Airlock) s (CurrentTime now, (cs, e)) =
+    let airlockProg (airlock : Airlock) s (cs, e) =
         async {
             let (airlock, ma) = stm airlock s.Airlock e
             let! _ = ma
             return { s with Airlock = airlock; Click = cs }
         }
     
-    let setup airlock evts s =        
+    let setup airlock now evts s  =        
         (Freck.Debug.trace evts)
-        |> doublePress s.Click
-        |> Freck.now
-        |> Freck.transitionNow (airlockProg airlock) s
+        |> doublePress now s.Click
+        |> Freck.transition now (airlockProg airlock) s

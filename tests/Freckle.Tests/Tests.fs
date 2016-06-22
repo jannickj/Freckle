@@ -8,6 +8,8 @@ open System.Threading
 
 let time v = (Time (0UL,v))
 
+let now = Now << time
+
 [<Fact>]
 let ``map is lazy`` () =
     let mutable isLazy = true
@@ -34,8 +36,7 @@ let ``filter removes elements not satisfying condition`` () =
 let ``cutNow discards all elements older than now`` () =
     let l = [(time 0L, ()); (time 1L, ()); (time 1L, ()); (time 2L, ())]
             |> Freck.ofList
-            |> Freck.setNow (time 1L)
-            |> Freck.cutToNow
+            |> Freck.discardBefore (time 1L)
             |> Freck.toList            
             
     l |> should equal [ (time 2L, ())
@@ -48,8 +49,7 @@ let ``cutNow discards all elements older than now`` () =
 let ``mapFold both folds and maps`` () =    
     let l = List.map (fun t -> (time (int64 t), t)) [ 1 .. 4 ]
             |> Freck.ofList
-            |> Freck.setNow (time 2L)
-            |> Freck.mapFoldNow (fun s a -> (s + a, a - 1)) 0
+            |> Freck.mapFold (now 2L) (fun s a -> (s + a, a - 1)) 0
             |> Freck.toList
   
     l |> should equal [(time 4L, (9, 3)); (time 3L, (5, 2)); (time 2L, (2, 1))]
@@ -73,8 +73,7 @@ let ``weave select the correct state when merging`` () =
 let ```transitionNow correctly transitions between async states`` () =
     let l = List.map (fun i -> (time (int64 i), i)) [ 1 .. 5 ]
             |> Freck.ofList
-            |> Freck.setNow (time 2L)
-            |> Freck.transitionNow (fun s a -> async { return s + a } ) 0
+            |> Freck.transition (now 2L) (fun s a -> async { return s + a } ) 0
     let l' = Async.RunSynchronously l
              |> Freck.toList
 
