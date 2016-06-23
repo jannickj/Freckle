@@ -6,9 +6,9 @@ open Xunit
 open FsUnit.Xunit
 open System.Threading
 
-let time v = (Time (0UL,v))
+let time v = Time.time v
 
-let now = Now << time
+let now v = { Current = time v; Past = Time.origin }
 
 [<Fact>]
 let ``map is lazy`` () =

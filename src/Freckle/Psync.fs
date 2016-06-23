@@ -12,7 +12,7 @@ module Psync =
     open System.Threading.Tasks
     open FSharp.Helpers
     
-    let pure' (x : 'a) : Psync<'a> = fun s -> (1, async.Return x)
+    let pure' (x : 'a) : Psync<'a> = fun _ -> (1, async.Return x)
 
     let map (f : 'a -> 'b) (sa : Psync<'a>) : Psync<'b> = 
         fun c ->

@@ -6,15 +6,26 @@ open LazyList
 [<AutoOpen>]
 module Types =
     open System
-    
+
     type TimeId = uint64
-    type Time = Time of TimeId * int64
-        with static member origin = Time (0UL, 0L)
-                static member time (Time (_,t)) = t
-                static member toDateTime (Time (_,t)) = DateTime(t)
-    type Now = Now of Time
-        with static member beginning = Now (Time.origin)
-    type Freck<'e> = 
+    type Time = 
+            { Ticks : int64
+              Id    : uint32
+            }
+        with static member time t = { Ticks = t; Id = 0u }
+             static member origin = Time.time 0L
+             static member ticks t = t.Ticks
+             static member incId t tOld = { t with Id = tOld.Id + 1u }
+             
+             static member toDateTime t = DateTime(Time.ticks t)
+
+    type Now = 
+        { Current : Time
+          Past : Time
+        }
+        with static member beginning = { Current = Time.origin; Past = Time.origin }
+
+    type Freck<'e> =
         { Event : LazyList<Time * 'e>
         }    
 
@@ -43,14 +54,7 @@ module Internal =
             | _, LazyList.Cons((tb,b), qs) ->           
                 let mergeQs () = merge' l1 qs
                 LazyList.consDelayed (tb,b) mergeQs            
-
-        let tryHead fr =
-            match (toEvent fr) with
-            | LazyList.Cons ((_,h), _) -> Some h
-            | _ -> None
-
-        let push t e fr = setEvent (LazyList.consDelayed (t,e) (fun () -> toEvent fr)) fr
-
+                            
 open Internal.Freck
 
 [<AutoOpen>]
@@ -75,7 +79,23 @@ module Core =
             join << (map f) 
              
         let inline stick (a : 'a) (fr : Freck<'b>) : Freck<'a * 'b> = map (tuple a) fr 
-    
+
+        let inline push t e fr = 
+            let rec inner l () =
+                match l with
+                | LazyList.Cons((t', e'), rest) when Time.ticks t' > Time.ticks t -> 
+                    LazyList.consDelayed (t', e') (inner rest)
+                | LazyList.Cons((t', _), _) when Time.ticks t' = Time.ticks t ->
+                    LazyList.cons (Time.incId t t', e) l
+                | other ->
+                    LazyList.cons (t, e) other
+
+            updateEvent (flip inner ()) fr
+            
+        let tryHead fr =
+            match (toEvent fr) with
+            | LazyList.Cons ((_,h), _) -> Some h
+            | _ -> None    
 
 [<AutoOpen>]
 module Transformation =
@@ -83,6 +103,7 @@ module Transformation =
         let inline toList fr = LazyList.toList (toEvent fr)
 
         let inline ofList l = setEvent (LazyList.ofList (List.sortByDescending fst l)) Freck.empty
+
 
 [<AutoOpen>]
 module Merging = 
@@ -106,19 +127,22 @@ module Timing =
     open Internal
     module Freck =
         
+        let time (fr : Freck<'a>) : Freck<Time> = 
+            updateEvent (LazyList.map (fun (t,_) -> (t,t))) fr
+
         let timeStamp (fr : Freck<'a>) : Freck<Time * 'a> = 
             updateEvent (LazyList.map (fun (t,a) -> (t,(t,a)))) fr
 
         let timeStampAsTicks fr =
-            Freck.map (fun (t,a) -> (Time.time t,a)) (timeStamp fr)
+            Freck.map (fun (t,a) -> (Time.ticks t,a)) (timeStamp fr)
 
         let dateTimed fr =
             Freck.map (fun (t,a) -> (Time.toDateTime t,a)) (timeStamp fr)
 
-
 [<AutoOpen>]
 module Filtering =
     module Freck =
+        
         let filter (f : 'a -> bool) (fr : Freck<'a>) : Freck<'a> =
             let rec inner l =
                 match l with
@@ -141,17 +165,35 @@ module Filtering =
 
             updateEvent (flip inner ()) fr
 
+
+        let skipWhile (f : 'a -> bool) (fr : Freck<'a>) : Freck<'a> = 
+            let rec inner l () =
+                match l with
+                | LazyList.Cons((_,h), rest) when f h ->
+                    LazyList.delayed (inner rest)
+                | _ -> l
+            updateEvent (flip inner ()) fr
+
+
         let discardBefore time fr =
             Freck.timeStamp fr
             |> takeWhile (fun (t,_) -> t >= time)
             |> Freck.map snd
 
+[<AutoOpen>]
+module Grouping =
+    module Freck =
+
+        let span (f : 'a -> bool) (fr : Freck<'a>) : (Freck<'a> * Freck<'a>) = 
+            (Freck.takeWhile f fr, Freck.skipWhile f fr)
+                        
+
 [<AutoOpen>] 
 module Folding =
     module Freck =
         
-        let mapFold (Now now) (f : 's -> 'a -> ('s * 'b)) (state : 's) (fr : Freck<'a>) : (Freck<'s * 'b>) =
-            let fr = Freck.discardBefore now fr
+        let mapFold (now : Now) (f : 's -> 'a -> ('s * 'b)) (state : 's) (fr : Freck<'a>) : (Freck<'s * 'b>) =
+            let fr = Freck.discardBefore now.Past fr
             let (l', _) = Seq.mapFoldBack (fun (t,a) s -> let (s', b) = f s a in ((t, (s', b))), s') (toEvent fr) state 
             setEvent (LazyList.ofSeq l') fr
         
@@ -162,8 +204,8 @@ module Folding =
 module Planning =
     module Freck =
 
-        let plan (Now now) (fullFreck : Freck<Async<'a>>) : Async<Freck<'a>> =            
-            let fr = Freck.discardBefore now fullFreck
+        let plan (now : Now) (fullFreck : Freck<Async<'a>>) : Async<Freck<'a>> =            
+            let fr = Freck.discardBefore now.Past fullFreck
             let folder (t,ma) (newV) =
                 async {
                     let! newV' = newV
@@ -173,8 +215,8 @@ module Planning =
             let folded =  (Seq.foldBack folder (toEvent fr)) (async.Return LazyList.empty)
             Async.map (flip setEvent fr) folded
         
-        let transition (Now now) (f : 's -> 'a -> Async<'s>) (state : 's) (allFreck : Freck<'a>)  : Async<Freck<'s>> =
-            let fr = Freck.discardBefore now allFreck
+        let transition (now : Now) (f : 's -> 'a -> Async<'s>) (state : 's) (allFreck : Freck<'a>)  : Async<Freck<'s>> =
+            let fr = Freck.discardBefore now.Past allFreck
             let rec inner l =
                 async {
                     match l with
@@ -188,10 +230,20 @@ module Planning =
                 let! (_, l) = inner (toEvent fr)
                 return setEvent l fr
         }
-//
-//[<AutoOpen>]
-//module Pull =
-//    module Freck =
+
+[<AutoOpen>]
+module Signal =
+    module Freck =
+        open System
+
+        let pulse ({ Current = time }) (hertz : uint32) : Freck<Time> =
+            let rec inner dist time ()  = LazyList.consDelayed (time, time) (inner dist (Time.time (time.Ticks - dist)))
+            let ticks = Time.ticks time
+            let tps = TimeSpan.TicksPerSecond
+            let pulseDistance = tps / (int64 hertz)
+            let calc = ticks - (ticks % pulseDistance)
+            Freck.freck (LazyList.delayed (inner pulseDistance (Time.time calc)))
+
 
 [<AutoOpen>]
 module Execution =
@@ -199,26 +251,10 @@ module Execution =
         open System
         open System.Threading
 
-        let execute (fs : Now -> Freck<'e> -> 's -> Async<Freck<'s>>) (state : 's) (events : Async<'e>) : Async<unit> =
-            let wait (arv : AutoResetEvent) = arv.WaitOne() |> ignore
-            let release (arv : AutoResetEvent) = arv.Set() |> ignore
-
-            let timeCalc (timeUpdate : AutoResetEvent) (timePrep : AutoResetEvent) timeid =
+        let execute (fs : Now -> Freck<'e> -> 's -> Async<Freck<'s>>) (state : 's) (events : Async<'e>) : Async<unit> =            
+            let fetchTime =
                 async {
-                    while true do
-                        wait timeUpdate
-                        timeid := !timeid + 1UL
-                        release timePrep
-                }
-
-            let fetchTime (timeFetch : AutoResetEvent) (timeUpdate : AutoResetEvent) (timePrep : AutoResetEvent) timeid =
-                async {
-                    wait timeFetch
-                    release timeUpdate
-                    wait timePrep
-                    let timeId = !timeid
-                    release timeFetch
-                    return Time (timeId, DateTime.UtcNow.Ticks)
+                    return Time.time DateTime.UtcNow.Ticks
                 }
 
             let manyEvents currentTime (sema : AutoResetEvent) evts =
@@ -226,35 +262,37 @@ module Execution =
                     while true do
                         let! evt = events
                         let! time = currentTime
-                        evts := push time evt !evts
+                        evts := Freck.push time evt !evts
                         sema.Set() |> ignore
                 }
 
-            let folder currentTime (sema : AutoResetEvent) events (now,s) =
+            let folder currentTime (sema : AutoResetEvent) events (past,s) =
                 async {
-                    sema.WaitOne() |> ignore
-                    let allevents = !events
-                    let evts = allevents
+                    sema.WaitOne(1) |> ignore
+                    let evts = !events                               
+
+                    let! current = currentTime
+                    
+                    let current' = 
+                        match Freck.tryHead (evts |> Freck.time) with
+                        | Some t when t >= current -> Time.incId current t
+                        | _ -> current
+
+                    let now = { Current = current'; Past = past.Current }
+                    
                     let! frS = fs now evts s
-                    let optS = tryHead frS
+                    let s' = Option.default' s <| Freck.tryHead frS
 
-                    let! newNow = currentTime
 
-                    return Async.Signal.Continue (newNow, Option.default' s optS)
+                    return Async.Signal.Continue (now,  s')
                 }
 
             async {
-                let timeFetch = new AutoResetEvent(true)
-                let timeUpdate = new AutoResetEvent(false)
-                let timePrep = new AutoResetEvent(false)
-                let timeId = ref 0UL
-                let! _ = timeCalc timeUpdate timePrep timeId |> Async.StartChild
                 let sema = new AutoResetEvent(false)
                 let evts = ref Freck.empty
-                let timeFetcher = fetchTime timeFetch timeUpdate timePrep timeId
-                let! currentTime = timeFetcher
-                let! _ = Async.StartChild (manyEvents timeFetcher sema evts)
-                do! Async.recursion (folder (Async.map Now timeFetcher) sema evts) (Now currentTime, state)
+                let! currentTime = fetchTime
+                let! _ = Async.StartChild (manyEvents fetchTime sema evts)
+                do! Async.recursion (folder fetchTime sema evts) ({ Current = currentTime; Past = Time.origin }, state)
                     |> Async.Ignore
             }
 

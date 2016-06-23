@@ -9,7 +9,8 @@ module Helpers =
     let inline flip f a b = f b a
 
     let inline const' k = fun _ -> k
-    
+
+
     let safeUnbox (o : obj) =
         match o with
         | :? 'a as a -> Some a

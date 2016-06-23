@@ -67,17 +67,17 @@
         Freck.dateTimed buttonEvts
         |> Freck.mapFold now isDoubleClick clickState
         |> Freck.weave (fun a b -> (Option.mapDefault clickState fst a, b)) others
-
+        
 
    
     let airlockProg (airlock : Airlock) s (cs, e) =
         async {
             let (airlock, ma) = stm airlock s.Airlock e
-            let! _ = ma
+            do! ma
             return { s with Airlock = airlock; Click = cs }
         }
     
     let setup airlock now evts s  =        
-        (Freck.Debug.trace evts)
+        evts
         |> doublePress now s.Click
         |> Freck.transition now (airlockProg airlock) s
