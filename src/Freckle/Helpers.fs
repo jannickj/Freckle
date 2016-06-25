@@ -43,7 +43,7 @@ module Helpers =
 
         type Signal<'a> = Continue of 'a
                         | Completed of 'a
-                        | Stop
+                        //| Stop
 
         let recursion (f : 's -> Async<Signal<'s>>) (state : 's)  : Async<'s> =
             async {
@@ -53,7 +53,7 @@ module Helpers =
                     let! sa = Async.TryCancelled(f s, fun _ -> ())
                     match sa with
                     | Continue a -> s <- a
-                    | Stop -> sad <- false
+                    //| Stop -> sad <- false
                     | Completed a -> 
                         s <- a
                         sad <- false

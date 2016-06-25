@@ -48,8 +48,9 @@
     <None Include="paket.references" />
     <Compile Include="Helpers.fs" />
     <Compile Include="Psync.fs" />
-    <Compile Include="Freckle.fs" />
-    <Compile Include="Debug.fs" />
+    <Compile Include="Mailbox.fs" />
+    <Compile Include="Freck.fs" />
+    <Compile Include="Action.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

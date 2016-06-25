@@ -1,4 +1,5 @@
-﻿namespace Freckle
+﻿[<AutoOpen>]
+module Freckle.Freck
 
 open FSharp.Helpers
 open LazyList
@@ -13,11 +14,11 @@ module Types =
               Id    : uint32
             }
         with static member time t = { Ticks = t; Id = 0u }
-             static member origin = Time.time 0L
-             static member ticks t = t.Ticks
-             static member incId t tOld = { t with Id = tOld.Id + 1u }
+                static member origin = Time.time 0L
+                static member ticks t = t.Ticks
+                static member incId t tOld = { t with Id = tOld.Id + 1u }
              
-             static member toDateTime t = DateTime(Time.ticks t)
+                static member toDateTime t = DateTime(Time.ticks t)
 
     type Now = 
         { Current : Time
@@ -57,7 +58,7 @@ module Internal =
                     let mergeQs () = merge' l1 qs
                     LazyList.consDelayed (tb,b) mergeQs            
                             
-open Internal.Freck.Internal
+open Freck.Internal
 
 [<AutoOpen>]
 module Core =  
@@ -213,4 +214,7 @@ module ComputationalExpression =
         member inline this.Zero () = Freck.pure' ()
 
     let freckle = FreckBuilder()
-        
+    
+    
+module Debug =
+    let trace fr = Freck.map (fun (t,v) -> printfn "%A: %A" t v; v) (Freck.timeStamp fr)

@@ -69,7 +69,7 @@ module Psync =
                     | (tc, ma) :: rest ->
                         let! threads' = awaitResource tc ma threads
                         return Async.Continue (rest, threads')
-                    | [] -> return Async.Stop
+                    | [] -> return Async.Completed (rem, threads)
                 }
             async {
                 let! (_, (_, running, completed)) = Async.recursion folder (sorted, (0, [], []))

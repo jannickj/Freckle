@@ -1,5 +1,6 @@
-﻿namespace Freckle
-open Freckle.Internal.Freck.Internal
+﻿[<AutoOpen>]
+module Freckle.Action
+open Freckle.Freck.Internal
 open LazyList
 open FSharp.Helpers
 
@@ -18,33 +19,34 @@ module Types =
 
     type Reaction<'e> = Reaction of (Context -> (Async<Option<Requirements> * 'e>))
 
+module Internal =
+    let inline inner (Reaction a) = a
+
+    let context = Reaction (fun c -> async.Return (None, c))
+
+    let combineReq r1 r2 =
+        match r1, r2 with
+        | Some r1, Some r2 -> Some { NextPoll = if r1.NextPoll < r2.NextPoll then r1.NextPoll else r2.NextPoll }
+        | Some _, None -> r1
+        | None, Some _ -> r2
+        | None, None -> None
+
+    let map f act c =
+        async {
+            let! (r, a) = act c
+            return (r, f a)
+        }
+
+    let join act c =
+        async {
+            let! (r, mact) = act c
+            let! (r', a) = mact c
+            return (combineReq r r', a)
+        }
+
 [<AutoOpen>]
 module Core =
     module Reaction =
-        module Internal =
-            let inline inner (Reaction a) = a
-
-            let context = Reaction (fun c -> async.Return (None, c))
-
-            let combineReq r1 r2 =
-                match r1, r2 with
-                | Some r1, Some r2 -> Some { NextPoll = if r1.NextPoll < r2.NextPoll then r1.NextPoll else r2.NextPoll }
-                | Some _, None -> r1
-                | None, Some _ -> r2
-                | None, None -> None
-
-            let map f act c =
-                async {
-                    let! (r, a) = act c
-                    return (r, f a)
-                }
-
-            let join act c =
-                async {
-                    let! (r, mact) = act c
-                    let! (r', a) = mact c
-                    return (combineReq r r', a)
-                }
 
         let inline pure' (a : 'a) : Reaction<'a> = 
             Reaction (fun _ -> async.Return (None,  a))
@@ -75,6 +77,7 @@ module ComputationalExpression =
 [<AutoOpen>]
 module Planning =
     module Freck =
+        open Freck.Internal
         let planNow (fullFreck : Freck<Reaction<'a>>) : Reaction<Freck<'a>> =
             reaction {
                 let! now = Reaction.now
@@ -125,7 +128,7 @@ module Signal =
 
         let listenTo<'e> : Reaction<Freck<'e>> = 
             reaction {
-                let! c = Reaction.Internal.context
+                let! c = Internal.context
                 let t = typeof<'e>
                 let st = SortedType(t)
                 match Map.tryFind st c.EventSource with
@@ -139,7 +142,9 @@ module Execution =
         open System
         open System.Threading
 
-        let execute (fs : Now -> Freck<'e> -> 's -> Async<Freck<'s>>) (state : 's) (events : Async<'e>) : Async<unit> =            
+        //let execute (reaction : 's -> Reaction<Freck<'s>>) (state : 's) : Async<unit> =
+
+        let execute' (fs : Now -> Freck<'e> -> 's -> Async<Freck<'s>>) (state : 's) (events : Async<'e>) : Async<unit> =            
             let fetchTime =
                 async {
                     return Time.time DateTime.UtcNow.Ticks
