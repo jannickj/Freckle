@@ -18,6 +18,20 @@ module Helpers =
 
     let tuple fst snd = (fst, snd)
 
+        
+    type SortedType(t) =
+        member x.Type : System.Type = t
+        override x.Equals(yobj) =
+            match yobj with
+            | :? SortedType as y -> (x.Type = y.Type)
+            | _ -> false
+        override x.GetHashCode() = hash x.Type
+        interface System.IComparable with
+            member x.CompareTo yobj =
+                match yobj with
+                | :? SortedType as y -> compare (hash x.Type) (hash y.Type)
+                | _ -> invalidArg "yobj" "cannot compare values of different types"
+
     module Async =
         open System.Threading
         open System.Threading.Tasks
