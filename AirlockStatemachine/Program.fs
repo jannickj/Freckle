@@ -38,15 +38,18 @@ let main argv =
         | OuterDoor -> ExternalAirlock.closeOuter
         
     let airlock : Airlock =
-        { Open = openDoor
-          Close = closeDoor
-          Pressurize = ExternalAirlock.pressurize
-          Depressurize = ExternalAirlock.depressurize
-          ShowTerminal = fun str -> async { return printfn "%s" str |> ignore }
+        { Open = openDoor >> Act.ofAsync
+          Close = closeDoor >> Act.ofAsync
+          Pressurize = ExternalAirlock.pressurize |> Act.ofAsync
+          Depressurize = ExternalAirlock.depressurize |> Act.ofAsync
+          ShowTerminal = fun str -> act { return printfn "%s" str |> ignore }
         }
-    Async.Start readConsole
-    let state = { Click = ClickState None; Airlock = AirLockState.IsDepressurized }
-    Freck.execute (setup airlock) state events
-    |> Async.RunSynchronously
-    printfn "%A" argv
+    async {
+
+        let! _ = readConsole |> Async.StartChild
+        let! mb = Mailbox.create (Clock.systemUtc)
+        do! Mailbox.listenTo events mb
+        let state = { Click = ClickState None; Airlock = AirLockState.IsDepressurized }
+        do! Act.runRecursive mb (setup airlock) state
+    } |> Async.RunSynchronously
     0 // return an integer exit code

@@ -19,6 +19,7 @@ module Clock =
     open System
     
     let systemUtc = Clock (async { return DateTime.UtcNow.Ticks })
+    let alwaysAt ticks = Clock (async { return ticks })
 
     let now (Clock m) = m
 

@@ -14,22 +14,29 @@ module Types =
         }
 
     type Requirements =
-        { NextPoll : Ticks
+        { NextPoll : Ticks option
         }
 
-    type Act<'e> = Act of (Context -> (Async<Option<Requirements> * 'e>))
+    type Act<'e> = Act of (Context -> (Async<Requirements * 'e>))
+
+[<AutoOpen>]
+module Support =
+    module Requirements =
+        let none = { NextPoll = None }
 
 module Internal =
     let inline inner (Act a) = a
 
-    let context = Act (fun c -> async.Return (None, c))
-
-    let combineReq r1 r2 =
-        match r1, r2 with
-        | Some r1, Some r2 -> Some { NextPoll = if r1.NextPoll < r2.NextPoll then r1.NextPoll else r2.NextPoll }
-        | Some _, None -> r1
-        | None, Some _ -> r2
+    let context = Act (fun c -> async.Return (Requirements.none, c))
+    
+    let combinePoll p1 p2 = 
+        match p1, p2 with
+        | Some p1', Some p2' -> if p1' < p2' then p1 else p2
+        | Some _, None -> p1
+        | None, Some _ -> p2
         | None, None -> None
+
+    let combineReq r1 r2 = { NextPoll = combinePoll r1.NextPoll r2.NextPoll }
 
     let map f act c =
         async {
@@ -49,7 +56,7 @@ module Core =
     module Act =
 
         let inline pure' (a : 'a) : Act<'a> = 
-            Act (fun _ -> async.Return (None,  a))
+            Act (fun _ -> async.Return (Requirements.none,  a))
 
         let inline map (f : 'a -> 'b) (act : Act<'a>) : Act<'b> = 
             Act (Internal.map f (Internal.inner act))
@@ -61,7 +68,16 @@ module Core =
         let inline bind (f : 'a -> Act<'b>) (m : Act<'a> ) : Act<'b> =
             join ((map f) m)
 
-        let now = Act (fun c -> async { return None, c.Now })
+        let now = Act (fun c -> async { return Requirements.none, c.Now })
+
+        let doNothing = pure' ()
+
+        let ofAsync ma = 
+            Act (fun c_ -> 
+                    async {
+                        let! a = ma
+                        return Requirements.none, a
+                    })
 
 [<AutoOpen>]
 module ComputationalExpression =
@@ -134,38 +150,44 @@ module Signal =
 
 [<AutoOpen>]
 module Execution =
-    module Feed =
+    module Act =
         open System
         open System.Threading
 
-        let execute' (mailbox : Mailbox)  (act : 's -> Act<Feed<'s>>) (state : 's)  : Async<unit> = 
-            let folder (regOpt,past,s) =
+        let run (mailbox : Mailbox) (evtSource : EventSource) (now : Now) (act : Act<Feed<'s>>) : Async< Requirements * Feed<'s>> =
+            async {
+                let context = 
+                    { Mailbox = mailbox
+                      EventSource = evtSource
+                      Now = now
+                    }
+
+                let (Act frS) = act
+                let! (reg, feed) = frS context
+
+                return (reg,  feed)
+                }
+
+        let runRecursive (mailbox : Mailbox)  (act : 's -> Act<Feed<'s>>) (state : 's)  : Async<unit> = 
+            let folder (reg,past,s) =
                 async {
-                    match regOpt with
-                    | Some reg -> do! Mailbox.awaitMailTimeout reg.NextPoll mailbox
-                    | None -> do! Mailbox.awaitMail mailbox
+                    match reg.NextPoll with
+                    | Some poll when poll > 0L -> do! Mailbox.awaitMailTimeout poll mailbox
+                    | _ -> do! Mailbox.awaitMail mailbox
                     
                     let! evtSource = Mailbox.receive mailbox
                     let! currentTicks = Mailbox.currentTick mailbox
                     let currentTime = EventSource.setTimeId currentTicks evtSource
 
                     let now = { Current = currentTime; Past = past }
-                    let context = 
-                        { Mailbox = mailbox
-                          EventSource = evtSource
-                          Now = now
-                        }
-
-                    let (Act frS) = act s
-                    let! (regOpt', feed) = frS context
+                    let! (reg', feed) = run mailbox evtSource now (act s)
                     let s' = Option.default' s <| Feed.tryHead feed
 
-
-                    return Async.Signal.Continue (regOpt', currentTime,  s')
+                    return Async.Signal.Continue (reg', currentTime,  s')
                 }
 
             async {
                 let! currentTicks = Mailbox.currentTick mailbox
-                do! Async.recursion folder (Some { NextPoll = 0L }, Time.time currentTicks, state)
+                do! Async.recursion folder ({ NextPoll = Some 0L }, Time.time currentTicks, state)
                     |> Async.Ignore
             }

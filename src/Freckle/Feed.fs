@@ -16,14 +16,15 @@ module Types =
               Id    : TimeId
             }
         with static member time t = { Ticks = t; Id = 0u }
-                static member origin = Time.time 0L
-                static member ticks t = t.Ticks
-                static member incId t tOld = 
-                    if t = tOld.Ticks 
-                    then { Ticks = t; Id = tOld.Id + 1u }
-                    else Time.time t
+             static member origin = Time.time 0L
+             static member ticks t = t.Ticks
+             static member incId t tOld = 
+                if t = tOld.Ticks 
+                then { Ticks = t; Id = tOld.Id + 1u }
+                else Time.time t
              
-                static member toDateTime t = DateTime(Time.ticks t)
+             static member toDateTime t = DateTime(Time.ticks t)
+             override x.ToString() = sprintf "%A" x 
 
     type Now = 
         { Current : Time
@@ -214,9 +215,9 @@ module Folding =
     module Feed =
         
         let mapFold (now : Now) (f : 's -> 'a -> ('s * 'b)) (state : 's) (fr : Feed<'a>) : (Feed<'s * 'b>) =
-            let fr = Feed.discardBefore now.Past fr
-            let (l', _) = Seq.mapFoldBack (fun (t,a) s -> let (s', b) = f s a in ((t, (s', b))), s') (toEvent fr) state 
-            setEvent (LazyList.ofSeq l') fr
+            let fr' = Feed.discardBefore now.Past fr
+            let (l', _) = Seq.mapFoldBack (fun (t,a) s -> let (s', b) = f s a in ((t, (s', b))), s') (toEvent fr') state 
+            setEvent (LazyList.ofSeq l') fr'
         
         let fold now (f : 's -> 'a -> 's) (s : 's) (fr : Feed<'a>) : Feed<'s> =
             Feed.map fst <| mapFold now (fun s a -> let s' = f s a in (s', ())) s fr

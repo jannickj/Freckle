@@ -25,11 +25,11 @@
         | IsDepressurized
 
     type Airlock =
-        { Open          : Door -> Async<unit>
-          Close         : Door -> Async<unit>
-          Pressurize    : Async<unit>
-          Depressurize  : Async<unit> 
-          ShowTerminal  : string -> Async<unit>
+        { Open          : Door -> Act<unit>
+          Close         : Door -> Act<unit>
+          Pressurize    : Act<unit>
+          Depressurize  : Act<unit> 
+          ShowTerminal  : string -> Act<unit>
         }
      
      type ClickState = ClickState of DateTime option
@@ -51,7 +51,7 @@
         | Pressurizing   , Pressurized          -> (Pressurizing   , airlock.Open InnerDoor)        
         | Pressurizing   , DoorOpened InnerDoor -> (IsPressurized  , airlock.ShowTerminal "Pressurized room")
 
-        | _                                     -> (state          , Async.doNothing)
+        | _                                     -> (state          , Act.doNothing)
 
     
     let doubleClickTime = TimeSpan.FromMilliseconds 500.0
@@ -62,22 +62,26 @@
         | _ -> (ClickState <| Some time, PressButton)
     
     let doublePress now clickState evts =
-        let (buttonEvts, others) = Freck.partition ((=) PressButton) evts
+        let (buttonEvts, others) = Feed.partition ((=) PressButton) evts
         let sndOpt (s,d) = Option.map (fun d' -> (s,d')) d
-        Freck.dateTimed buttonEvts
-        |> Freck.mapFold now isDoubleClick clickState
-        |> Freck.weave (fun a b -> (Option.mapDefault clickState fst a, b)) others
+        Feed.dateTimed buttonEvts
+        |> Feed.mapFold now isDoubleClick clickState
+        |> Feed.weave (fun a b -> (Option.mapDefault clickState fst a, b)) others
         
 
    
     let airlockProg (airlock : Airlock) s (cs, e) =
-        async {
+        act {
             let (airlock, ma) = stm airlock s.Airlock e
             do! ma
             return { s with Airlock = airlock; Click = cs }
         }
     
-    let setup airlock now evts s  =        
-        evts
-        |> doublePress now s.Click
-        |> Freck.transition now (airlockProg airlock) s
+    let setup airlock s  =       
+        act {
+            let! evts = Act.react
+            let! now= Act.now
+            return! evts
+                    |> doublePress now s.Click
+                    |> Feed.transitionNow (airlockProg airlock) s
+        }
