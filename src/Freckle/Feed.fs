@@ -1,5 +1,5 @@
 ﻿[<AutoOpen>]
-module Freckle.Freck
+module Freckle.Feed
 
 open FSharp.Helpers
 open LazyList
@@ -8,15 +8,20 @@ open LazyList
 module Types =
     open System
 
-    type TimeId = uint64
+    type TimeId = uint32
+    type Ticks = int64
+
     type Time = 
-            { Ticks : int64
-              Id    : uint32
+            { Ticks : Ticks
+              Id    : TimeId
             }
         with static member time t = { Ticks = t; Id = 0u }
                 static member origin = Time.time 0L
                 static member ticks t = t.Ticks
-                static member incId t tOld = { t with Id = tOld.Id + 1u }
+                static member incId t tOld = 
+                    if t = tOld.Ticks 
+                    then { Ticks = t; Id = tOld.Id + 1u }
+                    else Time.time t
              
                 static member toDateTime t = DateTime(Time.ticks t)
 
@@ -26,26 +31,26 @@ module Types =
         }
         with static member beginning = { Current = Time.origin; Past = Time.origin }
 
-    type Freck<'e> =
+    type Feed<'e> =
         { Event : LazyList<Time * 'e>
         }
 
 [<AutoOpen>]
 module Internal =
-    module Freck = 
+    module Feed = 
         module Internal =
             open LazyList
-
-            let inline updateEvent f (fr : Freck<'a>) : Freck<'b> =
+            
+            let inline updateEvent f (fr : Feed<'a>) : Feed<'b> =
                 { Event = f fr.Event  }
-
-            let inline setEvent l (_ : Freck<'a>) : Freck<'b> =
+            
+            let inline setEvent l (_ : Feed<'a>) : Feed<'b> =
                 { Event = l }
 
             let inline combineMeta l _ _ =
                 { Event = l }
             
-            let inline toEvent (fr : Freck<_>) = fr.Event
+            let inline toEvent (fr : Feed<_>) = fr.Event
         
             let rec merge' l1 l2 : LazyList<Time *'e> =
                 match (l1, l2) with
@@ -56,42 +61,55 @@ module Internal =
                     LazyList.consDelayed (ta,a) mergePs
                 | _, LazyList.Cons((tb,b), qs) ->           
                     let mergeQs () = merge' l1 qs
-                    LazyList.consDelayed (tb,b) mergeQs            
-                            
-open Freck.Internal
+                    LazyList.consDelayed (tb,b) mergeQs       
+            
+            let rec join (ls : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * 'a> =
+                match ls with
+                | Cons((ts, (Cons((t, _), _) as la)), rest) -> 
+                    let tDiff = (ts.Ticks - t.Ticks)
+                    let la' = map (fun (t,a) -> ({ t with Ticks = t.Ticks + tDiff}, a)) la
+                    let ls' = delayed (fun () -> join rest)
+                    delayed (fun () -> merge' la' ls')
+                | Cons((_, Nil), rest) -> delayed (fun () -> join rest)
+                | Nil -> LazyList.empty
+
+            let inline unsafePush t e feed =
+                updateEvent (LazyList.cons (t, e)) feed
+
+open Feed.Internal
 
 [<AutoOpen>]
 module Core =  
-    module Freck =     
-        let inline freck event = { Event = event }
+    module Feed =     
+        let inline feed event = { Event = event }
 
-        let inline empty<'e> : Freck<'e> = freck LazyList.empty 
+        let inline empty<'e> : Feed<'e> = feed LazyList.empty 
 
-        let inline pure' (a : 'a) : Freck<'a> = 
-            freck (LazyList.ofList [(Time.origin, a)])
+        let inline singleton time evt = feed (LazyList.cons (time, evt) LazyList.empty)
 
-        let inline map (f : 'a -> 'b) (fr : Freck<'a>) : Freck<'b> = 
+        let inline pure' (a : 'a) : Feed<'a> = 
+            feed (LazyList.ofList [(Time.origin, a)])
+
+        let inline map (f : 'a -> 'b) (fr : Feed<'a>) : Feed<'b> = 
             updateEvent (LazyList.map (fun (t,a) -> (t, f a))) fr
 
-        let inline join (fr : Freck<Freck<'a>>) : Freck<'a> = 
-            let f = LazyList.map (fun (t, cfr) -> LazyList.map (tuple t) (LazyList.map snd (toEvent cfr)))
-                    >> LazyList.concat
-            updateEvent f fr            
+        let inline join (fr : Feed<Feed<'a>>) : Feed<'a> =
+            setEvent (Feed.Internal.join <| toEvent (map toEvent fr)) fr            
     
-        let inline bind (f : 'a -> Freck<'b>) : Freck<'a> -> Freck<'b> =
+        let inline bind (f : 'a -> Feed<'b>) : Feed<'a> -> Feed<'b> =
             join << (map f) 
              
-        let inline stick (a : 'a) (fr : Freck<'b>) : Freck<'a * 'b> = map (tuple a) fr 
+        let inline stick (a : 'a) (fr : Feed<'b>) : Feed<'a * 'b> = map (tuple a) fr 
 
-        let inline push t e fr = 
+        let inline push (t : Ticks) e fr = 
             let rec inner l () =
                 match l with
-                | LazyList.Cons((t', e'), rest) when Time.ticks t' > Time.ticks t -> 
+                | LazyList.Cons((t', e'), rest) when Time.ticks t' > t -> 
                     LazyList.consDelayed (t', e') (inner rest)
-                | LazyList.Cons((t', _), _) when Time.ticks t' = Time.ticks t ->
+                | LazyList.Cons((t', _), _) when Time.ticks t' = t ->
                     LazyList.cons (Time.incId t t', e) l
                 | other ->
-                    LazyList.cons (t, e) other
+                    LazyList.cons (Time.time t, e) other
 
             updateEvent (flip inner ()) fr
             
@@ -102,17 +120,17 @@ module Core =
 
 [<AutoOpen>]
 module Transformation =
-    module Freck = 
+    module Feed = 
         let inline toList fr = LazyList.toList (toEvent fr)
 
-        let inline ofList l = setEvent (LazyList.ofList (List.sortByDescending fst l)) Freck.empty
+        let inline ofList l = setEvent (LazyList.ofList (List.sortByDescending fst l)) Feed.empty
 
 
 [<AutoOpen>]
 module Merging = 
-    module Freck =    
+    module Feed =    
         
-        let weave (f : Option<'a> -> 'b -> 'a) (frB : Freck<'b>) (frA : Freck<'a>) : Freck<'a> = 
+        let weave (f : Option<'a> -> 'b -> 'a) (frB : Feed<'b>) (frA : Feed<'a>) : Feed<'a> = 
             let rec inner lb la =
                 match lb, la with
                 | (Cons ((tb,_), _), Cons ((ta,va), rest)) when ta > tb -> LazyList.consDelayed (ta,va) (fun () -> inner lb rest)
@@ -121,32 +139,32 @@ module Merging =
                 | Nil, _ -> la
             combineMeta (inner (toEvent frB) (toEvent frA)) frA frB
 
-        let combine (frA : Freck<'a>) (frB : Freck<'a>) : Freck<'a> = 
+        let combine (frA : Feed<'a>) (frB : Feed<'a>) : Feed<'a> = 
             combineMeta (merge' (toEvent frB) (toEvent frB)) frA frB
 
 
 [<AutoOpen>]
 module Timing =
     open Internal
-    module Freck =
+    module Feed =
         
-        let time (fr : Freck<'a>) : Freck<Time> = 
+        let time (fr : Feed<'a>) : Feed<Time> = 
             updateEvent (LazyList.map (fun (t,_) -> (t,t))) fr
 
-        let timeStamp (fr : Freck<'a>) : Freck<Time * 'a> = 
+        let timeStamp (fr : Feed<'a>) : Feed<Time * 'a> = 
             updateEvent (LazyList.map (fun (t,a) -> (t,(t,a)))) fr
 
         let timeStampAsTicks fr =
-            Freck.map (fun (t,a) -> (Time.ticks t,a)) (timeStamp fr)
+            Feed.map (fun (t,a) -> (Time.ticks t,a)) (timeStamp fr)
 
         let dateTimed fr =
-            Freck.map (fun (t,a) -> (Time.toDateTime t,a)) (timeStamp fr)
+            Feed.map (fun (t,a) -> (Time.toDateTime t,a)) (timeStamp fr)
 
 [<AutoOpen>]
 module Filtering =
-    module Freck =
+    module Feed =
         
-        let filter (f : 'a -> bool) (fr : Freck<'a>) : Freck<'a> =
+        let filter (f : 'a -> bool) (fr : Feed<'a>) : Feed<'a> =
             let rec inner l =
                 match l with
                 | LazyList.Cons((t,a), rest) when f a -> LazyList.consDelayed (t,a) (fun () -> inner rest)
@@ -154,12 +172,12 @@ module Filtering =
                 | Nil -> LazyList.empty
             updateEvent inner fr
 
-        let choose (f : 'a -> 'b option): Freck<'a> -> Freck<'b> = 
-            Freck.map f >> filter (Option.isSome) >> Freck.map Option.get
+        let choose (f : 'a -> 'b option): Feed<'a> -> Feed<'b> = 
+            Feed.map f >> filter (Option.isSome) >> Feed.map Option.get
 
-        let partition (f : 'a -> bool) (fr : Freck<'a>) : (Freck<'a> * Freck<'a>) = (filter f fr, filter (not << f) fr)   
+        let partition (f : 'a -> bool) (fr : Feed<'a>) : (Feed<'a> * Feed<'a>) = (filter f fr, filter (not << f) fr)   
     
-        let takeWhile (f : 'a -> bool) (fr : Freck<'a>) : Freck<'a> = 
+        let takeWhile (f : 'a -> bool) (fr : Feed<'a>) : Feed<'a> = 
             let rec inner l () =
                 match l with
                 | LazyList.Cons((t,h), rest) when f h ->
@@ -169,7 +187,7 @@ module Filtering =
             updateEvent (flip inner ()) fr
 
 
-        let skipWhile (f : 'a -> bool) (fr : Freck<'a>) : Freck<'a> = 
+        let skipWhile (f : 'a -> bool) (fr : Feed<'a>) : Feed<'a> = 
             let rec inner l () =
                 match l with
                 | LazyList.Cons((_,h), rest) when f h ->
@@ -179,42 +197,42 @@ module Filtering =
 
 
         let discardBefore time fr =
-            Freck.timeStamp fr
+            Feed.timeStamp fr
             |> takeWhile (fun (t,_) -> t >= time)
-            |> Freck.map snd
+            |> Feed.map snd
 
 [<AutoOpen>]
 module Grouping =
-    module Freck =
+    module Feed =
 
-        let span (f : 'a -> bool) (fr : Freck<'a>) : (Freck<'a> * Freck<'a>) = 
-            (Freck.takeWhile f fr, Freck.skipWhile f fr)
+        let span (f : 'a -> bool) (fr : Feed<'a>) : (Feed<'a> * Feed<'a>) = 
+            (Feed.takeWhile f fr, Feed.skipWhile f fr)
                         
 
 [<AutoOpen>] 
 module Folding =
-    module Freck =
+    module Feed =
         
-        let mapFold (now : Now) (f : 's -> 'a -> ('s * 'b)) (state : 's) (fr : Freck<'a>) : (Freck<'s * 'b>) =
-            let fr = Freck.discardBefore now.Past fr
+        let mapFold (now : Now) (f : 's -> 'a -> ('s * 'b)) (state : 's) (fr : Feed<'a>) : (Feed<'s * 'b>) =
+            let fr = Feed.discardBefore now.Past fr
             let (l', _) = Seq.mapFoldBack (fun (t,a) s -> let (s', b) = f s a in ((t, (s', b))), s') (toEvent fr) state 
             setEvent (LazyList.ofSeq l') fr
         
-        let fold now (f : 's -> 'a -> 's) (s : 's) (fr : Freck<'a>) : Freck<'s> =
-            Freck.map fst <| mapFold now (fun s a -> let s' = f s a in (s', ())) s fr
+        let fold now (f : 's -> 'a -> 's) (s : 's) (fr : Feed<'a>) : Feed<'s> =
+            Feed.map fst <| mapFold now (fun s a -> let s' = f s a in (s', ())) s fr
 
 
 
 [<AutoOpen>]
 module ComputationalExpression =
-    type FreckBuilder() =
-        member inline this.Return(x : 'T) = Freck.pure' x
+    type FeedBuilder() =
+        member inline this.Return(x : 'T) = Feed.pure' x
         member inline this.ReturnFrom(x) = x
-        member inline this.Bind(ma, f) = Freck.bind f ma
-        member inline this.Zero () = Freck.pure' ()
+        member inline this.Bind(ma, f) = Feed.bind f ma
+        member inline this.Zero () = Feed.pure' ()
 
-    let freckle = FreckBuilder()
+    let feed = FeedBuilder()
     
     
 module Debug =
-    let trace fr = Freck.map (fun (t,v) -> printfn "%A: %A" t v; v) (Freck.timeStamp fr)
+    let trace fr = Feed.map (fun (t,v) -> printfn "%A: %A" t v; v) (Feed.timeStamp fr)

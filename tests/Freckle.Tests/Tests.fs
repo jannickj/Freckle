@@ -1,7 +1,7 @@
-module Tests.Freckle.Freck
+module Tests.Freckle.Feed
 open Freckle
 open FSharp.Helpers
-open Freckle.Internal
+open Freckle.Feed.Internal
 open Xunit
 open FsUnit.Xunit
 open System.Threading
@@ -14,8 +14,8 @@ let now v = { Current = time v; Past = Time.origin }
 let ``map is lazy`` () =
     let mutable isLazy = true
     let strict = lazy (isLazy <- false)
-    let fr = Freck.ofList [(time 0L, strict); (time 1L, strict)]
-             |> Freck.map (fun s -> s.Force())
+    let fr = Feed.ofList [(time 0L, strict); (time 1L, strict)]
+             |> Feed.map (fun s -> s.Force())
     
     isLazy |> should equal true
     Assert.True(isLazy)
@@ -25,9 +25,9 @@ let ``map is lazy`` () =
 let ``filter removes elements not satisfying condition`` () =
     
     let l = [(time 0L, false); (time 1L, true)]
-            |> Freck.ofList
-            |> Freck.filter id
-            |> Freck.toList
+            |> Feed.ofList
+            |> Feed.filter id
+            |> Feed.toList
 
     l |> should equal [(time 1L, true)]
 
@@ -35,9 +35,9 @@ let ``filter removes elements not satisfying condition`` () =
 [<Fact>]
 let ``cutNow discards all elements older than now`` () =
     let l = [(time 0L, ()); (time 1L, ()); (time 1L, ()); (time 2L, ())]
-            |> Freck.ofList
-            |> Freck.discardBefore (time 1L)
-            |> Freck.toList            
+            |> Feed.ofList
+            |> Feed.discardBefore (time 1L)
+            |> Feed.toList            
             
     l |> should equal [ (time 2L, ())
                       ; (time 1L, ())
@@ -48,19 +48,19 @@ let ``cutNow discards all elements older than now`` () =
 [<Fact>]
 let ``mapFold both folds and maps`` () =    
     let l = List.map (fun t -> (time (int64 t), t)) [ 1 .. 4 ]
-            |> Freck.ofList
-            |> Freck.mapFold (now 2L) (fun s a -> (s + a, a - 1)) 0
-            |> Freck.toList
+            |> Feed.ofList
+            |> Feed.mapFold (now 2L) (fun s a -> (s + a, a - 1)) 0
+            |> Feed.toList
   
     l |> should equal [(time 4L, (9, 3)); (time 3L, (5, 2)); (time 2L, (2, 1))]
 
 [<Fact>]
 let ``weave select the correct state when merging`` () =
-    let lA = [(time 0L, (1, "1a"));(time 2L, (2, "2a"))] |> Freck.ofList
-    let lB = [(time 1L, "1b");(time 2L, "2b");(time 3L, "3b")] |> Freck.ofList
+    let lA = [(time 0L, (1, "1a"));(time 2L, (2, "2a"))] |> Feed.ofList
+    let lB = [(time 1L, "1b");(time 2L, "2b");(time 3L, "3b")] |> Feed.ofList
 
-    let lAB = Freck.weave (fun optA b -> ((Option.mapDefault 0 fst optA), b)) lB lA
-              |> Freck.toList
+    let lAB = Feed.weave (fun optA b -> ((Option.mapDefault 0 fst optA), b)) lB lA
+              |> Feed.toList
 
     lAB |> should equal [ (time 3L, (2, "3b"))
                         ; (time 2L, (2, "2b"))
@@ -72,10 +72,10 @@ let ``weave select the correct state when merging`` () =
 [<Fact>]
 let ```transitionNow correctly transitions between async states`` () =
     let l = List.map (fun i -> (time (int64 i), i)) [ 1 .. 5 ]
-            |> Freck.ofList
-            |> Freck.transition (now 2L) (fun s a -> async { return s + a } ) 0
+            |> Feed.ofList
+            |> Feed.transitionNow (fun s a -> act { return s + a } ) 0
     let l' = Async.RunSynchronously l
-             |> Freck.toList
+             |> Feed.toList
 
     l' |> should equal [ (time 5L, 14)
                        ; (time 4L, 9)

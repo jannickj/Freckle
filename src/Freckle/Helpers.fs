@@ -31,6 +31,12 @@ module Helpers =
                 match yobj with
                 | :? SortedType as y -> compare (hash x.Type) (hash y.Type)
                 | _ -> invalidArg "yobj" "cannot compare values of different types"
+    module AutoResetEvent =
+        open System.Threading
+
+        let wait (a : AutoResetEvent) = a.WaitOne() |> ignore
+
+        let release (a : AutoResetEvent) = a.Set() |> ignore
 
     module Async =
         open System.Threading
@@ -43,7 +49,6 @@ module Helpers =
 
         type Signal<'a> = Continue of 'a
                         | Completed of 'a
-                        //| Stop
 
         let recursion (f : 's -> Async<Signal<'s>>) (state : 's)  : Async<'s> =
             async {
@@ -53,7 +58,6 @@ module Helpers =
                     let! sa = Async.TryCancelled(f s, fun _ -> ())
                     match sa with
                     | Continue a -> s <- a
-                    //| Stop -> sad <- false
                     | Completed a -> 
                         s <- a
                         sad <- false

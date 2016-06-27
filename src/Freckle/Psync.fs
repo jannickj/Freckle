@@ -59,7 +59,6 @@ module Psync =
                              let (tc, completed') = List.unzip res
 
                              return Async.Continue (inUse - List.sum tc, running, completed' @ completed)
-
                     }
                 Async.recursion folder
 
