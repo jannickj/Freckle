@@ -5,6 +5,7 @@ open Freckle.Feed.Internal
 open Xunit
 open FsUnit.Xunit
 open System.Threading
+open System
 
 let time v = Time.time v
 
@@ -71,20 +72,38 @@ let ``weave select the correct state when merging`` () =
                         ]
 
 [<Fact>]
-let ```transitionNow correctly transitions between async states`` () =
+let ``transitionNow correctly transitions between async states`` () =
     async {
         let! mb = Mailbox.create (Clock.alwaysAt 0L)
         let! evtSource = Mailbox.receive mb
-        let! l = List.map (fun i -> (time (int64 i), i)) [ 1 .. 5 ]
-                 |> Feed.ofList
-                 |> Feed.transitionNow (fun s a -> act { return s + a } ) 0
-                 |> Act.run mb evtSource ({ Current = Time.time 4L; Past = Time.time 2L })
-        
-        l |> should equal [ (time 5L, 14)
-                          ; (time 4L, 9)
-                          ; (time 3L, 5)
-                          ; (time 2L, 2)
-                          ]
+        let! _, l = List.map (fun i -> (time (int64 i), i)) [ 1 .. 5 ]
+                    |> Feed.ofList
+                    |> Feed.transitionNow (fun s a -> act { return s + a } ) 0
+                    |> Act.run mb evtSource ({ Current = Time.time 4L; Past = Time.time 2L })
+        let l' = Feed.toList l
+        l' |> should equal [ (time 5L, 14)
+                           ; (time 4L, 9)
+                           ; (time 3L, 5)
+                           ; (time 2L, 2)
+                           ]
         return ()   
-    }
+    } |> Async.StartAsTask
+
+[<Fact>]
+let ``pulse gives correct pulses`` () =
+    async {
+        let! mb = Mailbox.create (Clock.alwaysAt 0L)
+        let! evtSource = Mailbox.receive mb
+        let! _, l = Act.pulse 5u
+                    |> Act.run mb evtSource ({ Current = Time.time TimeSpan.TicksPerSecond; Past = Time.time 0L })
+        let l' = Feed.toList l
+        let dist = (TimeSpan.TicksPerSecond / 5L)
+        l' |> should equal [ (time (dist * 5L), time (dist * 5L))
+                           ; (time (dist * 4L), time (dist * 4L))
+                           ; (time (dist * 3L), time (dist * 3L))
+                           ; (time (dist * 2L), time (dist * 2L))
+                           ; (time (dist * 1L), time (dist * 1L))
+                           ]
+        return ()   
+    } |> Async.StartAsTask
     

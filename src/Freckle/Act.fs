@@ -16,6 +16,7 @@ module Types =
     type Requirements =
         { NextPoll : Ticks option
         }
+        with override x.ToString() = sprintf "%A" x
 
     type Act<'e> = Act of (Context -> (Async<Requirements * 'e>))
 
@@ -23,6 +24,7 @@ module Types =
 module Support =
     module Requirements =
         let none = { NextPoll = None }
+        let nextPoll t = { none with NextPoll = Some t }
 
 module Internal =
     let inline inner (Act a) = a
@@ -72,8 +74,10 @@ module Core =
 
         let doNothing = pure' ()
 
+        let require r = Act(fun _ -> async { return r, () })
+
         let ofAsync ma = 
-            Act (fun c_ -> 
+            Act (fun _ -> 
                     async {
                         let! a = ma
                         return Requirements.none, a
@@ -134,12 +138,17 @@ module Signal =
             act {
                 let! now = Act.now
                 let { Current = time } = now
-                let rec inner dist time ()  = LazyList.consDelayed (time, time) (inner dist (Time.time (time.Ticks - dist)))
+                let rec inner dist time ()  = 
+                    if time.Ticks < dist 
+                    then LazyList.empty 
+                    else LazyList.consDelayed (time, time) (inner dist (Time.time (time.Ticks - dist)))
                 let ticks = Time.ticks time
                 let tps = TimeSpan.TicksPerSecond
                 let pulseDistance = tps / (int64 ticksPerSecond)
-                let calc = ticks - (ticks % pulseDistance)
-                return Feed.feed (LazyList.delayed (inner pulseDistance (Time.time calc)))
+                let ticksSincePulse = (ticks % pulseDistance)
+                let lastPulse = ticks - ticksSincePulse
+                do! Act.require (Requirements.nextPoll (pulseDistance - ticksSincePulse))
+                return Feed.feed (LazyList.delayed (inner pulseDistance (Time.time lastPulse)))
             }
 
         let react<'e> : Act<Feed<'e>> = 
@@ -172,7 +181,8 @@ module Execution =
             let folder (reg,past,s) =
                 async {
                     match reg.NextPoll with
-                    | Some poll when poll > 0L -> do! Mailbox.awaitMailTimeout poll mailbox
+                    | Some poll when poll <= 0L -> ()
+                    | Some poll -> do! Mailbox.awaitMailTimeout poll mailbox
                     | _ -> do! Mailbox.awaitMail mailbox
                     
                     let! evtSource = Mailbox.receive mailbox

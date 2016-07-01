@@ -11,20 +11,22 @@ module Types =
     type TimeId = uint32
     type Ticks = int64
 
+    
+
     type Time = 
-            { Ticks : Ticks
-              Id    : TimeId
-            }
+        { Ticks : Ticks
+          Id    : TimeId
+        }
         with static member time t = { Ticks = t; Id = 0u }
              static member origin = Time.time 0L
              static member ticks t = t.Ticks
-             static member incId t tOld = 
-                if t = tOld.Ticks 
-                then { Ticks = t; Id = tOld.Id + 1u }
-                else Time.time t
-             
+             static member incId t tOld =
+                match tOld with
+                | tOld' when t = tOld'.Ticks -> { Ticks = t; Id = tOld'.Id + 1u }
+                | _ -> Time.time t             
              static member toDateTime t = DateTime(Time.ticks t)
-             override x.ToString() = sprintf "%A" x 
+             static member realise time t = if t.Ticks = 0L then time else t
+             override x.ToString() = sprintf "%A" x
 
     type Now = 
         { Current : Time
@@ -35,6 +37,7 @@ module Types =
     type Feed<'e> =
         { Event : LazyList<Time * 'e>
         }
+        with override x.ToString() = sprintf "%A" x
 
 [<AutoOpen>]
 module Internal =
@@ -62,16 +65,38 @@ module Internal =
                     LazyList.consDelayed (ta,a) mergePs
                 | _, LazyList.Cons((tb,b), qs) ->           
                     let mergeQs () = merge' l1 qs
-                    LazyList.consDelayed (tb,b) mergeQs       
+                    LazyList.consDelayed (tb,b) mergeQs
+           
+            let rec skipWhile' f l () =
+                match l with
+                | LazyList.Cons(a, rest) when f a ->
+                    LazyList.delayed (skipWhile' f rest)
+                | _ -> l
+
+            let rec takeWhile' f l ()=
+                match l with
+                | LazyList.Cons(a, rest) when f a ->
+                    LazyList.consDelayed a (takeWhile' f rest)
+                | _ -> LazyList.empty
+
+            let inline discardBefore' time =
+                LazyList.delayed << takeWhile' (fun (t,_) -> t >= time)
+
+            let inline discardAfterIncl time =
+               LazyList.delayed << skipWhile' (fun (t,_) -> t >= time)
             
-            let rec join (ls : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * 'a> =
-                match ls with
-                | Cons((ts, (Cons((t, _), _) as la)), rest) -> 
-                    let tDiff = (ts.Ticks - t.Ticks)
-                    let la' = map (fun (t,a) -> ({ t with Ticks = t.Ticks + tDiff}, a)) la
-                    let ls' = delayed (fun () -> join rest)
-                    delayed (fun () -> merge' la' ls')
-                | Cons((_, Nil), rest) -> delayed (fun () -> join rest)
+            let realiseTime t (l : LazyList<Time * 'a>) : LazyList<Time * 'a> =
+                map (fun (ta,a) -> (Time.realise t ta, a)) l
+
+            let inline join' (list : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * 'a> =
+                let rec inner t1 l =
+                    match l with
+                    | Cons((t2, la) , rest) ->
+                        let res = discardBefore' t2 (discardAfterIncl t1 (realiseTime t2 la))
+                        LazyList.append res (inner t2 rest)
+                    | Nil -> LazyList.empty
+                match list with
+                | Cons((t, la), rest) -> LazyList.append (discardBefore' t (realiseTime t la)) (inner t rest)
                 | Nil -> LazyList.empty
 
             let inline unsafePush t e feed =
@@ -95,12 +120,13 @@ module Core =
             updateEvent (LazyList.map (fun (t,a) -> (t, f a))) fr
 
         let inline join (fr : Feed<Feed<'a>>) : Feed<'a> =
-            setEvent (Feed.Internal.join <| toEvent (map toEvent fr)) fr            
+            setEvent (join' <| toEvent (map toEvent fr)) fr            
     
         let inline bind (f : 'a -> Feed<'b>) : Feed<'a> -> Feed<'b> =
             join << (map f) 
              
         let inline stick (a : 'a) (fr : Feed<'b>) : Feed<'a * 'b> = map (tuple a) fr 
+
 
         let inline push (t : Ticks) e fr = 
             let rec inner l () =
@@ -178,29 +204,15 @@ module Filtering =
 
         let partition (f : 'a -> bool) (fr : Feed<'a>) : (Feed<'a> * Feed<'a>) = (filter f fr, filter (not << f) fr)   
     
-        let takeWhile (f : 'a -> bool) (fr : Feed<'a>) : Feed<'a> = 
-            let rec inner l () =
-                match l with
-                | LazyList.Cons((t,h), rest) when f h ->
-                    LazyList.consDelayed (t,h) (inner rest)
-                | _ -> LazyList.empty
-
-            updateEvent (flip inner ()) fr
+        let takeWhile (f : 'a -> bool) (fr : Feed<'a>) : Feed<'a> =            
+            updateEvent (LazyList.delayed << takeWhile' (f << snd)) fr
 
 
         let skipWhile (f : 'a -> bool) (fr : Feed<'a>) : Feed<'a> = 
-            let rec inner l () =
-                match l with
-                | LazyList.Cons((_,h), rest) when f h ->
-                    LazyList.delayed (inner rest)
-                | _ -> l
-            updateEvent (flip inner ()) fr
-
-
-        let discardBefore time fr =
-            Feed.timeStamp fr
-            |> takeWhile (fun (t,_) -> t >= time)
-            |> Feed.map snd
+            updateEvent (LazyList.delayed << skipWhile' (f << snd)) fr
+            
+        let discardBefore (time : Time)  fr : Feed<'a>=
+            updateEvent (discardBefore' time) fr
 
 [<AutoOpen>]
 module Grouping =
