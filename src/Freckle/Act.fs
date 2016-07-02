@@ -56,7 +56,7 @@ module Internal =
 [<AutoOpen>]
 module Core =
     module Act =
-
+        
         let inline pure' (a : 'a) : Act<'a> = 
             Act (fun _ -> async.Return (Requirements.none,  a))
 
@@ -71,6 +71,15 @@ module Core =
             join ((map f) m)
 
         let now = Act (fun c -> async { return Requirements.none, c.Now })
+        
+        let combine (Act ma) (Act mb) = 
+            Act (fun c ->
+                    async { 
+                        let! ra, () = ma c
+                        let! rb, b = mb c
+                        return (Internal.combineReq ra rb, b) 
+                    })
+
 
         let doNothing = pure' ()
 
@@ -83,6 +92,13 @@ module Core =
                         return Requirements.none, a
                     })
 
+        let startChild (Act ma) =
+            Act (fun c ->
+                async {
+                        let! a = (ma c) |> Async.StartChild
+                        return Requirements.none, ofAsync a
+                    })
+
 [<AutoOpen>]
 module ComputationalExpression =
     type Builder() =
@@ -90,7 +106,7 @@ module ComputationalExpression =
         member inline this.ReturnFrom(x) = x
         member inline this.Bind(ma, f) = Act.bind f ma
         member inline this.Zero () = Act.pure' ()
-
+        member this.Combine (a,b) = Act.combine a b
     let act = Builder()
 
 

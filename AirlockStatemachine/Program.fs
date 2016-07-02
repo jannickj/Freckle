@@ -5,11 +5,28 @@ open Freckle
 
 [<EntryPoint>]
 let main argv = 
+    
+    let writeConsole s =
+        async {
+            return ignore <| ExternalAirlock.printfn' "%s" s        
+        } |> Act.ofAsync
+
+    let writeStatus s =
+        async {
+            let crazy () =
+                let pos = System.Console.CursorTop
+                let posLeft = System.Console.CursorLeft
+                System.Console.SetCursorPosition(40, 0)
+                ignore <| printf "STATUS: %s" s
+                System.Console.SetCursorPosition(posLeft, pos)
+            return lock ExternalAirlock.consoleLock crazy
+        } |> Act.ofAsync
+    
     let readConsole =
         async {
             while true do
                 let s = System.Console.ReadLine()
-                System.Console.SetCursorPosition(0, (System.Console.CursorTop - 1))
+                lock ExternalAirlock.consoleLock (fun () -> System.Console.SetCursorPosition(0, (System.Console.CursorTop - 1)))
                 do! ExternalAirlock.press
         }
 
@@ -42,7 +59,8 @@ let main argv =
           Close = closeDoor >> Act.ofAsync
           Pressurize = ExternalAirlock.pressurize |> Act.ofAsync
           Depressurize = ExternalAirlock.depressurize |> Act.ofAsync
-          ShowTerminal = fun str -> act { return printfn "%s" str |> ignore }
+          ShowTerminal = writeConsole
+          ShowStatus = writeStatus
         }
     async {
 

@@ -6,6 +6,10 @@ open System.Threading.Tasks.Dataflow
 
 let eventQueue = BufferBlock()
 
+let consoleLock = new obj()
+
+let printfn' s = lock consoleLock (fun () -> printfn s)
+
 type BlockImp = { ObjectInUse : bool ref
                   Name : string
                   Status : bool ref
@@ -54,11 +58,11 @@ let pressurize =
             failwith (vent.Name + " already in use YOU HAVE LOST")
                                             
         vent.ObjectInUse.Value <- true
-        printfn "@@@ Beginning to pressurize"
+        printfn' "@@@ Beginning to pressurize"
         vent.Status := true
         do! Async.Sleep 5000
         vent.ObjectInUse.Value <- false
-        printfn "@@@ Room has been pressuarized"
+        printfn' "@@@ Room has been pressuarized"
         do! enqueue "pressuarized"
     }
 
@@ -72,9 +76,9 @@ let depressurize =
 
         vent.ObjectInUse.Value <- true
         vent.Status := false
-        printfn "@@@ Beginning to depressurize"
+        printfn' "@@@ Beginning to depressurize"
         do! Async.Sleep 5000
-        printfn "@@@ Room has been depressurized"
+        printfn' "@@@ Room has been depressurized"
         vent.ObjectInUse.Value <- false
         do! enqueue "depressurized"
 
@@ -90,10 +94,10 @@ let open' (door : BlockImp) =
             failwith (door.Name + " already in use YOU HAVE LOST")
                             
         door.ObjectInUse.Value <- true                         
-        printfn "@@@ Opening %s" door.Name 
+        printfn' "@@@ Opening %s" door.Name 
         door.Status := true
         do! Async.Sleep 2000
-        printfn "@@@ Door %s has opened" door.Name 
+        printfn' "@@@ Door %s has opened" door.Name 
         door.ObjectInUse.Value <- false 
         do! enqueue ("opened" + door.Name)
     }
@@ -110,10 +114,10 @@ let close (door : BlockImp) =
             failwith (door.Name + " already in use YOU HAVE LOST")
                         
         door.ObjectInUse.Value <- true 
-        printfn "@@@ Closing %s" door.Name 
+        printfn' "@@@ Closing %s" door.Name 
         door.Status := false
         do! Async.Sleep 2000
-        printfn "@@@ Door %s has closed" door.Name 
+        printfn' "@@@ Door %s has closed" door.Name 
         door.ObjectInUse.Value <- false 
         do! enqueue ("closed" + door.Name)
     }

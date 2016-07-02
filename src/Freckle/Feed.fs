@@ -123,7 +123,10 @@ module Core =
             setEvent (join' <| toEvent (map toEvent fr)) fr            
     
         let inline bind (f : 'a -> Feed<'b>) : Feed<'a> -> Feed<'b> =
-            join << (map f) 
+            join << (map f)
+
+        let inline bind_ (f : 'a -> Feed<unit>) : Feed<'a> -> Feed<'a> =
+            bind (fun a -> map (const' a) (f a))
              
         let inline stick (a : 'a) (fr : Feed<'b>) : Feed<'a * 'b> = map (tuple a) fr 
 

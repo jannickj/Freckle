@@ -30,6 +30,7 @@
           Pressurize    : Act<unit>
           Depressurize  : Act<unit> 
           ShowTerminal  : string -> Act<unit>
+          ShowStatus    : string -> Act<unit>
         }
      
      type ClickState = ClickState of DateTime option
@@ -73,15 +74,35 @@
     let airlockProg (airlock : Airlock) s (cs, e) =
         act {
             let (airlock, ma) = stm airlock s.Airlock e
-            do! ma
+            let! _ = ma |> Act.startChild
             return { s with Airlock = airlock; Click = cs }
+        }
+
+    let status p airlock s =
+        act {
+            match s with
+            | Pressurizing ->
+                let! _ = Feed.planNow (Feed.map (fun t -> airlock.ShowStatus <| sprintf "Pressurizing %d" (Time.ticks t))  p)
+                return ()
+            | Depressurizing ->
+                let! _ = Feed.planNow (Feed.map (fun t -> airlock.ShowStatus <| sprintf "Depressurizing %d" (Time.ticks t))  p)
+                return ()
+            | _ -> return () 
         }
     
     let setup airlock s  =       
         act {
+            let! p = 
+                match s.Airlock with
+                | Pressurizing ->
+                    Act.pulse 30u
+                | _ -> Act.pure' (Feed.empty)
+
+            printfn "%A" p
             let! evts = Act.react
             let! now= Act.now
-            return! evts
-                    |> doublePress now s.Click
-                    |> Feed.transitionNow (airlockProg airlock) s
+            let! s =  evts
+                      |> doublePress now s.Click
+                      |> Feed.transitionNow (airlockProg airlock) s
+            return s
         }

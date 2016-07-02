@@ -94,7 +94,7 @@ let ``pulse gives correct pulses`` () =
     async {
         let! mb = Mailbox.create (Clock.alwaysAt 0L)
         let! evtSource = Mailbox.receive mb
-        let! _, l = Act.pulse 5u
+        let! reg, l = Act.pulse 5u
                     |> Act.run mb evtSource ({ Current = Time.time TimeSpan.TicksPerSecond; Past = Time.time 0L })
         let l' = Feed.toList l
         let dist = (TimeSpan.TicksPerSecond / 5L)
@@ -104,6 +104,7 @@ let ``pulse gives correct pulses`` () =
                            ; (time (dist * 2L), time (dist * 2L))
                            ; (time (dist * 1L), time (dist * 1L))
                            ]
+        reg.NextPoll |> should equal (Some dist)
         return ()   
     } |> Async.StartAsTask
     
