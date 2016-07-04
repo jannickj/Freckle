@@ -25,7 +25,12 @@ module Types =
                 | tOld' when t = tOld'.Ticks -> { Ticks = t; Id = tOld'.Id + 1u }
                 | _ -> Time.time t             
              static member toDateTime t = DateTime(Time.ticks t)
-             static member realise time t = if t.Ticks = 0L then time else t
+             static member realise t1 t2 = 
+                if t1.Ticks = 0L && t2.Ticks = 0L
+                then t1
+                elif t1.Ticks = 0L
+                    then t2 
+                    else t1
              override x.ToString() = sprintf "%A" x
 
     type Now = 
@@ -84,15 +89,23 @@ module Internal =
 
             let inline discardAfterIncl time =
                LazyList.delayed << skipWhile' (fun (t,_) -> t >= time)
+
+            let inline discardAfterExcl time =
+               LazyList.delayed << skipWhile' (fun (t,_) -> t > time)
             
             let realiseTime t (l : LazyList<Time * 'a>) : LazyList<Time * 'a> =
-                map (fun (ta,a) -> (Time.realise t ta, a)) l
+                LazyList.map (fun (ta,a) -> (Time.realise t ta, a)) l
 
-            let inline join' (list : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * 'a> =
+            let join' (list : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * 'a> =
                 let rec inner t1 l =
                     match l with
                     | Cons((t2, la) , rest) ->
-                        let res = discardBefore' t2 (discardAfterIncl t1 (realiseTime t2 la))
+                        let la' = (realiseTime t2 la)
+                        let discarder l = 
+                            if t1 > t2 
+                            then (discardAfterIncl t1 l)
+                            else (discardAfterExcl t1 l)
+                        let res = discardBefore' t2 (discarder la')
                         LazyList.append res (inner t2 rest)
                     | Nil -> LazyList.empty
                 match list with
@@ -147,6 +160,10 @@ module Core =
             match (toEvent fr) with
             | LazyList.Cons ((_,h), _) -> Some h
             | _ -> None    
+
+module Operator =
+    
+    let (>>=) m f = Feed.bind f m
 
 [<AutoOpen>]
 module Transformation =
