@@ -26,6 +26,7 @@ module Types =
                 | _ -> Time.time t             
              static member toDateTime t = DateTime(Time.ticks t)
              static member realise time t = if t.Ticks = 0L then time else t
+             static member max = { Ticks = Int64.MaxValue; Id = UInt32.MaxValue }
              override x.ToString() = sprintf "%A" x
 
     type Now = 
@@ -33,11 +34,15 @@ module Types =
           Past : Time
         }
         with static member beginning = { Current = Time.origin; Past = Time.origin }
+    type Future<'e> = Time * 'e
 
     type Feed<'e> =
         { Event : LazyList<Time * 'e>
         }
         with override x.ToString() = sprintf "%A" x
+
+module Future = 
+    let map f (t, a) = (t, f a)
 
 [<AutoOpen>]
 module Internal =
@@ -79,11 +84,14 @@ module Internal =
                     LazyList.consDelayed a (takeWhile' f rest)
                 | _ -> LazyList.empty
 
-            let inline discardBefore' time =
+            let inline discardBeforeExcl time =
                 LazyList.delayed << takeWhile' (fun (t,_) -> t >= time)
 
             let inline discardAfterIncl time =
                LazyList.delayed << skipWhile' (fun (t,_) -> t >= time)
+
+            let inline discardAfterExcl time =
+               LazyList.delayed << skipWhile' (fun (t,_) -> t > time)
             
             let realiseTime t (l : LazyList<Time * 'a>) : LazyList<Time * 'a> =
                 map (fun (ta,a) -> (Time.realise t ta, a)) l
@@ -92,12 +100,60 @@ module Internal =
                 let rec inner t1 l =
                     match l with
                     | Cons((t2, la) , rest) ->
-                        let res = discardBefore' t2 (discardAfterIncl t1 (realiseTime t2 la))
+                        let res = discardBeforeExcl t2 (discardAfterIncl t1 (realiseTime t2 la))
                         LazyList.append res (inner t2 rest)
                     | Nil -> LazyList.empty
                 match list with
-                | Cons((t, la), rest) -> LazyList.append (discardBefore' t (realiseTime t la)) (inner t rest)
+                | Cons((t, la), rest) -> LazyList.append (discardBeforeExcl t (realiseTime t la)) (inner t rest)
                 | Nil -> LazyList.empty
+
+            let mapFirst f l =
+                 match l with
+                 | Cons(a, r) -> cons (f a) r
+                 | Nil -> empty
+
+            let mapSecond f l =
+                 match l with
+                 | Cons(a, (Cons(b, r))) -> cons a (cons (f b) r)
+                 | _ -> l 
+
+            let agify ll =
+                map (fun (t, l) -> map (fun (t2, a) -> ((max t t2), (t2, a))) (realiseTime t l)) ll
+                
+            let pretty fr = fr |> toList |> List.map (fun (t, a) -> t.Ticks, a)
+
+            let rec inner tMax l () =
+                match l with      
+                | Nil -> LazyList.empty
+                | Cons(la, Nil) -> map snd (discardAfterExcl tMax la)
+                | Cons(la, (Cons(Nil, rest))) -> discardingEx tMax (cons la rest) ()
+                | Cons(la, (Cons(lb, _) as rest)) ->
+                    match la, lb with
+                    | Cons((age,(ta,a)), restA), Cons((_,(tb,_)),_) when ta > tb ->
+                        cons (age,a) <| discardingEx age (cons restA rest) ()
+                    | Cons((ageA,(ta,a)), restA), Cons((ageB,(tb,_)),_) when ta = tb && ageA >= ageB ->
+                        cons (ageA,a) <| discardingEx ageA (cons restA rest) ()
+                    | _ -> 
+                        discardingEx tMax rest ()      
+
+            and discarding tMax l () = 
+                let l' = mapSecond (discardAfterIncl tMax) l
+                inner tMax l' ()
+            and discardingEx tMax l () = 
+                let l' = mapSecond (discardAfterExcl tMax) l
+                inner tMax l' ()
+
+            let inline join2' (list : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * 'a> =
+               
+                
+                let res = inner Time.max (agify list)
+                printfn "fuk"
+                printfn "%A" (pretty list |> List.map (fun (t, a) -> (t, pretty a)))
+                printfn "%A" ((map (fun a -> (map (fun (ta,(t2,aa)) -> (ta.Ticks, (t2.Ticks, aa)))) a)) (agify list) |> toList)
+                printfn "%A" (res () |> pretty)
+                printfn "fak"
+                res () |> toList |> ignore
+                delayed <| res
 
             let inline unsafePush t e feed =
                 updateEvent (LazyList.cons (t, e)) feed
@@ -120,7 +176,7 @@ module Core =
             updateEvent (LazyList.map (fun (t,a) -> (t, f a))) fr
 
         let inline join (fr : Feed<Feed<'a>>) : Feed<'a> =
-            setEvent (join' <| toEvent (map toEvent fr)) fr            
+            setEvent (join2' <| toEvent (map toEvent fr)) fr            
     
         let inline bind (f : 'a -> Feed<'b>) : Feed<'a> -> Feed<'b> =
             join << (map f)
@@ -215,7 +271,7 @@ module Filtering =
             updateEvent (LazyList.delayed << skipWhile' (f << snd)) fr
             
         let discardBefore (time : Time)  fr : Feed<'a>=
-            updateEvent (discardBefore' time) fr
+            updateEvent (discardBeforeExcl time) fr
 
 [<AutoOpen>]
 module Grouping =
