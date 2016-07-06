@@ -38,7 +38,7 @@ let ``filter removes elements not satisfying condition`` () =
 let ``cutNow discards all elements older than now`` () =
     let l = [(time 0L, ()); (time 1L, ()); (time 1L, ()); (time 2L, ())]
             |> Feed.ofList
-            |> Feed.discardBefore (time 1L)
+            |> Feed.discardOlderExcl (time 1L)
             |> Feed.toList            
             
     l |> should equal [ (time 2L, ())

@@ -94,9 +94,9 @@
         act {
             match s.ActionAt with
             | Some ticks when s.Airlock = Pressurizing || s.Airlock = Depressurizing ->
-                let! p = Act.pulse 1u
-                let pctDone t = (float (t - ticks) * 100.0 ) / float (TimeSpan.TicksPerSecond * 9L)
-                let! _ = Feed.planNow (Feed.map (fun t -> airlock.ShowStatus <| sprintf "%A %f%%   " s.Airlock (pctDone (Time.ticks t)))  p)
+                let! p = Act.pulse 60u
+                let pctDone t = min 100.0 <| (float (t - ticks) * 100.0 ) / float (TimeSpan.TicksPerSecond * 9L)
+                let! _ = Feed.planNow (Feed.map (fun t -> airlock.ShowStatus <| sprintf "%A %.2f%%   " s.Airlock (pctDone (Time.ticks t)))  p)
                 return ()
             | _ -> return ()
         }

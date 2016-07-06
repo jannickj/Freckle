@@ -117,7 +117,7 @@ module Planning =
         let planNow (fullFeed : Feed<Act<'a>>) : Act<Feed<'a>> =
             act {
                 let! now = Act.now
-                let fr = Feed.discardBefore now.Past fullFeed
+                let fr = Feed.betweenNow now fullFeed
                 let folder (t,ma) (newV) =
                     act {
                         let! newV' = newV
@@ -131,7 +131,7 @@ module Planning =
         let transitionNow (f : 's -> 'a -> Act<'s>) (state : 's) (allFeed : Feed<'a>)  : Act<Feed<'s>> =
             act {
                 let! now = Act.now
-                let fr = Feed.discardBefore now.Past allFeed
+                let fr =  Feed.betweenNow now allFeed
                 let rec inner l =
                     act {
                         match l with
