@@ -117,7 +117,7 @@ module Planning =
         let planNow (fullFeed : Feed<Act<'a>>) : Act<Feed<'a>> =
             act {
                 let! now = Act.now
-                let fr = Feed.discardBefore now.Past fullFeed
+                let fr = Feed.betweenNow now fullFeed
                 let folder (t,ma) (newV) =
                     act {
                         let! newV' = newV
@@ -131,7 +131,7 @@ module Planning =
         let transitionNow (f : 's -> 'a -> Act<'s>) (state : 's) (allFeed : Feed<'a>)  : Act<Feed<'s>> =
             act {
                 let! now = Act.now
-                let fr = Feed.discardBefore now.Past allFeed
+                let fr =  Feed.betweenNow now allFeed
                 let rec inner l =
                     act {
                         match l with
@@ -194,13 +194,23 @@ module Execution =
                 }
 
         let runRecursive (mailbox : Mailbox)  (act : 's -> Act<Feed<'s>>) (state : 's)  : Async<unit> = 
-            let folder (reg,past,s) =
+            let await pushedLast reg =
                 async {
-                    match reg.NextPoll with
-                    | Some poll when poll <= 0L -> ()
-                    | Some poll -> do! Mailbox.awaitMailTimeout poll mailbox
-                    | _ -> do! Mailbox.awaitMail mailbox
-                    
+                    if pushedLast then
+                        return false
+                    else
+                        match reg.NextPoll with
+                        | Some poll -> 
+                            do! Mailbox.awaitMailTimeout poll mailbox
+                            return false
+                        | _ -> 
+                            do! Mailbox.awaitMail mailbox
+                            return true    
+                }
+            
+            let folder (reg,past,s, pushedLast) =
+                async {
+                    let! wasPush = await pushedLast reg
                     let! evtSource = Mailbox.receive mailbox
                     let! currentTicks = Mailbox.currentTick mailbox
                     let currentTime = EventSource.setTimeId currentTicks evtSource
@@ -209,11 +219,11 @@ module Execution =
                     let! (reg', feed) = run mailbox evtSource now (act s)
                     let s' = Option.default' s <| Feed.tryHead feed
 
-                    return Async.Signal.Continue (reg', currentTime,  s')
+                    return Async.Signal.Continue (reg', currentTime,  s', wasPush)
                 }
 
             async {
                 let! currentTicks = Mailbox.currentTick mailbox
-                do! Async.recursion folder ({ NextPoll = Some 0L }, Time.time currentTicks, state)
+                do! Async.recursion folder ({ NextPoll = Some 0L }, Time.time currentTicks, state, false)
                     |> Async.Ignore
             }

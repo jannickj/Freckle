@@ -6,6 +6,7 @@ open Xunit
 open FsUnit.Xunit
 open System.Threading
 open System
+open FsCheck
 
 let time v = Time.time v
 
@@ -37,7 +38,7 @@ let ``filter removes elements not satisfying condition`` () =
 let ``cutNow discards all elements older than now`` () =
     let l = [(time 0L, ()); (time 1L, ()); (time 1L, ()); (time 2L, ())]
             |> Feed.ofList
-            |> Feed.discardBefore (time 1L)
+            |> Feed.discardOlderExcl (time 1L)
             |> Feed.toList            
             
     l |> should equal [ (time 2L, ())
@@ -139,3 +140,84 @@ let ``feed monad`` () =
 
 //    expected |> should equal lAB
     expected |> should equal lBA
+    
+[<Fact>]
+let ``Feed monad`` () =    
+    let lA = [(time 0L, "1a");(time 2L, "2a");(time 4L, "3a")] |> Feed.ofList
+    let lB = [(time 1L, "1b");(time 3L, "2b");(time 5L, "3b")] |> Feed.ofList
+
+    let lAB = 
+        feed {
+            let! a = lA
+            let! b = lB
+            return (a, b)
+        } |> Feed.toList
+          |> List.map (fun (t, ab) -> (t.Ticks, ab))
+          
+
+    should equal lAB []
+
+
+
+type Bind = Bind of (int -> Feed<int>)
+type Value = Value of int
+type Category = Category of Feed<int>
+
+open FsCheck.Xunit
+
+let futureGen =
+    gen {
+        let! a = Gen.choose(1, 100)
+        let! t = Gen.choose(1, 100)
+        return (Time.time (int64 t), a)
+    }
+
+let feedGen =
+    gen {
+        let! futures = futureGen
+                       |> Gen.listOfLength 2
+        return Feed.ofList futures
+    }
+
+let feedFunctionGen = 
+    gen {
+        let f1 a = Feed.pure' a
+        let f2 a = Feed.empty
+        let f3 a = [(time 0L, 1);(time 2L, a)] |> Feed.ofList
+        return! Gen.elements([f1; f2; f3])
+    }
+
+
+type Generators =
+    static member Category() = Arb.fromGen (feedGen |> Gen.map Category)
+    static member Value() = Arb.fromGen (Gen.choose(1, 100) |> Gen.map Value)
+    static member Bind() = Arb.fromGen (feedFunctionGen |> Gen.map Bind)
+
+let toFeedData feed = Feed.toList feed |> List.map (fun (t, ab) -> (t.Ticks, ab))
+
+[<Arbitrary(typeof<Generators>)>]
+module ``Feed monad laws`` =
+    open Feed.Operator
+
+    [<Property>]
+    let ``left identity`` (Bind f) (Value a) =
+        let feed1 = Feed.pure' a >>= f |> toFeedData
+        let feed2 = f a                |> toFeedData
+        
+        should equal feed1 feed2
+
+
+    [<Property>]
+    let ``right identity`` (Category m) =
+        let feed1 = m >>= Feed.pure' |> toFeedData
+        let feed2 = m                |> toFeedData
+
+        should equal feed1 feed2
+
+
+    [<Property(Replay="(1251986508,296175100)")>]
+    let ``associativity`` (Bind f) (Bind g) (Category m) (Value x) (Value y) =
+        let feed1 = (m >>= f) >>= g            |> toFeedData
+        let feed2 = m >>= (fun x -> f x >>= g) |> toFeedData
+
+        should equal feed1 feed2 

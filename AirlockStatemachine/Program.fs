@@ -67,7 +67,7 @@ let main argv =
         let! _ = readConsole |> Async.StartChild
         let! mb = Mailbox.create (Clock.systemUtc)
         do! Mailbox.listenTo events mb
-        let state = { Click = ClickState None; Airlock = AirLockState.IsDepressurized }
+        let state = { Click = ClickState None; Airlock = AirLockState.IsDepressurized; ActionAt = None }
         do! Act.runRecursive mb (setup airlock) state
     } |> Async.RunSynchronously
     0 // return an integer exit code

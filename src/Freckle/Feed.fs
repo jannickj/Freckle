@@ -15,18 +15,23 @@ module Types =
 
     type Time = 
         { Ticks : Ticks
-          Id    : TimeId
+          //Id    : TimeId
         }
-        with static member time t = { Ticks = t; Id = 0u }
+        with static member time t = { Ticks = t } //; Id = 0u }
              static member origin = Time.time 0L
              static member ticks t = t.Ticks
              static member incId t tOld =
                 match tOld with
-                | tOld' when t = tOld'.Ticks -> { Ticks = t; Id = tOld'.Id + 1u }
+                | tOld' when t = tOld'.Ticks -> { Ticks = t } //; Id = tOld'.Id + 1u }
                 | _ -> Time.time t             
              static member toDateTime t = DateTime(Time.ticks t)
-             static member realise time t = if t.Ticks = 0L then time else t
-             static member max = { Ticks = Int64.MaxValue; Id = UInt32.MaxValue }
+             static member max = { Ticks = Int64.MaxValue } //; Id = UInt32.MaxValue }
+             static member realise t1 t2 = 
+                if t1.Ticks = 0L && t2.Ticks = 0L
+                then t1
+                elif t1.Ticks = 0L
+                    then t2 
+                    else t1
              override x.ToString() = sprintf "%A" x
 
     type Now = 
@@ -87,6 +92,9 @@ module Internal =
             let inline discardBeforeExcl time =
                 LazyList.delayed << takeWhile' (fun (t,_) -> t >= time)
 
+            let inline discardBeforeIncl time =
+                LazyList.delayed << takeWhile' (fun (t,_) -> t > time)
+
             let inline discardAfterIncl time =
                LazyList.delayed << skipWhile' (fun (t,_) -> t >= time)
 
@@ -94,18 +102,19 @@ module Internal =
                LazyList.delayed << skipWhile' (fun (t,_) -> t > time)
             
             let realiseTime t (l : LazyList<Time * 'a>) : LazyList<Time * 'a> =
-                map (fun (ta,a) -> (Time.realise t ta, a)) l
+                LazyList.map (fun (ta,a) -> (Time.realise t ta, a)) l
 
-            let inline join' (list : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * 'a> =
-                let rec inner t1 l =
-                    match l with
-                    | Cons((t2, la) , rest) ->
-                        let res = discardBeforeExcl t2 (discardAfterIncl t1 (realiseTime t2 la))
-                        LazyList.append res (inner t2 rest)
-                    | Nil -> LazyList.empty
-                match list with
-                | Cons((t, la), rest) -> LazyList.append (discardBeforeExcl t (realiseTime t la)) (inner t rest)
-                | Nil -> LazyList.empty
+            let join' (list : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * 'a> = undefined
+//                let rec inner t1 l =
+//                    match l with
+//                    | Cons((t2, la) , rest) ->
+//                        let la' = (realiseTime t2 la)
+//                        let discarder l = 
+//                            if t1 > t2 
+//                            then (discardAfterIncl t1 l)
+//                            else (discardAfterExcl t1 l)
+//                        let res = discardBeforeExcl t2 (discarder la')
+//                | Nil -> LazyList.empty
 
             let mapFirst f l =
                  match l with
@@ -204,6 +213,10 @@ module Core =
             | LazyList.Cons ((_,h), _) -> Some h
             | _ -> None    
 
+module Operator =
+    
+    let (>>=) m f = Feed.bind f m
+
 [<AutoOpen>]
 module Transformation =
     module Feed = 
@@ -270,9 +283,21 @@ module Filtering =
         let skipWhile (f : 'a -> bool) (fr : Feed<'a>) : Feed<'a> = 
             updateEvent (LazyList.delayed << skipWhile' (f << snd)) fr
             
-        let discardBefore (time : Time)  fr : Feed<'a>=
+        let discardOlderExcl (time : Time)  fr : Feed<'a>=
             updateEvent (discardBeforeExcl time) fr
 
+        let discardOlderIncl (time : Time)  fr : Feed<'a>=
+            updateEvent (discardBeforeIncl time) fr
+
+        let discardYoungerIncl (time : Time)  fr : Feed<'a>=
+            updateEvent (discardAfterIncl time) fr
+
+        let discardYoungerExcl (time : Time)  fr : Feed<'a>=
+            updateEvent (discardAfterExcl time) fr
+
+        let betweenNow (now : Now) fr =
+            fr |> discardYoungerExcl now.Current |> discardOlderIncl now.Past
+            
 [<AutoOpen>]
 module Grouping =
     module Feed =
@@ -286,7 +311,7 @@ module Folding =
     module Feed =
         
         let mapFold (now : Now) (f : 's -> 'a -> ('s * 'b)) (state : 's) (fr : Feed<'a>) : (Feed<'s * 'b>) =
-            let fr' = Feed.discardBefore now.Past fr
+            let fr' = Feed.betweenNow now fr
             let (l', _) = Seq.mapFoldBack (fun (t,a) s -> let (s', b) = f s a in ((t, (s', b))), s') (toEvent fr') state 
             setEvent (LazyList.ofSeq l') fr'
         

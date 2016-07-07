@@ -18,7 +18,23 @@ module Types =
 module Clock =
     open System
     
-    let systemUtc = Clock (async { return DateTime.UtcNow.Ticks })
+    let ofAsync ma =
+        let last = ref 0L
+        let ma' =
+            async {
+                let! time = ma
+                return lock last (fun () ->
+                                    let newT =
+                                        if !last >= time 
+                                        then !last + 1L
+                                        else time
+                                    last := newT
+                                    newT)
+                
+            }
+        Clock ma'
+
+    let systemUtc = ofAsync (async { return DateTime.UtcNow.Ticks })
     let alwaysAt ticks = Clock (async { return ticks })
 
     let now (Clock m) = m
