@@ -118,39 +118,72 @@ module Internal =
                  | _ -> l 
 
             let agify ll =
-                map (fun (t, l) -> map (fun (t2, a) -> ((max t t2), (t2, a))) (realiseTime t l)) ll
+                map (fun (t, l) -> map (fun (t2, a) -> ((max t t2), ((t2,t), a))) (realiseTime t l)) ll
                 
             let pretty fr = fr |> toList |> List.map (fun (t, a) -> t.Ticks, a)
+            let superPretty a = map (fun (ta,((t1,t2),aa)) -> (ta.Ticks, ((t1.Ticks,t2.Ticks), aa))) a |> toList
+            let superPretty2 a = map (fun (_,((t1,t2),aa)) -> (t1.Ticks,t2.Ticks, aa)) a |> toList |> List.head
 
-            let rec inner tMax l () =
+            let rec inner (ageMax : Time) t1Max t2Max (l : LazyList<LazyList<Time * ((Time * Time) * 'a)>>) () : LazyList<Time * 'a> =
                 match l with      
                 | Nil -> LazyList.empty
-                | Cons(la, Nil) -> map snd (discardAfterExcl tMax la)
-                | Cons(la, (Cons(Nil, rest))) -> discardingEx tMax (cons la rest) ()
-                | Cons(la, (Cons(lb, _) as rest)) ->
+                | Cons(la, Nil) -> filter (fun (age, ((t1,t2),_)) -> age <= ageMax && t1 <= t1Max && t2 <= t2Max ) la |> map (fun (age, (_,a)) -> (age, a))
+                | Cons(la, (Cons(lb, tail2) as tail1)) ->
                     match la, lb with
-                    | Cons((age,(ta,a)), restA), Cons((_,(tb,_)),_) when ta > tb ->
-                        cons (age,a) <| discardingEx age (cons restA rest) ()
-                    | Cons((ageA,(ta,a)), restA), Cons((ageB,(tb,_)),_) when ta = tb && ageA >= ageB ->
-                        cons (ageA,a) <| discardingEx ageA (cons restA rest) ()
-                    | _ -> 
-                        discardingEx tMax rest ()      
+                    | Nil, _ -> inner ageMax t1Max t2Max tail1 ()
 
-            and discarding tMax l () = 
-                let l' = mapSecond (discardAfterIncl tMax) l
-                inner tMax l' ()
-            and discardingEx tMax l () = 
-                let l' = mapSecond (discardAfterExcl tMax) l
-                inner tMax l' ()
+                    | _, Nil -> inner ageMax t1Max t2Max (cons la tail2) ()
+
+                    | Cons((ageA,((t1a,t2a),_)), tailA), _ when ageA > ageMax || t1a > t1Max || t2a > t2Max ->
+                        inner ageMax t1Max t2Max (cons tailA tail1) ()
+
+                    | la, Cons((ageB,((t1b,t2b),_)), tailB) when ageB > ageMax || t1b > t1Max || t2b > t2Max ->
+                        inner ageMax t1Max t2Max (cons la (cons tailB tail2)) ()
+                    
+                    | Cons((ageA,(((t1a,t2a)),a)), tailA),  Cons((_,((t1b,t2b),_)),_) when t1a >= t1b && t2a >= t2b  ->
+                        printfn "1a: %A" (superPretty2 la, superPretty2 lb)
+                        consDelayed (ageA,a) <| inner (min ageA ageMax) (min t1a t1Max) (min t2a t2Max)  (cons tailA tail1)
+                    
+                    | Cons((ageA,(((t1a,t2a)),a)), tailA),  Cons((_,((t1b,t2b),_)),_) when max t1a t2a < max t1b t2b  ->
+                        printfn "1c: %A" (superPretty2 la, superPretty2 lb)
+                        consDelayed (ageA,a) <| inner (min ageA ageMax) (min t1a t1Max) (min t2a t2Max)  (cons tailA tail1)
+
+                    | Cons((ageA,(((t1a,t2a)),a)), tailA),  Cons((_,((t1b,t2b),_)),_) when max t1a t2a = max t1b t2b && (abs (t1a.Ticks - t2a.Ticks) <= abs (t1b.Ticks - t2b.Ticks)) ->
+                        printfn "1d: %A" (superPretty2 la, superPretty2 lb)
+                        consDelayed (ageA,a) <| inner (min ageA ageMax) (min t1a t1Max) (min t2a t2Max)  (cons tailA tail1)
+//                    | Cons((ageA,((t1a,t2a),a)), tailA),  Cons((_,((t1b,t2b),_)),_) when t2a > t1a && t2a >= t2b && t1a >= t1b ->
+//                        printfn "1b: %A" (superPretty2 la, superPretty2 lb)
+//                        consDelayed (ageA,a) <| inner (min ageA ageMax) (min t1a t1Max) (min t2a t2Max)  (cons tailA tail1)
+
+
+                    | Cons((ageA,((t1a,t2a),a)), tailA),  Cons((_,((t1b,t2b),_)),_) when t2a = t1a && t1a >= (min t1b t2b) ->
+                        printfn "1e: %A" (superPretty2 la, superPretty2 lb)
+                        consDelayed (ageA,a) <| inner (min ageA ageMax) (min t1a t1Max) (min t2a t2Max)  (cons tailA tail1)
+
+//                    | Cons((ageA,((t1a,t2a),a)), tailA),  Cons((_,((t1b,t2b),_)),_) when t2a = t1a && t1b >= t1a && t2a >= t2b ->
+//                        printfn "1d: %A" (superPretty2 la, superPretty2 lb)
+//                        consDelayed (ageA,a) <| inner (min ageA ageMax) (min t1a t1Max) (min t2a t2Max)  (cons tailA tail1)
+                    
+                    | _, _ -> 
+                        printfn "2x: %A" (superPretty2 la, superPretty2 lb)
+                        inner ageMax t1Max t2Max tail1 ()
+
+//                    | Cons((_,((t1a,t2a),_)), tailA), Cons((ageB,((t1b,t2b),b)),tailB) when (t1b >= t2b && t1b >= t1a && (t2b >= (min t1a t2a) )) ->
+//                        consDelayed (ageB,b) <| inner (min ageB ageMax) (min t1b t1Max) (min t2b t2Max)  (cons tailA (cons tailB tail2))
+//                    
+//                    | Cons((_,((t1a,t2a),_)), tailA), Cons((ageB,((t1b,t2b),b)),tailB) when (t2b >= t1b && t2b >= t2a && (t1b >= (min t1a t2a) )) ->
+//                        consDelayed (ageB,b) <| inner (min ageB ageMax) (min t1b t1Max) (min t2b t2Max) (cons tailA (cons tailB tail2))
+//
+//                    | _ -> failwith <| sprintf "FAK!\n %A" (superPretty la, superPretty lb)
 
             let inline join2' (list : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * 'a> =
                
                 
-                let res = inner Time.max (agify list)
+                let res = inner Time.max Time.max Time.max (agify list)
                 printfn "fuk"
-                printfn "%A" (pretty list |> List.map (fun (t, a) -> (t, pretty a)))
-                printfn "%A" ((map (fun a -> (map (fun (ta,(t2,aa)) -> (ta.Ticks, (t2.Ticks, aa)))) a)) (agify list) |> toList)
-                printfn "%A" (res () |> pretty)
+//                printfn "%A" (pretty list |> List.map (fun (t, a) -> (t, pretty a)))
+                printfn "%A" (map superPretty (agify list) |> toList)
+//                printfn "%A" (res () |> pretty)
                 printfn "fak"
                 res () |> toList |> ignore
                 delayed <| res
