@@ -129,23 +129,7 @@ let ``feed monad`` () =
     printfn "NEWWWWWW"
     let lAB = Feed.bind (fun a -> Feed.bind (fun b -> Feed.pure' (a + b)) lB) lA |> pretty
     expected |> should equal lAB
-    
-    
-[<Fact>]
-let ``Feed monad`` () =    
-    let lA = [(time 0L, "1a");(time 2L, "2a");(time 4L, "3a")] |> Feed.ofList
-    let lB = [(time 1L, "1b");(time 3L, "2b");(time 5L, "3b")] |> Feed.ofList
 
-    let lAB = 
-        feed {
-            let! a = lA
-            let! b = lB
-            return (a, b)
-        } |> Feed.toList
-          |> List.map (fun (t, ab) -> (t.Ticks, ab))
-          
-
-    should equal lAB []
 
 
 
@@ -185,30 +169,30 @@ type Generators =
 
 let toFeedData feed = Feed.toList feed |> List.map (fun (t, ab) -> (t.Ticks, ab))
 
-[<Arbitrary(typeof<Generators>)>]
-module ``Feed monad laws`` =
-    open Feed.Operator
-
-    [<Property>]
-    let ``left identity`` (Bind f) (Value a) =
-        let feed1 = Feed.pure' a >>= f |> toFeedData
-        let feed2 = f a                |> toFeedData
-        
-        should equal feed1 feed2
-
-
-    [<Property>]
-    let ``right identity`` (Category m) =
-        let feed1 = m >>= Feed.pure' |> toFeedData
-        let feed2 = m                |> toFeedData
-
-        should equal feed1 feed2
-
-
-    [<Property(Replay="(1251986508,296175100)")>]
-    let ``associativity`` (Bind f) (Bind g) (Category m) (Value x) (Value y) =
-        let feed1 = (m >>= f) >>= g            |> toFeedData
-        let feed2 = m >>= (fun x -> f x >>= g) |> toFeedData
-
-        should equal feed1 feed2 
-
+//[<Arbitrary(typeof<Generators>)>]
+//module ``Feed monad laws`` =
+//    open Feed.Operator
+//
+//    [<Property>]
+//    let ``left identity`` (Bind f) (Value a) =
+//        let feed1 = Feed.pure' a >>= f |> toFeedData
+//        let feed2 = f a                |> toFeedData
+//        
+//        should equal feed1 feed2
+//
+//
+//    [<Property>]
+//    let ``right identity`` (Category m) =
+//        let feed1 = m >>= Feed.pure' |> toFeedData
+//        let feed2 = m                |> toFeedData
+//
+//        should equal feed1 feed2
+//
+//
+//    [<Property(Replay="(1251986508,296175100)")>]
+//    let ``associativity`` (Bind f) (Bind g) (Category m) (Value x) (Value y) =
+//        let feed1 = (m >>= f) >>= g            |> toFeedData
+//        let feed2 = m >>= (fun x -> f x >>= g) |> toFeedData
+//
+//        should equal feed1 feed2 
+//
