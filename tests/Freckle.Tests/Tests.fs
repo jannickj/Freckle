@@ -10,7 +10,7 @@ open FsCheck
 
 let time v = Time.time v
 
-let nowWithPast v = { Current = Time.time System.Int64.MaxValue ; Past = Time.time v }
+let now vfrom vto = { Current = Time.time vto ; Past = Time.time vfrom }
 
 [<Fact>]
 let ``map is lazy`` () =
@@ -51,7 +51,7 @@ let ``cutNow discards all elements older than now`` () =
 let ``mapFold both folds and maps`` () =    
     let l = List.map (fun t -> (time (int64 t), t)) [ 1 .. 3 ]
             |> Feed.ofList
-            |> Feed.mapFold (nowWithPast 2L) (fun s a -> (s + a, a - 1)) 0
+            |> Feed.mapFold (now 1L 3L) (fun s a -> (s + a, a - 1)) 0
             |> Feed.toList
   
     l |> should equal [ (time 3L, (5, 2))
@@ -80,10 +80,9 @@ let ``transitionNow correctly transitions between async states`` () =
         let! _, l = List.map (fun i -> (time (int64 i), i)) [ 1 .. 5 ]
                     |> Feed.ofList
                     |> Feed.transitionNow (fun s a -> act { return s + a } ) 0
-                    |> Act.run mb evtSource ({ Current = Time.time 4L; Past = Time.time 2L })
+                    |> Act.run mb evtSource ({ Current = Time.time 4L; Past = Time.time 1L })
         let l' = Feed.toList l
-        l' |> should equal [ (time 5L, 14)
-                           ; (time 4L, 9)
+        l' |> should equal [ (time 4L, 9)
                            ; (time 3L, 5)
                            ; (time 2L, 2)
                            ]
@@ -113,9 +112,13 @@ let pretty fr = fr |> Feed.toList |> List.map (fun (t, a) -> t.Ticks, a)
 
 [<Fact>]
 let ``feed monad`` () = 
-    let lA = [(time 1L, "1a"); (time 4L, "2a");(time 5L, "3a")] |> Feed.ofList
-    
-    let lB = [(time 2L, "1b");(time 4L, "2b");(time 6L, "3b")] |> Feed.ofList
+    let f x = [(time 0L, "fx");(time 2L, x)] |> Feed.ofList
+    let g y = [(time 0L, "gy");(time 2L, y)] |> Feed.ofList
+    let m = [(time 55L, "a"); (time 13L, "b")] |> Feed.ofList
+ 
+//    let lA =  //[(time 1L, "1a"); (time 4L, "2a");(time 5L, "3a")] |> Feed.ofList
+//    
+//    let lB = [(time 2L, "1b");(time 4L, "2b");(time 6L, "3b")] |> Feed.ofList
 
     let expected = [ (6L, ("3a" + "3b"))
                      (5L, ("3a" + "2b"))
@@ -124,11 +127,14 @@ let ``feed monad`` () =
                      (2L, ("1a" + "1b"))
                    ]
     
-    let lBA = Feed.bind (fun b -> Feed.bind (fun a -> Feed.pure' (a + b)) lA) lB |> pretty
-    expected |> should equal lBA
-    printfn "NEWWWWWW"
-    let lAB = Feed.bind (fun a -> Feed.bind (fun b -> Feed.pure' (a + b)) lB) lA |> pretty
-    expected |> should equal lAB
+
+    let lBA = Feed.bind (fun x -> Feed.bind g (f x)) m |> pretty  
+    printfn "NEWWWWWW"  
+    let lAB = Feed.bind g (Feed.bind f m) |> pretty
+//    let lBA = Feed.bind (fun b -> Feed.bind (fun a -> Feed.pure' (a + b)) lA) lB |> pretty
+    lAB |> should equal lBA
+////    let lAB = Feed.bind (fun a -> Feed.bind (fun b -> Feed.pure' (a + b)) lB) lA |> pretty
+//    expected |> should equal lAB
 
 
 
@@ -169,10 +175,10 @@ type Generators =
 
 let toFeedData feed = Feed.toList feed |> List.map (fun (t, ab) -> (t.Ticks, ab))
 
-//[<Arbitrary(typeof<Generators>)>]
-//module ``Feed monad laws`` =
-//    open Feed.Operator
-//
+[<Arbitrary(typeof<Generators>)>]
+module ``Feed monad laws`` =
+    open Feed.Operator
+
 //    [<Property>]
 //    let ``left identity`` (Bind f) (Value a) =
 //        let feed1 = Feed.pure' a >>= f |> toFeedData
@@ -190,9 +196,9 @@ let toFeedData feed = Feed.toList feed |> List.map (fun (t, ab) -> (t.Ticks, ab)
 //
 //
 //    [<Property(Replay="(1251986508,296175100)")>]
-//    let ``associativity`` (Bind f) (Bind g) (Category m) (Value x) (Value y) =
+//    let ``associativity`` (Bind f) (Bind g) (Category m) =
 //        let feed1 = (m >>= f) >>= g            |> toFeedData
 //        let feed2 = m >>= (fun x -> f x >>= g) |> toFeedData
 //
-//        should equal feed1 feed2 
-//
+//        should equal  feed2 feed1
+

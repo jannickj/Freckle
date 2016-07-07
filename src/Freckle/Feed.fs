@@ -26,12 +26,7 @@ module Types =
                 | _ -> Time.time t             
              static member toDateTime t = DateTime(Time.ticks t)
              static member max = { Ticks = Int64.MaxValue } //; Id = UInt32.MaxValue }
-             static member realise t1 t2 = 
-                if t1.Ticks = 0L && t2.Ticks = 0L
-                then t1
-                elif t1.Ticks = 0L
-                    then t2 
-                    else t1
+             static member realise t1 t2 = if t2.Ticks = 0L then t1 else t2
              override x.ToString() = sprintf "%A" x
 
     type Now = 
@@ -104,18 +99,6 @@ module Internal =
             let realiseTime t (l : LazyList<Time * 'a>) : LazyList<Time * 'a> =
                 LazyList.map (fun (ta,a) -> (Time.realise t ta, a)) l
 
-            let join' (list : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * 'a> = undefined
-//                let rec inner t1 l =
-//                    match l with
-//                    | Cons((t2, la) , rest) ->
-//                        let la' = (realiseTime t2 la)
-//                        let discarder l = 
-//                            if t1 > t2 
-//                            then (discardAfterIncl t1 l)
-//                            else (discardAfterExcl t1 l)
-//                        let res = discardBeforeExcl t2 (discarder la')
-//                | Nil -> LazyList.empty
-
             let mapFirst f l =
                  match l with
                  | Cons(a, r) -> cons (f a) r
@@ -125,9 +108,8 @@ module Internal =
                  match l with
                  | Cons(a, (Cons(b, r))) -> cons a (cons (f b) r)
                  | _ -> l 
-
-            let agify ll =
-                map (fun (t, l) -> map (fun (t2, a) -> ((max t t2), ((t2,t), a))) (realiseTime t l)) ll
+            
+            let agify ll = map (fun (t, l) -> map (fun (t2, a) -> ((max t t2), ((t2,t), a))) (realiseTime t l)) ll
                 
             let pretty fr = fr |> toList |> List.map (fun (t, a) -> t.Ticks, a)
             let superPretty a = map (fun (ta,((t1,t2),aa)) -> (ta.Ticks, ((t1.Ticks,t2.Ticks), aa))) a |> toList
@@ -185,15 +167,15 @@ module Internal =
 //
 //                    | _ -> failwith <| sprintf "FAK!\n %A" (superPretty la, superPretty lb)
 
-            let inline join2' (list : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * 'a> =
+            let inline join' (list : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * 'a> =
                
                 
                 let res = inner Time.max Time.max Time.max (agify list)
                 printfn "fuk"
 //                printfn "%A" (pretty list |> List.map (fun (t, a) -> (t, pretty a)))
-                printfn "%A" (map superPretty (agify list) |> toList)
+//                printfn "%A" (map superPretty (agify list) |> toList)
 //                printfn "%A" (res () |> pretty)
-                printfn "fak"
+//                printfn "fak"
                 res () |> toList |> ignore
                 delayed <| res
 
@@ -212,13 +194,13 @@ module Core =
         let inline singleton time evt = feed (LazyList.cons (time, evt) LazyList.empty)
 
         let inline pure' (a : 'a) : Feed<'a> = 
-            feed (LazyList.ofList [(Time.origin, a)])
+            feed (LazyList.ofList [(Time.max, a)])
 
         let inline map (f : 'a -> 'b) (fr : Feed<'a>) : Feed<'b> = 
             updateEvent (LazyList.map (fun (t,a) -> (t, f a))) fr
 
         let inline join (fr : Feed<Feed<'a>>) : Feed<'a> =
-            setEvent (join2' <| toEvent (map toEvent fr)) fr            
+            setEvent (join' <| toEvent (map toEvent fr)) fr            
     
         let inline bind (f : 'a -> Feed<'b>) : Feed<'a> -> Feed<'b> =
             join << (map f)
