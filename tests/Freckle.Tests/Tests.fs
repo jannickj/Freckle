@@ -110,33 +110,92 @@ let ``pulse gives correct pulses`` () =
 
 let pretty fr = fr |> Feed.toList |> List.map (fun (t, a) -> t.Ticks, a)
 
+let toFeedData feed = 
+    feed.Event
+    |> Feed.Internal.sortSameTime
+    |> LazyList.toList
+    |> List.map (fun (t, ab) -> (t.Ticks, ab))
+
+open Feed.Operator
+
+
+[<Fact>]
+let ``feed join`` () = 
+    let lA =  [(time 0L, "1a"); (time 3L, "2aX");(time 3L, "2aY")] |> Feed.ofList    
+    let lB = [(time 1L, "1b");(time 3L, "2bX");(time 3L, "2bY");(time 5L, "3b")] |> Feed.ofList
+    let lAB = [(time 3L, lB); (time 3L, lA)] |> Feed.ofList
+
+    let joinX = Feed.join lAB
+    printfn "joinX %A" (pretty joinX)
+    printfn "newwwwww"
+
 [<Fact>]
 let ``feed monad`` () = 
-    let f x = [(time 0L, "fx");(time 2L, x)] |> Feed.ofList
-    let g y = [(time 0L, "gy");(time 2L, y)] |> Feed.ofList
-    let m =   [(time 55L, "a"); (time 13L, "b")] |> Feed.ofList
+    let f x = [(time 1L, "f1" + x);(time 3L, "f2" + x)] |> Feed.ofList
+    let g y = [(time 2L, "g1" + y);(time 4L, "g2" + y)] |> Feed.ofList
+    let m = [(time 55L, "a"); (time 13L, "b")] |> Feed.ofList
  
-    let lA =  [(time 0L, "a"); (time 3L, "b");(time 4L, "c")] |> Feed.ofList
+    let lA =  [(time 0L, "1a"); (time 3L, "2aX");(time 3L, "2aY")] |> Feed.ofList
     
-    let lB = [(time 1L, "x");(time 3L, "y");(time 5L, "z")] |> Feed.ofList
+    let lB = [(time 1L, "1b");(time 3L, "2bX");(time 3L, "2bY");(time 5L, "3b")] |> Feed.ofList
+        
+    let lC = [(time 0L, "1c");(time 2L, "2c");(time 6L, "3c")] |> Feed.ofList
 
-    let expected = [ (5L, ("z" + "c" ))
-                     (4L, ("y" + "c" ))
-                     (3L, ("y" + "b" ))
-                     (3L, ("x" + "b" ))
-                     (1L, ("x" + "a" ))
-                   ]
+
+    let expectedABC = [ (6L, ("2aY" + "3b" + "3c"))
+                        (6L, ("2aX" + "3b" + "3c"))
+                        (5L, ("2aY" + "3b" + "2c"))
+                        (5L, ("2aX" + "3b" + "2c"))
+                        (3L, ("2aY" + "2bY" + "2c"))
+                        (3L, ("2aY" + "2bX" + "2c"))
+                        (3L, ("2aX" + "2bX" + "2c"))  
+                        (2L, ("1a" + "1b" + "2c"))
+                        (1L, ("1a" + "1b" + "1c"))
+                      ]
+
+
+    let mX = 
+        feed {
+            let! x = lA
+            let! y = lB
+            let! z = lC
+            if x = "2aX" && y = "2bY"
+            then return! Feed.empty
+            else return (x + y + z) 
+        }
+    printfn "mX %A" (pretty mX)
+    printfn "newwwwww"
     
+    let mY = 
+        feed {
+            let! z = lC
+            let! x = lA
+            let! y = lB
+            if x = "2aX" && y = "2bY"
+            then return! Feed.empty
+            else return (x + y + z) 
+        }
+    printfn "mY %A" (pretty mY)
+    printfn "newwwwww"
+//
+//    let m1 = (m >>= f) >>= g  
+//    printfn "m1 %A" (pretty m1)
+//    printfn "newwwwww"
+//    let m2 =  m >>= (fun x -> f x >>= g)
+//    printfn "m2 %A" (pretty m2)
+//    printfn "newwwwww"
+//    printfn "%A" (pretty m2)
 
-    let lBA = Feed.bind (fun x -> Feed.bind g (f x)) m |> pretty  
-    printfn "NEWWWWWW"  
-    let lAB = Feed.bind g (Feed.bind f m) |> pretty
-//    let lBA = Feed.bind (fun b -> Feed.bind (fun a -> Feed.pure' (a + b)) lA) lB |> pretty
-    lAB |> should equal lBA
-////    let lAB = Feed.bind (fun a -> Feed.bind (fun b -> Feed.pure' (a + b)) lB) lA |> pretty
+////    printfn "%A" (Feed.bind (fun x -> Feed.bind g (f x)) m |> pretty )
+  
+//    printfn "%A" (Feed.bind g (Feed.bind f m) |> pretty)
+//    let lBA = Feed.bind (fun b ->  Feed.bind (fun a -> Feed.pure' (a + b)) lA) lB |> pretty
+//    expected |> should equal lBA
+//    let lAB = Feed.bind (fun a -> Feed.bind (fun b -> Feed.pure' (a + b)) lB) lA |> pretty
 //    expected |> should equal lAB
-
-
+    
+    should equal  (toFeedData mX) (toFeedData mY)
+    should equal  (toFeedData mX) expectedABC 
 
 
 type Bind = Bind of (int -> Feed<int>)
@@ -155,7 +214,7 @@ let futureGen =
 let feedGen =
     gen {
         let! futures = futureGen
-                       |> Gen.listOfLength 2
+                       |> Gen.listOf
         return Feed.ofList futures
     }
 
@@ -163,8 +222,10 @@ let feedFunctionGen =
     gen {
         let f1 a = Feed.pure' a
         let f2 a = Feed.empty
-        let f3 a = [(time 0L, 1);(time 2L, a)] |> Feed.ofList
-        return! Gen.elements([f1; f2; f3])
+        let f3 a = [(time 1L, 1);(time 2L, a)] |> Feed.ofList
+        let! f = feedGen
+        let f4 a = f
+        return! Gen.elements([f1; f2; f3; f4])
     }
 
 
@@ -173,32 +234,31 @@ type Generators =
     static member Value() = Arb.fromGen (Gen.choose(1, 100) |> Gen.map Value)
     static member Bind() = Arb.fromGen (feedFunctionGen |> Gen.map Bind)
 
-let toFeedData feed = Feed.toList feed |> List.map (fun (t, ab) -> (t.Ticks, ab))
 
 [<Arbitrary(typeof<Generators>)>]
 module ``Feed monad laws`` =
     open Feed.Operator
 
-//    [<Property>]
-//    let ``left identity`` (Bind f) (Value a) =
-//        let feed1 = Feed.pure' a >>= f |> toFeedData
-//        let feed2 = f a                |> toFeedData
-//        
-//        should equal feed1 feed2
-//
-//
-//    [<Property>]
-//    let ``right identity`` (Category m) =
-//        let feed1 = m >>= Feed.pure' |> toFeedData
-//        let feed2 = m                |> toFeedData
-//
-//        should equal feed1 feed2
-//
-//
-//    [<Property(Replay="(1251986508,296175100)")>]
-//    let ``associativity`` (Bind f) (Bind g) (Category m) =
-//        let feed1 = (m >>= f) >>= g            |> toFeedData
-//        let feed2 = m >>= (fun x -> f x >>= g) |> toFeedData
-//
-//        should equal  feed2 feed1
+    [<Property>]
+    let ``left identity`` (Bind f) (Value a) =
+        let feed1 = Feed.pure' a >>= f |> toFeedData
+        let feed2 = f a                |> toFeedData
+        
+        should equal feed1 feed2
+
+
+    [<Property>]
+    let ``right identity`` (Category m) =
+        let feed1 = m >>= Feed.pure' |> toFeedData
+        let feed2 = m                |> toFeedData
+
+        should equal feed1 feed2
+
+
+    [<Property>]
+    let ``associativity`` (Bind f) (Bind g) (Category m) =
+        let feed1 = (m >>= f) >>= g            |> toFeedData
+        let feed2 = m >>= (fun x -> f x >>= g) |> toFeedData
+
+        should equal  feed1 feed2
 

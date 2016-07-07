@@ -15,8 +15,14 @@ module Types =
         }
         with override x.ToString() = sprintf "%A" x
 
+
 module Future = 
     let map f (t, a) = (t, f a)
+
+    
+module Period =
+    let isAfter (p1 : Period) (p2 : Period) =
+        p1.Beginning > p2.Beginning
 
 [<AutoOpen>]
 module Internal =
@@ -72,9 +78,6 @@ module Internal =
             let inline discardAfterExcl time =
                LazyList.delayed << skipWhile' (fun (t,_) -> t > time)
             
-            let realiseTime t (l : LazyList<Time * 'a>) : LazyList<Time * 'a> =
-                LazyList.map (fun (ta,a) -> (Time.realise t ta, a)) l
-
             let mapFirst f l =
                  match l with
                  | Cons(a, r) -> cons (f a) r
@@ -84,115 +87,96 @@ module Internal =
                  match l with
                  | Cons(a, (Cons(b, r))) -> cons a (cons (f b) r)
                  | _ -> l 
-            
                 
             let pretty fr = fr |> toList |> List.map (fun (t, a) -> t.Ticks, a)
+            let prettyPretty fr = fr |> toList |> List.map (fun (t, a) -> t.Ticks, pretty a)
             let superPretty a = map (fun (ta,((t1,t2),aa)) -> (ta.Ticks, ((t1.Ticks,t2.Ticks), aa))) a |> toList
             let superPretty2 a = map (fun (_,((t1,t2),aa)) -> (t1.Ticks,t2.Ticks, aa)) a |> toList |> List.head
 
-
-            let inline capMax maxAge (l : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * LazyList<Time * 'a>> = 
-                map (fun (t,la) -> (t, discardAfterIncl maxAge la)) (discardAfterIncl maxAge l)
-
-            let inline capMin minAge (l : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * LazyList<Time * 'a>> = 
-                map (fun (t,la) -> (t, discardBeforeExcl minAge la)) (discardBeforeExcl minAge l)
+            let cutOff t lA = map (fun (tA, lB) -> (tA,discardAfterIncl t lB)) lA 
             
-            let rec findMin minAge  (l : LazyList<Time * Time>) =
+            let groupTime' l =
                 match l with
-                | Cons((t,_),_) when t < minAge -> minAge
-                | Cons((t, ta), tail) ->
-                    findMin (max (min t ta) minAge) tail
-                | Nil -> minAge
+                | Cons((t,a), tail) -> 
+                    let res = takeWhile' (fun (t2, _) -> t = t2) tail |> delayed |> map snd |> toList
+                    consDelayed (t, a :: res) 
+            
+            let rec groupBy f (l : LazyList<'a>) =
+                match l with
+                | Nil -> empty
+                | Cons(x, xs) ->
+                    let (ys, zs) = takeWhile' (f x) xs, skipWhile' (f x) xs
+                    consDelayed (consDelayed x ys) (fun () -> groupBy f (delayed zs))
 
-            let inline toTime (l : LazyList<Time * LazyList<Time * 'a>>) =
-                let toTime (t,la) = 
+            let sameTime l = 
+                groupBy (fun (t1,_) (t2,_) -> t1 = t2) l
+
+            let sortSameTime l =
+                sameTime l
+                |> map (fun l -> Seq.sortDescending l |> LazyList.ofSeq)
+                |> LazyList.concat
+                
+
+
+            
+            
+            let isBetter (t1a,t2a) (t1b,t2b) =
+                let minA = min t1a t2a
+                let maxA = max t1a t2a
+                let minB = min t1b t2b
+                let maxB = max t1b t2b
+                if minA > minB then true
+                elif minA = minB then maxA > maxB
+                else false
+
+//                if t1a > minB && t1a <= maxB && t2a >= minB && t1a >= t1b then true
+//                elif t2a > minB && t2a <= maxB && t1a >= minB && t2a >= t2b then true
+//                else false
+
+            let isMuchBetter (t1a,t2a) (t1b,t2b) =
+                let res = isBetter (t1a,t2a) (t1b,t2b) //&& not (isBetter (t1b,t2b) (t1a,t2a))
+
+//                printfn "(%A vs %A) %A better than %A = %A" a b (t1a.Ticks,t2a.Ticks) (t1b.Ticks,t2b.Ticks) res
+                res
+
+
+            let inline capMax maxAge l =
+                (discardAfterIncl maxAge l)
+                |> map (fun  (t, la) -> (t, discardAfterIncl maxAge la))
+                //|> filter (fun (_, la) -> not <| isEmpty la)
+            
+//            let 
+
+            let rec findNext minAge ((t1Best,t2Best,bests) as best) (l : LazyList<Time * LazyList<Time * 'a>>) =
+                match l with
+                | Cons((t1, la), rest) when t1 >= minAge -> 
                     match la with
-                    | Cons((ta,_),_) -> (t, ta)
-                    | Nil -> (t, Time.maxValue)
-                map toTime l
-                
-            let agify ll = map (fun (t, l) -> map (fun (t2, a) -> (max t t2, a)) l) ll
+                    | Cons((t2,_),_) when t2 < minAge -> findNext minAge best rest
+                    | Cons((t2,a), rest2) when (t1 = t1Best && t2 = t2Best) || (t2 = t1Best && t1 = t2Best) -> 
+                        findNext minAge (t1, t2, a :: bests) (cons (t1, rest2) rest)
+                    | Cons((t2,a), rest2) when isMuchBetter (t1, t2) (t1Best, t2Best) -> 
+                        findNext (max (min t1 t2) minAge) (t1, t2, [a]) (cons (t1, rest2) rest)
+                    | Cons((t2,_), rest2) ->
+                        findNext (max (min t1 t2) minAge) best (cons (t1, rest2) rest)
+                    | Nil ->
+                        findNext minAge best rest
+                | _ -> best
 
-            let inline combineAll (l : LazyList<LazyList<Time * 'a>>) =
-               Seq.fold (fun s a -> merge' s a) LazyList.empty l
-
-            let rec join' (l : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * 'a> =
-                let minAge = findMin Time.minValue (toTime l)
-                if minAge > Time.minValue
-                then 
-                    let res = 
-                        capMin minAge l
-                        |> agify
-                        |> combineAll
-                    LazyList.append res (join' (capMax minAge l))
-                else LazyList.empty
-                
-            let rec inner (ageMax : Time) t1Max t2Max (l : LazyList<LazyList<Time * ((Time * Time) * 'a)>>) () : LazyList<Time * 'a> =
-                match l with      
-                | Nil -> LazyList.empty
-                | Cons(la, Nil) -> filter (fun (age, ((t1,t2),_)) -> age <= ageMax && t1 <= t1Max && t2 <= t2Max ) la |> map (fun (age, (_,a)) -> (age, a))
-                | Cons(la, (Cons(lb, tail2) as tail1)) ->
-                    match la, lb with
-                    | Nil, _ -> inner ageMax t1Max t2Max tail1 ()
-
-                    | _, Nil -> inner ageMax t1Max t2Max (cons la tail2) ()
-
-                    | Cons((ageA,((t1a,t2a),_)), tailA), _ when ageA > ageMax || t1a > t1Max || t2a > t2Max ->
-                        inner ageMax t1Max t2Max (cons tailA tail1) ()
-
-                    | la, Cons((ageB,((t1b,t2b),_)), tailB) when ageB > ageMax || t1b > t1Max || t2b > t2Max ->
-                        inner ageMax t1Max t2Max (cons la (cons tailB tail2)) ()
-                    
-                    | Cons((ageA,(((t1a,t2a)),a)), tailA),  Cons((_,((t1b,t2b),_)),_) when t1a >= t1b && t2a >= t2b  ->
-                        printfn "1a: %A" (superPretty2 la, superPretty2 lb)
-                        consDelayed (ageA,a) <| inner (min ageA ageMax) (min t1a t1Max) (min t2a t2Max)  (cons tailA tail1)
-                    
-                    | Cons((ageA,(((t1a,t2a)),a)), tailA),  Cons((_,((t1b,t2b),_)),_) when max t1a t2a < max t1b t2b  ->
-                        printfn "1c: %A" (superPretty2 la, superPretty2 lb)
-                        consDelayed (ageA,a) <| inner (min ageA ageMax) (min t1a t1Max) (min t2a t2Max)  (cons tailA tail1)
-
-                    | Cons((ageA,(((t1a,t2a)),a)), tailA),  Cons((_,((t1b,t2b),_)),_) when max t1a t2a = max t1b t2b && (abs (t1a.Ticks - t2a.Ticks) <= abs (t1b.Ticks - t2b.Ticks)) ->
-                        printfn "1d: %A" (superPretty2 la, superPretty2 lb)
-                        consDelayed (ageA,a) <| inner (min ageA ageMax) (min t1a t1Max) (min t2a t2Max)  (cons tailA tail1)
-//                    | Cons((ageA,((t1a,t2a),a)), tailA),  Cons((_,((t1b,t2b),_)),_) when t2a > t1a && t2a >= t2b && t1a >= t1b ->
-//                        printfn "1b: %A" (superPretty2 la, superPretty2 lb)
-//                        consDelayed (ageA,a) <| inner (min ageA ageMax) (min t1a t1Max) (min t2a t2Max)  (cons tailA tail1)
-
-
-                    | Cons((ageA,((t1a,t2a),a)), tailA),  Cons((_,((t1b,t2b),_)),_) when t2a = t1a && t1a >= (min t1b t2b) ->
-                        printfn "1e: %A" (superPretty2 la, superPretty2 lb)
-                        consDelayed (ageA,a) <| inner (min ageA ageMax) (min t1a t1Max) (min t2a t2Max)  (cons tailA tail1)
-
-//                    | Cons((ageA,((t1a,t2a),a)), tailA),  Cons((_,((t1b,t2b),_)),_) when t2a = t1a && t1b >= t1a && t2a >= t2b ->
-//                        printfn "1d: %A" (superPretty2 la, superPretty2 lb)
-//                        consDelayed (ageA,a) <| inner (min ageA ageMax) (min t1a t1Max) (min t2a t2Max)  (cons tailA tail1)
-                    
-                    | _, _ -> 
-                        printfn "2x: %A" (superPretty2 la, superPretty2 lb)
-                        inner ageMax t1Max t2Max tail1 ()
-
-//                    | Cons((_,((t1a,t2a),_)), tailA), Cons((ageB,((t1b,t2b),b)),tailB) when (t1b >= t2b && t1b >= t1a && (t2b >= (min t1a t2a) )) ->
-//                        consDelayed (ageB,b) <| inner (min ageB ageMax) (min t1b t1Max) (min t2b t2Max)  (cons tailA (cons tailB tail2))
-//                    
-//                    | Cons((_,((t1a,t2a),_)), tailA), Cons((ageB,((t1b,t2b),b)),tailB) when (t2b >= t1b && t2b >= t2a && (t1b >= (min t1a t2a) )) ->
-//                        consDelayed (ageB,b) <| inner (min ageB ageMax) (min t1b t1Max) (min t2b t2Max) (cons tailA (cons tailB tail2))
-//
-//                    | _ -> failwith <| sprintf "FAK!\n %A" (superPretty la, superPretty lb)
-
-            let inline join' (list : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * 'a> =
-               
-                
-                let res = inner Time.max Time.max Time.max (agify list)
-                printfn "fuk"
-//                printfn "%A" (pretty list |> List.map (fun (t, a) -> (t, pretty a)))
-//                printfn "%A" (map superPretty (agify list) |> toList)
-//                printfn "%A" (res () |> pretty)
-//                printfn "fak"
-                res () |> toList |> ignore
-                delayed <| res
+            let rec joinInner l () =
+                match l with
+                | Nil -> empty
+                | Cons((_,Nil),rest) -> joinInner rest ()
+                | Cons((t1,(Cons((t2,a),_))),_) -> 
+                    let (t1', t2', la) = findNext (min t1 t2) (t1,t2,List.empty) l
+                    let age = max t1' t2'
+                    let l'' = capMax age l
+                    append (List.map (fun a -> (age, a)) la |> ofList) ((delayed << joinInner) l'')
+            
+            let join' l = (delayed << joinInner) l
 
             let inline unsafePush t e feed =
                 updateEvent (LazyList.cons (t, e)) feed
+
 
 open Feed.Internal
 
@@ -362,7 +346,7 @@ module Filtering =
 [<AutoOpen>]
 module Grouping =
     module Feed =
-
+        
         let span (f : 'a -> bool) (fr : Feed<'a>) : (Feed<'a> * Feed<'a>) = 
             (Feed.takeWhile f fr, Feed.skipWhile f fr)
                         
