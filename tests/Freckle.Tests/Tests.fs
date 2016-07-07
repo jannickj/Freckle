@@ -114,32 +114,22 @@ let pretty fr = fr |> Feed.toList |> List.map (fun (t, a) -> t.Ticks, a)
 [<Fact>]
 let ``feed monad`` () = 
     let lA = [(time 1L, "1a"); (time 4L, "2a");(time 5L, "3a")] |> Feed.ofList
+    
     let lB = [(time 2L, "1b");(time 4L, "2b");(time 6L, "3b")] |> Feed.ofList
 
-//    let lAB = Feed.bind (fun a -> Feed.bind (fun b -> Feed.pure' (a, b)) lB) lA |> pretty
-    let lBA = Feed.bind (fun b -> Feed.bind (fun a -> Feed.pure' (a, b)) lA) lB |> pretty
-
-//    let lAB = feed {
-//                let! a = lA
-//                let! b = lB
-//                return (a, b)
-//              } |> pretty
-
-    let lBA = feed {
-                let! b = lB
-                let! a = lA
-                return (a, b)
-              } |> pretty
-
-    let expected = [ (6L, ("3a", "3b"))
-                     (5L, ("3a", "2b"))
-                     (4L, ("2a", "2b"))
-                     (4L, ("2a", "1b"))
-                     (2L, ("1a", "1b"))
+    let expected = [ (6L, ("3a" + "3b"))
+                     (5L, ("3a" + "2b"))
+                     (4L, ("2a" + "2b"))
+                     (4L, ("2a" + "1b"))
+                     (2L, ("1a" + "1b"))
                    ]
-
-//    expected |> should equal lAB
+    
+    let lBA = Feed.bind (fun b -> Feed.bind (fun a -> Feed.pure' (a + b)) lA) lB |> pretty
     expected |> should equal lBA
+    printfn "NEWWWWWW"
+    let lAB = Feed.bind (fun a -> Feed.bind (fun b -> Feed.pure' (a + b)) lB) lA |> pretty
+    expected |> should equal lAB
+    
     
 [<Fact>]
 let ``Feed monad`` () =    
@@ -221,3 +211,4 @@ module ``Feed monad laws`` =
         let feed2 = m >>= (fun x -> f x >>= g) |> toFeedData
 
         should equal feed1 feed2 
+
