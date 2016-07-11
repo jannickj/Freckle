@@ -50,15 +50,15 @@ module Helpers =
         type Signal<'a> = Continue of 'a
                         | Completed of 'a
 
-        let recursion (f : 's -> Async<Signal<'s>>) (state : 's)  : Async<'s> =
+        let recursion (f : 's -> Async<bool * 's>) (state : 's)  : Async<'s> =
             async {
                 let mutable s = state
                 let mutable sad = true
                 while sad do
-                    let! sa = Async.TryCancelled(f s, fun _ -> ())
-                    match sa with
-                    | Continue a -> s <- a
-                    | Completed a -> 
+                    let! (b, a) = Async.TryCancelled(f s, fun _ -> ())
+                    match b with
+                    | true -> s <- a
+                    | false -> 
                         s <- a
                         sad <- false
                 return s

@@ -6,106 +6,85 @@ open FSharp.Helpers
 module Types =
     open System.Threading
 
-    type Clock = Clock of Async<Ticks>
-    type EventSource = EventSource of Time * Map<SortedType, Feed<obj>>
-    type Mailbox = 
-        { LiveEvents  : Ref<EventSource> 
-          EventLock   : AutoResetEvent
-          Clock       : Clock
+    type Expire = Never
+                | After of Time
+                | WhenRead
+
+    type Mailbox<'e> = 
+        { LiveEvents  : Ref<Feed<'e> * Feed<'e>>
+          EventLock   : obj
           MailAwait   : AutoResetEvent
+          Expiration  : Expire
+          Clock       : Clock
         }
 
-module Clock =
-    open System
+
+module Internal =
     
-    let ofAsync ma =
-        let last = ref 0L
-        let ma' =
-            async {
-                let! time = ma
-                return lock last (fun () ->
-                                    let newT =
-                                        if !last >= time 
-                                        then !last + 1L
-                                        else time
-                                    last := newT
-                                    newT)
-                
-            }
-        Clock ma'
+    let inline read' (m : Mailbox<'e>) =
+        let (inc, out) = !m.LiveEvents
+        Feed.combine inc out
 
-    let systemUtc = ofAsync (async { return DateTime.UtcNow.Ticks })
-    let alwaysAt ticks = Clock (async { return ticks })
+    let inline readAndRemove' (m : Mailbox<'e>) () =
+        let (inc, out) = !m.LiveEvents
+        m.LiveEvents := (Feed.empty, Feed.empty)
+        Feed.combine inc out
+            
 
-    let now (Clock m) = m
+    let inline push' time evt (m : Mailbox<_>) () : unit =
+        let (inc, out) = !m.LiveEvents
+        match m.Expiration, Feed.tryHead (Feed.time out) with
+        | After _, None -> 
+            m.LiveEvents := (Feed.empty, Feed.Internal.unsafePush time evt inc)
+        | After t, Some outTime when t.Ticks > time.Ticks - outTime.Ticks -> 
+            m.LiveEvents := (Feed.Internal.unsafePush time evt inc, Feed.empty)
+        | _ -> m.LiveEvents := (Feed.Internal.unsafePush time evt inc, Feed.empty)
+        AutoResetEvent.release m.MailAwait
 
-module EventSource =
-    
-    let empty = EventSource (Time.origin, Map.empty)
-
-    let lastEventTime (EventSource (t,_)) = t
-
-    let read<'e> (EventSource (_,es) : EventSource) : Feed<'e> = 
-        let t = typeof<'e>
-        let st = SortedType(t)
-        match Map.tryFind st es with
-        | Some fr -> Feed.map unbox fr
-        | None -> Feed.empty
-
-    let push<'e> ticks (evt: 'e) (EventSource (oldTime,es) : EventSource) : EventSource = 
-        let t = typeof<'e>
-        let st = SortedType(t)
-        let time = Time.incId ticks oldTime
-        match Map.tryFind st es with
-        | Some fr -> EventSource (time, Map.add st (Feed.Internal.unsafePush time (box evt) fr) es)
-        | None -> EventSource (time, Map.add st (Feed.singleton time (box evt)) es)
-   
-    let setTimeId tick evtsource =
-        let evtTime = lastEventTime evtsource
-        Time.incId tick evtTime
-        
  
 [<AutoOpen>]
 module Core =
     module Mailbox =
         open System.Threading
         
-        let currentTick (mb : Mailbox) = Clock.now mb.Clock
-
-        let create clock =
+        let createWithExpiration expire clock =
             async {
                 let ars = new AutoResetEvent(true)
                 let mawait = new AutoResetEvent(false)
                 let! _ = Async.OnCancel (fun () -> ars.Dispose(); mawait.Dispose())
-                return { LiveEvents = ref EventSource.empty
+                return { LiveEvents = ref (Feed.empty, Feed.empty)
                          EventLock = ars
-                         Clock = clock
+                         Expiration = expire
                          MailAwait = mawait
+                         Clock = clock
                        }
             }
-
-        let post evt (mb : Mailbox) =
+            
+        let post evt (m : Mailbox<_>) : Async<unit> =
             async {
-                AutoResetEvent.wait mb.EventLock
-                let! time = currentTick mb
-                mb.LiveEvents := EventSource.push time evt !mb.LiveEvents
-                AutoResetEvent.release mb.EventLock
-                AutoResetEvent.release mb.MailAwait
+                let! time = Clock.now m.Clock
+                return lock m.EventLock (Internal.push' time evt m)
             }
         
-        let awaitMailTimeout (ticks : Ticks) (mb : Mailbox) =
+        let read (m : Mailbox<'e>) : Async<Feed<'e>> = 
+            async {
+                match m.Expiration with
+                | WhenRead -> return lock m.EventLock (Internal.readAndRemove' m)
+                | _ -> return Internal.read' m 
+            }
+
+        let awaitMailTimeout (ticks : Ticks) (mb : Mailbox<_>) =
             async {
                 return mb.MailAwait.WaitOne(System.TimeSpan(ticks)) |> ignore
             }
 
-        let awaitMail (mb : Mailbox) =
+        let awaitMail (mb : Mailbox<_>) =
             async {
                 return mb.MailAwait.WaitOne() |> ignore
             }
 
-        let receive (mb : Mailbox) = async { return !mb.LiveEvents }
         
-        let listenTo eventStream (mb : Mailbox) =
+        let listenTo eventStream (mb : Mailbox<_>) =
             async  {
                 while true do
                     let! evt = eventStream

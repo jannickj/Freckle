@@ -48,6 +48,7 @@
     <None Include="paket.references" />
     <Compile Include="Helpers.fs" />
     <Compile Include="Psync.fs" />
+    <Compile Include="Clock.fs" />
     <Compile Include="Sample.fs" />
     <Compile Include="Feed.fs" />
     <Compile Include="Mailbox.fs" />
