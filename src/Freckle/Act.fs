@@ -7,97 +7,55 @@ open FSharp.Helpers
 [<AutoOpen>]
 module Types =
     
-    type Context =
-        { Mailbox : Mailbox
-          Now : Now
-          EventSource : EventSource
-        }
-
-    type Requirements =
-        { NextPoll : Ticks option
-        }
-        with override x.ToString() = sprintf "%A" x
-
-    type Act<'e> = Act of (Context -> (Async<Requirements * 'e>))
-
-[<AutoOpen>]
-module Support =
-    module Requirements =
-        let none = { NextPoll = None }
-        let nextPoll t = { none with NextPoll = Some t }
+    type Act<'a> = Sample<Async<'a>>
 
 module Internal =
-    let inline inner (Act a) = a
 
-    let context = Act (fun c -> async.Return (Requirements.none, c))
-    
-    let combinePoll p1 p2 = 
-        match p1, p2 with
-        | Some p1', Some p2' -> if p1' < p2' then p1 else p2
-        | Some _, None -> p1
-        | None, Some _ -> p2
-        | None, None -> None
-
-    let combineReq r1 r2 = { NextPoll = combinePoll r1.NextPoll r2.NextPoll }
-
-    let map f act c =
+    let inline map f act p =
         async {
-            let! (r, a) = act c
-            return (r, f a)
+            let! a = act p
+            return f a
         }
 
-    let join act c =
+    let inline join act p =
         async {
-            let! (r, mact) = act c
-            let! (r', a) = mact c
-            return (combineReq r r', a)
+            let! mact = act p
+            return! mact p
         }
 
 [<AutoOpen>]
 module Core =
     module Act =
+        open Internal
         
-        let inline pure' (a : 'a) : Act<'a> = 
-            Act (fun _ -> async.Return (Requirements.none,  a))
+        let inline pure' (a : 'a) : Act<'a> = Sample.pure' (async.Return a)
 
-        let inline map (f : 'a -> 'b) (act : Act<'a>) : Act<'b> = 
-            Act (Internal.map f (Internal.inner act))
+        let inline map (f : 'a -> 'b) (act : Act<'a>) : Act<'b> = map f act
 
-        let inline join (act : Act<Act<'a>>) : Act<'a> = 
-            let act' = Internal.inner (map Internal.inner act)
-            Act (Internal.join act')
+        let inline join (act : Act<Act<'a>>) : Act<'a> = join act
     
         let inline bind (f : 'a -> Act<'b>) (m : Act<'a> ) : Act<'b> =
             join ((map f) m)
-
-        let now = Act (fun c -> async { return Requirements.none, c.Now })
-        
-        let combine (Act ma) (Act mb) = 
-            Act (fun c ->
-                    async { 
-                        let! ra, () = ma c
-                        let! rb, b = mb c
-                        return (Internal.combineReq ra rb, b) 
-                    })
+                    
+        let combine ma mb = 
+            fun c ->
+                async { 
+                    let! () = ma c
+                    let! b = mb c
+                    return b 
+                }
 
 
         let doNothing = pure' ()
 
-        let require r = Act(fun _ -> async { return r, () })
+        let ofAsync ma : Act<_> = Sample.pure' ma
 
-        let ofAsync ma = 
-            Act (fun _ -> 
-                    async {
-                        let! a = ma
-                        return Requirements.none, a
-                    })
-
-        let startChild (Act ma) =
-            Act (fun c ->
+        let startChild ma =
+            fun c ->
                 async {
                         let! a = (ma c) |> Async.StartChild
                         return Requirements.none, ofAsync a
-                    })
+                }
 
 [<AutoOpen>]
 module ComputationalExpression =

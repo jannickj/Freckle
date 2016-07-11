@@ -8,32 +8,6 @@ open LazyList
 module Types =
     open System
 
-    type TimeId = uint32
-    type Ticks = int64
-
-    
-
-    type Time = 
-        { Ticks : Ticks
-          //Id    : TimeId
-        }
-        with static member time t = { Ticks = t } //; Id = 0u }
-             static member origin = Time.time 0L
-             static member ticks t = t.Ticks
-             static member incId t tOld =
-                match tOld with
-                | tOld' when t = tOld'.Ticks -> { Ticks = t } //; Id = tOld'.Id + 1u }
-                | _ -> Time.time t             
-             static member toDateTime t = DateTime(Time.ticks t)
-             static member max = { Ticks = Int64.MaxValue } //; Id = UInt32.MaxValue }
-             static member realise t1 t2 = if t2.Ticks = 0L then t1 else t2
-             override x.ToString() = sprintf "%A" x
-
-    type Now = 
-        { Current : Time
-          Past : Time
-        }
-        with static member beginning = { Current = Time.origin; Past = Time.origin }
     type Future<'e> = Time * 'e
 
     type Feed<'e> =
@@ -60,6 +34,8 @@ module Internal =
                 { Event = l }
             
             let inline toEvent (fr : Feed<_>) = fr.Event
+
+            let single time a = { Event = LazyList.cons (time,a) LazyList.empty }
         
             let rec merge' l1 l2 : LazyList<Time *'e> =
                 match (l1, l2) with
@@ -256,6 +232,35 @@ module Merging =
         let combine (frA : Feed<'a>) (frB : Feed<'a>) : Feed<'a> = 
             combineMeta (merge' (toEvent frB) (toEvent frB)) frA frB
 
+[<AutoOpen>]
+module Signal =
+    module Act =
+        open System
+
+        let pulse (pulsePerSecond : uint32) : Sample<Feed<Time>> =
+            sample {
+                let! finish = Sample.finish
+                let! beginning = Sample.beginning
+                let rec inner dist time ()  = 
+                    if time.Ticks < dist || time <= beginning
+                    then LazyList.empty 
+                    else LazyList.consDelayed (time, time) (inner dist (Time.time (time.Ticks - dist)))
+                let ticks = Time.ticks finish
+                let tps = TimeSpan.TicksPerSecond
+                let pulseDistance = tps / (int64 pulsePerSecond)
+                let ticksSincePulse = (ticks % pulseDistance)
+                let lastPulse = ticks - ticksSincePulse
+                
+                return Feed.feed (LazyList.delayed (inner pulseDistance (Time.time lastPulse)))
+            }
+
+        let period : Sample<Feed<Period>> =
+            sample {
+                let! period = Sample.period
+                return single period.Finish period
+            }
+
+
 
 [<AutoOpen>]
 module Timing =
@@ -310,9 +315,14 @@ module Filtering =
         let discardYoungerExcl (time : Time)  fr : Feed<'a>=
             updateEvent (discardAfterExcl time) fr
 
-        let betweenNow (now : Now) fr =
-            fr |> discardYoungerExcl now.Current |> discardOlderIncl now.Past
-            
+        ///Discards all events before the sample (inclusive) and all events after the sample (Exclusive)
+        let between fr =
+            sample {
+                let! beginning = Sample.beginning
+                let! finish = Sample.finish
+                return fr |> discardYoungerExcl finish |> discardOlderIncl beginning
+            }
+
 [<AutoOpen>]
 module Grouping =
     module Feed =
@@ -325,15 +335,61 @@ module Grouping =
 module Folding =
     module Feed =
         
-        let mapFold (now : Now) (f : 's -> 'a -> ('s * 'b)) (state : 's) (fr : Feed<'a>) : (Feed<'s * 'b>) =
-            let fr' = Feed.betweenNow now fr
-            let (l', _) = Seq.mapFoldBack (fun (t,a) s -> let (s', b) = f s a in ((t, (s', b))), s') (toEvent fr') state 
-            setEvent (LazyList.ofSeq l') fr'
+        let mapScan (f : 's -> 'a -> ('s * 'b)) (state : 's) (fr : Feed<'a>) : (Sample<Feed<'s * 'b>>) =
+            sample {
+                let! fr' = Feed.between fr
+                let (l', _) = Seq.mapFoldBack (fun (t,a) s -> let (s', b) = f s a in ((t, (s', b))), s') (toEvent fr') state 
+                return setEvent (LazyList.ofSeq l') fr'
+            }
+
+        let mapFold (f : 's -> 'a -> ('s * 'b)) (state : 's) (fr : Feed<'a>) : (Sample<'s * Feed<'b>>) =
+            sample {
+                let! fr' = Feed.between fr
+                let (l', state') = Seq.mapFoldBack (fun (t,a) s -> let (s', b) = f s a in ((t, b), s')) (toEvent fr') state 
+                return (state', setEvent (LazyList.ofSeq l') fr')
+            }
+
+        let scan (f : 's -> 'a -> 's) (state : 's) (fr : Feed<'a>) : Sample<Feed<'s>> =
+            sample {
+                let! fr' = Feed.between fr
+                let (l, _) = Seq.mapFoldBack (fun (t,a) s -> let s' = f s a in ((t, s'), s')) (toEvent fr') state 
+                return setEvent (LazyList.ofSeq l) fr'
+            }
+
+        let fold (f : 's -> 'a -> 's) (state : 's) (fr : Feed<'a>) : Sample<'s> =
+            sample {
+                let! fr' = Feed.between fr
+                return Seq.foldBack (fun (_, a) s -> f s a) (toEvent fr') state
+            }
+            
+[<AutoOpen>]
+module Planning =
+    module Feed =
+        open Feed.Internal
+
+        let plan (fullFeed : Feed<Async<'a>>) : Sample<Async<Feed<'a>>> =
+            sample {
+                let! fr = Feed.between fullFeed
+                let folder (t,ma) (newV) =
+                    async {
+                        let! newV' = newV
+                        let! a = ma
+                        return LazyList.cons (t,a) newV'
+                    }
+                let folded =  (Seq.foldBack folder (toEvent fr)) (async.Return LazyList.empty)
+                return Async.map (flip setEvent fr) folded
+            }
         
-        let fold now (f : 's -> 'a -> 's) (s : 's) (fr : Feed<'a>) : Feed<'s> =
-            Feed.map fst <| mapFold now (fun s a -> let s' = f s a in (s', ())) s fr
-
-
+        let transition (f : 's -> 'a -> Async<'s>) (state : 's) (allFeed : Feed<'a>)  : Sample<Async<'s>> =
+            sample {
+                let! fr = Feed.between allFeed
+                let inner ms a =
+                    async {
+                        let! s = ms
+                        return! f s a
+                    }
+                return! Feed.fold inner (async.Return state) fr
+            }
 
 [<AutoOpen>]
 module ComputationalExpression =
