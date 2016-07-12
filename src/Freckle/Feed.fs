@@ -85,12 +85,48 @@ module Internal =
                  | Cons(a, (Cons(b, r))) -> cons a (cons (f b) r)
                  | _ -> l 
             
-            let agify ll = map (fun (t, l) -> map (fun (t2, a) -> ((max t t2), ((t2,t), a))) (realiseTime t l)) ll
                 
             let pretty fr = fr |> toList |> List.map (fun (t, a) -> t.Ticks, a)
             let superPretty a = map (fun (ta,((t1,t2),aa)) -> (ta.Ticks, ((t1.Ticks,t2.Ticks), aa))) a |> toList
             let superPretty2 a = map (fun (_,((t1,t2),aa)) -> (t1.Ticks,t2.Ticks, aa)) a |> toList |> List.head
 
+
+            let inline capMax maxAge (l : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * LazyList<Time * 'a>> = 
+                map (fun (t,la) -> (t, discardAfterIncl maxAge la)) (discardAfterIncl maxAge l)
+
+            let inline capMin minAge (l : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * LazyList<Time * 'a>> = 
+                map (fun (t,la) -> (t, discardBeforeExcl minAge la)) (discardBeforeExcl minAge l)
+            
+            let rec findMin minAge  (l : LazyList<Time * Time>) =
+                match l with
+                | Cons((t,_),_) when t < minAge -> minAge
+                | Cons((t, ta), tail) ->
+                    findMin (max (min t ta) minAge) tail
+                | Nil -> minAge
+
+            let inline toTime (l : LazyList<Time * LazyList<Time * 'a>>) =
+                let toTime (t,la) = 
+                    match la with
+                    | Cons((ta,_),_) -> (t, ta)
+                    | Nil -> (t, Time.maxValue)
+                map toTime l
+                
+            let agify ll = map (fun (t, l) -> map (fun (t2, a) -> (max t t2, a)) l) ll
+
+            let inline combineAll (l : LazyList<LazyList<Time * 'a>>) =
+               Seq.fold (fun s a -> merge' s a) LazyList.empty l
+
+            let rec join' (l : LazyList<Time * LazyList<Time * 'a>>) : LazyList<Time * 'a> =
+                let minAge = findMin Time.minValue (toTime l)
+                if minAge > Time.minValue
+                then 
+                    let res = 
+                        capMin minAge l
+                        |> agify
+                        |> combineAll
+                    LazyList.append res (join' (capMax minAge l))
+                else LazyList.empty
+                
             let rec inner (ageMax : Time) t1Max t2Max (l : LazyList<LazyList<Time * ((Time * Time) * 'a)>>) () : LazyList<Time * 'a> =
                 match l with      
                 | Nil -> LazyList.empty

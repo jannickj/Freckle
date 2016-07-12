@@ -114,17 +114,17 @@ let pretty fr = fr |> Feed.toList |> List.map (fun (t, a) -> t.Ticks, a)
 let ``feed monad`` () = 
     let f x = [(time 0L, "fx");(time 2L, x)] |> Feed.ofList
     let g y = [(time 0L, "gy");(time 2L, y)] |> Feed.ofList
-    let m = [(time 55L, "a"); (time 13L, "b")] |> Feed.ofList
+    let m =   [(time 55L, "a"); (time 13L, "b")] |> Feed.ofList
  
-//    let lA =  //[(time 1L, "1a"); (time 4L, "2a");(time 5L, "3a")] |> Feed.ofList
-//    
-//    let lB = [(time 2L, "1b");(time 4L, "2b");(time 6L, "3b")] |> Feed.ofList
+    let lA =  [(time 0L, "a"); (time 3L, "b");(time 4L, "c")] |> Feed.ofList
+    
+    let lB = [(time 1L, "x");(time 3L, "y");(time 5L, "z")] |> Feed.ofList
 
-    let expected = [ (6L, ("3a" + "3b"))
-                     (5L, ("3a" + "2b"))
-                     (4L, ("2a" + "2b"))
-                     (4L, ("2a" + "1b"))
-                     (2L, ("1a" + "1b"))
+    let expected = [ (5L, ("z" + "c" ))
+                     (4L, ("y" + "c" ))
+                     (3L, ("y" + "b" ))
+                     (3L, ("x" + "b" ))
+                     (1L, ("x" + "a" ))
                    ]
     
 
