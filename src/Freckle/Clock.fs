@@ -15,7 +15,7 @@ module Types =
         }
         with static member time t = { Ticks = t; Infinitesimal = 0UL }
              static member origin = Time.time 0L
-             static member ticks t = t.Ticks           
+             static member ticks t = t.Ticks
              static member toDateTime t = DateTime(Time.ticks t)
              static member maxValue = { Ticks = Int64.MaxValue; Infinitesimal = UInt64.MaxValue }
              static member minValue = { Ticks = Int64.MinValue; Infinitesimal = UInt64.MinValue }

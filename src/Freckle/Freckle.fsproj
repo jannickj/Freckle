@@ -47,12 +47,10 @@
     <None Include="paket.template" />
     <None Include="paket.references" />
     <Compile Include="Helpers.fs" />
-    <Compile Include="Psync.fs" />
     <Compile Include="Clock.fs" />
     <Compile Include="Sample.fs" />
     <Compile Include="Feed.fs" />
     <Compile Include="Mailbox.fs" />
-    <Compile Include="Act.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

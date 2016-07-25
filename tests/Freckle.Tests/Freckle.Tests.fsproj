@@ -99,6 +99,8 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Freckle\Freckle.fsproj">
       <Name>Freckle</Name>
       <Project>{aca0e94a-e608-481f-9b44-44e615fdcba8}</Project>

@@ -38,6 +38,7 @@ module Core =
         
         let finish (p : Period) = p.Finish
         
+        let realise p (s : Sample<'a>) : 'a = s p
 
 [<AutoOpen>]
 module ComputationalExpression =
@@ -51,8 +52,6 @@ module ComputationalExpression =
 
 [<AutoOpen>]
 module Sampling =
-
-    let instantiate p (s : Sample<_>) = s p
 
     let sampleForever (clock : Clock) state (sampler : 's -> Sample<Async<'s>>) : Async<_> =
         let inner (last, s) =
