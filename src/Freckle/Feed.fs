@@ -263,7 +263,7 @@ module Feed =
         module Feed =
 
             let delay t fr = 
-                updateEvent (fun l -> map (fun (t',a) -> (Time.delay t' t, a)) l) fr
+                updateEvent (fun l -> map (fun (t',a) -> (t' + t, a)) l) fr
 
             let time (fr : Feed<'a>) : Feed<Time> = 
                 updateEvent (LazyList.map (fun (t,_) -> (t,t))) fr
