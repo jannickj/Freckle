@@ -52,6 +52,12 @@
     <tbody>
         <tr>
           <td class="module-name">
+            <a href="freckle-feed-computationalexpression.html">ComputationalExpression</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
             <a href="freckle-feed-internal.html">Internal</a>
           </td>
           <td class="xmldoc"></td>
@@ -76,69 +82,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '29', 29)" onmouseover="showTip(event, '29', 29)">
+          <code onmouseout="hideTip(event, '32', 32)" onmouseover="showTip(event, '32', 32)">
             bind f
           </code>
-          <div class="tip" id="29">
+          <div class="tip" id="32">
             <strong>Signature:</strong> f:(&#39;a -&gt; Feed&lt;&#39;b&gt;) -&gt; Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;b&gt;<br />
                           <strong>Type parameters:</strong> 'a, 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L166-166" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '30', 30)" onmouseover="showTip(event, '30', 30)">
-            bind_ f
-          </code>
-          <div class="tip" id="30">
-            <strong>Signature:</strong> f:(&#39;a -&gt; Feed&lt;unit&gt;) -&gt; Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
-                          <strong>Type parameters:</strong> 'a          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L169-169" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '31', 31)" onmouseover="showTip(event, '31', 31)">
-            choose f
-          </code>
-          <div class="tip" id="31">
-            <strong>Signature:</strong> f:(&#39;a -&gt; &#39;b option) -&gt; Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;b&gt;<br />
-                          <strong>Type parameters:</strong> 'a, 'b          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L257-257" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '32', 32)" onmouseover="showTip(event, '32', 32)">
-            combine frA frB
-          </code>
-          <div class="tip" id="32">
-            <strong>Signature:</strong> frA:Feed&lt;&#39;a&gt; -&gt; frB:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
-                          <strong>Type parameters:</strong> 'a          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L209-209" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L167-167" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -149,14 +101,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '33', 33)" onmouseover="showTip(event, '33', 33)">
-            dateTimed fr
+            bind_ f
           </code>
           <div class="tip" id="33">
-            <strong>Signature:</strong> fr:Feed&lt;&#39;?7408&gt; -&gt; Feed&lt;DateTime * &#39;?7408&gt;<br />
-                          <strong>Type parameters:</strong> '?7408          </div>
+            <strong>Signature:</strong> f:(&#39;a -&gt; Feed&lt;unit&gt;) -&gt; Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L246-246" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L170-170" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -167,14 +119,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '34', 34)" onmouseover="showTip(event, '34', 34)">
-            delay t fr
+            choose f
           </code>
           <div class="tip" id="34">
-            <strong>Signature:</strong> t:Time -&gt; fr:Feed&lt;&#39;?7400&gt; -&gt; Feed&lt;&#39;?7400&gt;<br />
-                          <strong>Type parameters:</strong> '?7400          </div>
+            <strong>Signature:</strong> f:(&#39;a -&gt; &#39;b option) -&gt; Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;b&gt;<br />
+                          <strong>Type parameters:</strong> 'a, 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L234-234" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L258-258" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -185,14 +137,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '35', 35)" onmouseover="showTip(event, '35', 35)">
-            discardFuture fr
+            combine frA frB
           </code>
           <div class="tip" id="35">
-            <strong>Signature:</strong> fr:Feed&lt;&#39;?7429&gt; -&gt; Sample&lt;Feed&lt;&#39;?7429&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7429          </div>
+            <strong>Signature:</strong> frA:Feed&lt;&#39;a&gt; -&gt; frB:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L281-281" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L210-210" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -203,14 +155,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '36', 36)" onmouseover="showTip(event, '36', 36)">
-            discardOlderExcl time fr
+            dateTimed fr
           </code>
           <div class="tip" id="36">
-            <strong>Signature:</strong> time:Time -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
-                          <strong>Type parameters:</strong> 'a          </div>
+            <strong>Signature:</strong> fr:Feed&lt;&#39;?7388&gt; -&gt; Feed&lt;DateTime * &#39;?7388&gt;<br />
+                          <strong>Type parameters:</strong> '?7388          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L269-269" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L247-247" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -221,14 +173,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '37', 37)" onmouseover="showTip(event, '37', 37)">
-            discardOlderIncl time fr
+            delay t fr
           </code>
           <div class="tip" id="37">
-            <strong>Signature:</strong> time:Time -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
-                          <strong>Type parameters:</strong> 'a          </div>
+            <strong>Signature:</strong> t:Time -&gt; fr:Feed&lt;&#39;?7380&gt; -&gt; Feed&lt;&#39;?7380&gt;<br />
+                          <strong>Type parameters:</strong> '?7380          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L272-272" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L235-235" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -239,14 +191,68 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '38', 38)" onmouseover="showTip(event, '38', 38)">
-            discardOutsideSample fr
+            discardFuture fr
           </code>
           <div class="tip" id="38">
-            <strong>Signature:</strong> fr:Feed&lt;&#39;?7433&gt; -&gt; Sample&lt;Feed&lt;&#39;?7433&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7433          </div>
+            <strong>Signature:</strong> fr:Feed&lt;&#39;?7409&gt; -&gt; Sample&lt;Feed&lt;&#39;?7409&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7409          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L294-294" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L282-282" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '39', 39)" onmouseover="showTip(event, '39', 39)">
+            discardOlderExcl time fr
+          </code>
+          <div class="tip" id="39">
+            <strong>Signature:</strong> time:Time -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L270-270" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '40', 40)" onmouseover="showTip(event, '40', 40)">
+            discardOlderIncl time fr
+          </code>
+          <div class="tip" id="40">
+            <strong>Signature:</strong> time:Time -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L273-273" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '41', 41)" onmouseover="showTip(event, '41', 41)">
+            discardOutsideSample fr
+          </code>
+          <div class="tip" id="41">
+            <strong>Signature:</strong> fr:Feed&lt;&#39;?7413&gt; -&gt; Sample&lt;Feed&lt;&#39;?7413&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7413          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L295-295" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -258,69 +264,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '39', 39)" onmouseover="showTip(event, '39', 39)">
+          <code onmouseout="hideTip(event, '42', 42)" onmouseover="showTip(event, '42', 42)">
             discardPast fr
           </code>
-          <div class="tip" id="39">
-            <strong>Signature:</strong> fr:Feed&lt;&#39;?7431&gt; -&gt; Sample&lt;Feed&lt;&#39;?7431&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7431          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L287-287" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '40', 40)" onmouseover="showTip(event, '40', 40)">
-            discardYoungerExcl time fr
-          </code>
-          <div class="tip" id="40">
-            <strong>Signature:</strong> time:Time -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
-                          <strong>Type parameters:</strong> 'a          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L278-278" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '41', 41)" onmouseover="showTip(event, '41', 41)">
-            discardYoungerIncl time fr
-          </code>
-          <div class="tip" id="41">
-            <strong>Signature:</strong> time:Time -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
-                          <strong>Type parameters:</strong> 'a          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L275-275" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '42', 42)" onmouseover="showTip(event, '42', 42)">
-            empty 
-          </code>
           <div class="tip" id="42">
-            <strong>Signature:</strong> Feed&lt;&#39;e&gt;<br />
-                          <strong>Type parameters:</strong> 'e          </div>
+            <strong>Signature:</strong> fr:Feed&lt;&#39;?7411&gt; -&gt; Sample&lt;Feed&lt;&#39;?7411&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7411          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L153-153" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L288-288" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -331,14 +283,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '43', 43)" onmouseover="showTip(event, '43', 43)">
-            filter f fr
+            discardYoungerExcl time fr
           </code>
           <div class="tip" id="43">
-            <strong>Signature:</strong> f:(&#39;a -&gt; bool) -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
+            <strong>Signature:</strong> time:Time -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L249-249" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L279-279" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -349,14 +301,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '44', 44)" onmouseover="showTip(event, '44', 44)">
-            foldPast f state fr
+            discardYoungerIncl time fr
           </code>
           <div class="tip" id="44">
-            <strong>Signature:</strong> f:(&#39;s -&gt; &#39;a -&gt; &#39;s) -&gt; state:&#39;s -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Sample&lt;&#39;s&gt;<br />
-                          <strong>Type parameters:</strong> 's, 'a          </div>
+            <strong>Signature:</strong> time:Time -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L333-333" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L276-276" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -367,14 +319,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '45', 45)" onmouseover="showTip(event, '45', 45)">
-            groupBy f fr
+            empty 
           </code>
           <div class="tip" id="45">
-            <strong>Signature:</strong> f:(&#39;a -&gt; &#39;a -&gt; bool) -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;Feed&lt;&#39;a&gt;&gt;<br />
-                          <strong>Type parameters:</strong> 'a          </div>
+            <strong>Signature:</strong> Feed&lt;&#39;e&gt;<br />
+                          <strong>Type parameters:</strong> 'e          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L303-303" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L154-154" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -385,14 +337,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '46', 46)" onmouseover="showTip(event, '46', 46)">
-            join fr
+            filter f fr
           </code>
           <div class="tip" id="46">
-            <strong>Signature:</strong> fr:Feed&lt;Feed&lt;&#39;a&gt;&gt; -&gt; Feed&lt;&#39;a&gt;<br />
+            <strong>Signature:</strong> f:(&#39;a -&gt; bool) -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L163-163" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L250-250" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -403,14 +355,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '47', 47)" onmouseover="showTip(event, '47', 47)">
-            map f fr
+            foldPast f state fr
           </code>
           <div class="tip" id="47">
-            <strong>Signature:</strong> f:(&#39;a -&gt; &#39;b) -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;b&gt;<br />
-                          <strong>Type parameters:</strong> 'a, 'b          </div>
+            <strong>Signature:</strong> f:(&#39;s -&gt; &#39;a -&gt; &#39;s) -&gt; state:&#39;s -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Sample&lt;&#39;s&gt;<br />
+                          <strong>Type parameters:</strong> 's, 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L160-160" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L334-334" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -421,14 +373,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '48', 48)" onmouseover="showTip(event, '48', 48)">
-            mapFoldPast f state fr
+            groupBy f fr
           </code>
           <div class="tip" id="48">
-            <strong>Signature:</strong> f:(&#39;s -&gt; &#39;a -&gt; &#39;s * &#39;b) -&gt; state:&#39;s -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Sample&lt;&#39;s * Feed&lt;&#39;b&gt;&gt;<br />
-                          <strong>Type parameters:</strong> 's, 'a, 'b          </div>
+            <strong>Signature:</strong> f:(&#39;a -&gt; &#39;a -&gt; bool) -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;Feed&lt;&#39;a&gt;&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L319-319" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L304-304" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -439,14 +391,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '49', 49)" onmouseover="showTip(event, '49', 49)">
-            mapScan f s fr
+            join fr
           </code>
           <div class="tip" id="49">
-            <strong>Signature:</strong> f:(&#39;s -&gt; &#39;a -&gt; &#39;s * &#39;b) -&gt; s:&#39;s -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;s * &#39;b&gt;<br />
-                          <strong>Type parameters:</strong> 's, 'a, 'b          </div>
+            <strong>Signature:</strong> fr:Feed&lt;Feed&lt;&#39;a&gt;&gt; -&gt; Feed&lt;&#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L309-309" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L164-164" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -457,14 +409,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '50', 50)" onmouseover="showTip(event, '50', 50)">
-            mapScanPast f state fr
+            map f fr
           </code>
           <div class="tip" id="50">
-            <strong>Signature:</strong> f:(&#39;s -&gt; &#39;a -&gt; &#39;s * &#39;b) -&gt; state:&#39;s -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Sample&lt;Feed&lt;&#39;s * &#39;b&gt;&gt;<br />
-                          <strong>Type parameters:</strong> 's, 'a, 'b          </div>
+            <strong>Signature:</strong> f:(&#39;a -&gt; &#39;b) -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;b&gt;<br />
+                          <strong>Type parameters:</strong> 'a, 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L312-312" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L161-161" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -475,14 +427,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '51', 51)" onmouseover="showTip(event, '51', 51)">
-            ofList l
+            mapFoldPast f state fr
           </code>
           <div class="tip" id="51">
-            <strong>Signature:</strong> l:(Time * &#39;?7391) list -&gt; Feed&lt;&#39;?7391&gt;<br />
-                          <strong>Type parameters:</strong> '?7391          </div>
+            <strong>Signature:</strong> f:(&#39;s -&gt; &#39;a -&gt; &#39;s * &#39;b) -&gt; state:&#39;s -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Sample&lt;&#39;s * Feed&lt;&#39;b&gt;&gt;<br />
+                          <strong>Type parameters:</strong> 's, 'a, 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L198-198" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L320-320" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -493,14 +445,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '52', 52)" onmouseover="showTip(event, '52', 52)">
-            partition f fr
+            mapScan f s fr
           </code>
           <div class="tip" id="52">
-            <strong>Signature:</strong> f:(&#39;a -&gt; bool) -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt; * Feed&lt;&#39;a&gt;<br />
-                          <strong>Type parameters:</strong> 'a          </div>
+            <strong>Signature:</strong> f:(&#39;s -&gt; &#39;a -&gt; &#39;s * &#39;b) -&gt; s:&#39;s -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;s * &#39;b&gt;<br />
+                          <strong>Type parameters:</strong> 's, 'a, 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L260-260" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L310-310" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -511,14 +463,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '53', 53)" onmouseover="showTip(event, '53', 53)">
-            plan fullFeed
+            mapScanPast f state fr
           </code>
           <div class="tip" id="53">
-            <strong>Signature:</strong> fullFeed:Feed&lt;Async&lt;&#39;a&gt;&gt; -&gt; Sample&lt;Async&lt;Feed&lt;&#39;a&gt;&gt;&gt;<br />
-                          <strong>Type parameters:</strong> 'a          </div>
+            <strong>Signature:</strong> f:(&#39;s -&gt; &#39;a -&gt; &#39;s * &#39;b) -&gt; state:&#39;s -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Sample&lt;Feed&lt;&#39;s * &#39;b&gt;&gt;<br />
+                          <strong>Type parameters:</strong> 's, 'a, 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L340-340" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L313-313" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -529,14 +481,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '54', 54)" onmouseover="showTip(event, '54', 54)">
-            plan_ fr
+            ofList l
           </code>
           <div class="tip" id="54">
-            <strong>Signature:</strong> fr:Feed&lt;Async&lt;&#39;?7462&gt;&gt; -&gt; Sample&lt;Async&lt;unit&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7462          </div>
+            <strong>Signature:</strong> l:(Time * &#39;?7371) list -&gt; Feed&lt;&#39;?7371&gt;<br />
+                          <strong>Type parameters:</strong> '?7371          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L353-353" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L199-199" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -547,14 +499,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '55', 55)" onmouseover="showTip(event, '55', 55)">
-            pulse pulsePerSecond
+            partition f fr
           </code>
           <div class="tip" id="55">
-            <strong>Signature:</strong> pulsePerSecond:uint32 -&gt; Sample&lt;Feed&lt;Time&gt;&gt;<br />
-                      </div>
+            <strong>Signature:</strong> f:(&#39;a -&gt; bool) -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt; * Feed&lt;&#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L212-212" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L261-261" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -565,14 +517,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '56', 56)" onmouseover="showTip(event, '56', 56)">
-            pulseAtmost pulsePerSecond
+            plan fullFeed
           </code>
           <div class="tip" id="56">
-            <strong>Signature:</strong> pulsePerSecond:uint32 -&gt; Sample&lt;Feed&lt;Time&gt;&gt;<br />
-                      </div>
+            <strong>Signature:</strong> fullFeed:Feed&lt;Async&lt;&#39;a&gt;&gt; -&gt; Sample&lt;Async&lt;Feed&lt;&#39;a&gt;&gt;&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L229-229" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L341-341" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -583,14 +535,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '57', 57)" onmouseover="showTip(event, '57', 57)">
-            pure&#39; a
+            plan_ fr
           </code>
           <div class="tip" id="57">
-            <strong>Signature:</strong> a:&#39;a -&gt; Feed&lt;&#39;a&gt;<br />
-                          <strong>Type parameters:</strong> 'a          </div>
+            <strong>Signature:</strong> fr:Feed&lt;Async&lt;&#39;?7442&gt;&gt; -&gt; Sample&lt;Async&lt;unit&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7442          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L157-157" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L354-354" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -601,14 +553,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '58', 58)" onmouseover="showTip(event, '58', 58)">
-            scan f s
+            pulse pulsePerSecond
           </code>
           <div class="tip" id="58">
-            <strong>Signature:</strong> f:(&#39;?7439 -&gt; &#39;?7440 -&gt; &#39;?7439) -&gt; s:&#39;?7439 -&gt; Feed&lt;&#39;?7440&gt; -&gt; Feed&lt;&#39;?7439&gt;<br />
-                          <strong>Type parameters:</strong> '?7439, '?7440          </div>
+            <strong>Signature:</strong> pulsePerSecond:uint32 -&gt; Sample&lt;Feed&lt;Time&gt;&gt;<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L307-307" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L213-213" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -619,14 +571,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '59', 59)" onmouseover="showTip(event, '59', 59)">
-            scanPast f state fr
+            pulseAtmost pulsePerSecond
           </code>
           <div class="tip" id="59">
-            <strong>Signature:</strong> f:(&#39;s -&gt; &#39;a -&gt; &#39;s) -&gt; state:&#39;s -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Sample&lt;Feed&lt;&#39;s&gt;&gt;<br />
-                          <strong>Type parameters:</strong> 's, 'a          </div>
+            <strong>Signature:</strong> pulsePerSecond:uint32 -&gt; Sample&lt;Feed&lt;Time&gt;&gt;<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L326-326" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L230-230" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -637,14 +589,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '60', 60)" onmouseover="showTip(event, '60', 60)">
-            singleton time evt
+            pure&#39; a
           </code>
           <div class="tip" id="60">
-            <strong>Signature:</strong> time:Time -&gt; evt:&#39;?7362 -&gt; Feed&lt;&#39;?7362&gt;<br />
-                          <strong>Type parameters:</strong> '?7362          </div>
+            <strong>Signature:</strong> a:&#39;a -&gt; Feed&lt;&#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L155-155" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L158-158" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -655,14 +607,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '61', 61)" onmouseover="showTip(event, '61', 61)">
-            skip n fr
+            scan f s
           </code>
           <div class="tip" id="61">
-            <strong>Signature:</strong> n:int -&gt; fr:Feed&lt;&#39;?7385&gt; -&gt; Feed&lt;&#39;?7385&gt;<br />
-                          <strong>Type parameters:</strong> '?7385          </div>
+            <strong>Signature:</strong> f:(&#39;?7419 -&gt; &#39;?7420 -&gt; &#39;?7419) -&gt; s:&#39;?7419 -&gt; Feed&lt;&#39;?7420&gt; -&gt; Feed&lt;&#39;?7419&gt;<br />
+                          <strong>Type parameters:</strong> '?7419, '?7420          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L187-187" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L308-308" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -673,14 +625,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '62', 62)" onmouseover="showTip(event, '62', 62)">
-            skipWhile f fr
+            scanPast f state fr
           </code>
           <div class="tip" id="62">
-            <strong>Signature:</strong> f:(&#39;a -&gt; bool) -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
-                          <strong>Type parameters:</strong> 'a          </div>
+            <strong>Signature:</strong> f:(&#39;s -&gt; &#39;a -&gt; &#39;s) -&gt; state:&#39;s -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Sample&lt;Feed&lt;&#39;s&gt;&gt;<br />
+                          <strong>Type parameters:</strong> 's, 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L266-266" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L327-327" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -691,14 +643,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '63', 63)" onmouseover="showTip(event, '63', 63)">
-            span f fr
+            singleton time evt
           </code>
           <div class="tip" id="63">
-            <strong>Signature:</strong> f:(&#39;a -&gt; bool) -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt; * Feed&lt;&#39;a&gt;<br />
-                          <strong>Type parameters:</strong> 'a          </div>
+            <strong>Signature:</strong> time:Time -&gt; evt:&#39;?7342 -&gt; Feed&lt;&#39;?7342&gt;<br />
+                          <strong>Type parameters:</strong> '?7342          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L300-300" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L156-156" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -709,14 +661,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '64', 64)" onmouseover="showTip(event, '64', 64)">
-            stick a fr
+            skip n fr
           </code>
           <div class="tip" id="64">
-            <strong>Signature:</strong> a:&#39;a -&gt; fr:Feed&lt;&#39;b&gt; -&gt; Feed&lt;&#39;a * &#39;b&gt;<br />
-                          <strong>Type parameters:</strong> 'a, 'b          </div>
+            <strong>Signature:</strong> n:int -&gt; fr:Feed&lt;&#39;?7365&gt; -&gt; Feed&lt;&#39;?7365&gt;<br />
+                          <strong>Type parameters:</strong> '?7365          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L172-172" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L188-188" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -727,14 +679,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '65', 65)" onmouseover="showTip(event, '65', 65)">
-            take n fr
+            skipWhile f fr
           </code>
           <div class="tip" id="65">
-            <strong>Signature:</strong> n:int -&gt; fr:Feed&lt;&#39;?7383&gt; -&gt; Feed&lt;&#39;?7383&gt;<br />
-                          <strong>Type parameters:</strong> '?7383          </div>
+            <strong>Signature:</strong> f:(&#39;a -&gt; bool) -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L184-184" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L267-267" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -745,14 +697,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '66', 66)" onmouseover="showTip(event, '66', 66)">
-            takeWhile f fr
+            span f fr
           </code>
           <div class="tip" id="66">
-            <strong>Signature:</strong> f:(&#39;a -&gt; bool) -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
+            <strong>Signature:</strong> f:(&#39;a -&gt; bool) -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt; * Feed&lt;&#39;a&gt;<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L262-262" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L301-301" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -763,14 +715,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '67', 67)" onmouseover="showTip(event, '67', 67)">
-            testLength n fr
+            stick a fr
           </code>
           <div class="tip" id="67">
-            <strong>Signature:</strong> n:int -&gt; fr:Feed&lt;&#39;?7387&gt; -&gt; int<br />
-                          <strong>Type parameters:</strong> '?7387          </div>
+            <strong>Signature:</strong> a:&#39;a -&gt; fr:Feed&lt;&#39;b&gt; -&gt; Feed&lt;&#39;a * &#39;b&gt;<br />
+                          <strong>Type parameters:</strong> 'a, 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L190-190" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L173-173" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -781,14 +733,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '68', 68)" onmouseover="showTip(event, '68', 68)">
-            time fr
+            take n fr
           </code>
           <div class="tip" id="68">
-            <strong>Signature:</strong> fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;Time&gt;<br />
-                          <strong>Type parameters:</strong> 'a          </div>
+            <strong>Signature:</strong> n:int -&gt; fr:Feed&lt;&#39;?7363&gt; -&gt; Feed&lt;&#39;?7363&gt;<br />
+                          <strong>Type parameters:</strong> '?7363          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L237-237" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L185-185" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -799,14 +751,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '69', 69)" onmouseover="showTip(event, '69', 69)">
-            timeStamp fr
+            takeWhile f fr
           </code>
           <div class="tip" id="69">
-            <strong>Signature:</strong> fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;Time * &#39;a&gt;<br />
+            <strong>Signature:</strong> f:(&#39;a -&gt; bool) -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L240-240" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L263-263" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -817,14 +769,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '70', 70)" onmouseover="showTip(event, '70', 70)">
-            timeStampAsTicks fr
+            testLength n fr
           </code>
           <div class="tip" id="70">
-            <strong>Signature:</strong> fr:Feed&lt;&#39;?7406&gt; -&gt; Feed&lt;Ticks * &#39;?7406&gt;<br />
-                          <strong>Type parameters:</strong> '?7406          </div>
+            <strong>Signature:</strong> n:int -&gt; fr:Feed&lt;&#39;?7367&gt; -&gt; int<br />
+                          <strong>Type parameters:</strong> '?7367          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L243-243" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L191-191" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -835,14 +787,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '71', 71)" onmouseover="showTip(event, '71', 71)">
-            toList fr
+            time fr
           </code>
           <div class="tip" id="71">
-            <strong>Signature:</strong> fr:Feed&lt;&#39;?7389&gt; -&gt; (Time * &#39;?7389) list<br />
-                          <strong>Type parameters:</strong> '?7389          </div>
+            <strong>Signature:</strong> fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;Time&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L196-196" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L238-238" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -853,14 +805,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '72', 72)" onmouseover="showTip(event, '72', 72)">
-            transition f state allFeed
+            timeStamp fr
           </code>
           <div class="tip" id="72">
-            <strong>Signature:</strong> f:(&#39;s -&gt; &#39;a -&gt; Async&lt;&#39;s&gt;) -&gt; state:&#39;s -&gt; allFeed:Feed&lt;&#39;a&gt; -&gt; Sample&lt;Async&lt;&#39;s&gt;&gt;<br />
-                          <strong>Type parameters:</strong> 's, 'a          </div>
+            <strong>Signature:</strong> fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;Time * &#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L355-355" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L241-241" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -871,14 +823,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '73', 73)" onmouseover="showTip(event, '73', 73)">
-            tryHead fr
+            timeStampAsTicks fr
           </code>
           <div class="tip" id="73">
-            <strong>Signature:</strong> fr:Feed&lt;&#39;b&gt; -&gt; &#39;b option<br />
-                          <strong>Type parameters:</strong> 'b          </div>
+            <strong>Signature:</strong> fr:Feed&lt;&#39;?7386&gt; -&gt; Feed&lt;Ticks * &#39;?7386&gt;<br />
+                          <strong>Type parameters:</strong> '?7386          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L174-174" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L244-244" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -889,14 +841,68 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '74', 74)" onmouseover="showTip(event, '74', 74)">
-            weave f frB frA
+            toList fr
           </code>
           <div class="tip" id="74">
+            <strong>Signature:</strong> fr:Feed&lt;&#39;?7369&gt; -&gt; (Time * &#39;?7369) list<br />
+                          <strong>Type parameters:</strong> '?7369          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L197-197" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '75', 75)" onmouseover="showTip(event, '75', 75)">
+            transition f state allFeed
+          </code>
+          <div class="tip" id="75">
+            <strong>Signature:</strong> f:(&#39;s -&gt; &#39;a -&gt; Async&lt;&#39;s&gt;) -&gt; state:&#39;s -&gt; allFeed:Feed&lt;&#39;a&gt; -&gt; Sample&lt;Async&lt;&#39;s&gt;&gt;<br />
+                          <strong>Type parameters:</strong> 's, 'a          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L356-356" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '76', 76)" onmouseover="showTip(event, '76', 76)">
+            tryHead fr
+          </code>
+          <div class="tip" id="76">
+            <strong>Signature:</strong> fr:Feed&lt;&#39;b&gt; -&gt; &#39;b option<br />
+                          <strong>Type parameters:</strong> 'b          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L175-175" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '77', 77)" onmouseover="showTip(event, '77', 77)">
+            weave f frB frA
+          </code>
+          <div class="tip" id="77">
             <strong>Signature:</strong> f:(Option&lt;&#39;a&gt; -&gt; &#39;b -&gt; &#39;a) -&gt; frB:Feed&lt;&#39;b&gt; -&gt; frA:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;a&gt;<br />
                           <strong>Type parameters:</strong> 'a, 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L200-200" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L201-201" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -914,15 +920,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '75', 75)" onmouseover="showTip(event, '75', 75)">
+          <code onmouseout="hideTip(event, '78', 78)" onmouseover="showTip(event, '78', 78)">
             ( |Head|Empty| ) feed
           </code>
-          <div class="tip" id="75">
-            <strong>Signature:</strong> feed:Feed&lt;&#39;?7381&gt; -&gt; Choice&lt;(&#39;?7381 * Feed&lt;&#39;?7381&gt;),unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7381          </div>
+          <div class="tip" id="78">
+            <strong>Signature:</strong> feed:Feed&lt;&#39;?7361&gt; -&gt; Choice&lt;(&#39;?7361 * Feed&lt;&#39;?7361&gt;),unit&gt;<br />
+                          <strong>Type parameters:</strong> '?7361          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L179-179" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L180-180" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
