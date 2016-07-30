@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>SortedType - Freckle</title>
+    <title>Builder - Freckle</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Jannick Johnsen"/>
@@ -35,10 +35,10 @@
 
 
 
-<h1>SortedType</h1>
+<h1>Builder</h1>
 <p>
-  <span>Namespace: FSharp</span><br />
-  <span>Parent Module: <a href="fsharp-helpers.html">Helpers</a></span>
+  <span>Namespace: Freckle</span><br />
+  <span>Parent Module: <a href="freckle-samplecomputationalexpression.html">SampleComputationalExpression</a></span>
 </p>
 <div class="xmldoc">
 </div>
@@ -51,15 +51,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '147', 147)" onmouseover="showTip(event, '147', 147)">
-            new(t)
+          <code onmouseout="hideTip(event, '172', 172)" onmouseover="showTip(event, '172', 172)">
+            new()
           </code>
-          <div class="tip" id="147">
-            <strong>Signature:</strong> t:Type -&gt; SortedType<br />
+          <div class="tip" id="172">
+            <strong>Signature:</strong> unit -&gt; Builder<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Helpers.fs#L21-21" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L64-64" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -78,20 +78,73 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '148', 148)" onmouseover="showTip(event, '148', 148)">
-            Type
+          <code onmouseout="hideTip(event, '173', 173)" onmouseover="showTip(event, '173', 173)">
+            Bind(ma, f)
           </code>
-          <div class="tip" id="148">
-            <strong>Signature:</strong> Type<br />
-                      </div>
+          <div class="tip" id="173">
+            <strong>Signature:</strong> (ma:Sample&lt;&#39;a&gt; * f:(&#39;a -&gt; Sample&lt;&#39;b&gt;)) -&gt; Sample&lt;&#39;b&gt;<br />
+                          <strong>Type parameters:</strong> 'a, 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Helpers.fs#L22-22" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L67-67" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-              <p>CompiledName: <code>get_Type</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '174', 174)" onmouseover="showTip(event, '174', 174)">
+            Return(x)
+          </code>
+          <div class="tip" id="174">
+            <strong>Signature:</strong> x:&#39;T -&gt; Sample&lt;&#39;T&gt;<br />
+                          <strong>Type parameters:</strong> 'T          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L65-65" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '175', 175)" onmouseover="showTip(event, '175', 175)">
+            ReturnFrom(x)
+          </code>
+          <div class="tip" id="175">
+            <strong>Signature:</strong> x:&#39;b -&gt; &#39;b<br />
+                          <strong>Type parameters:</strong> 'b          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L66-66" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '176', 176)" onmouseover="showTip(event, '176', 176)">
+            Zero()
+          </code>
+          <div class="tip" id="176">
+            <strong>Signature:</strong> unit -&gt; Sample&lt;unit&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L68-68" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
         </td>
       </tr>
     </tbody>

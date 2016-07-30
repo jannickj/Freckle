@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Mailbox - Freckle</title>
+    <title>Builder - Freckle</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Jannick Johnsen"/>
@@ -35,34 +35,58 @@
 
 
 
-<h1>Mailbox</h1>
+<h1>Builder</h1>
 <p>
   <span>Namespace: Freckle</span><br />
-  <span>Parent Module: <a href="freckle-mailbox-core.html">Core</a></span>
+  <span>Parent Module: <a href="freckle-sampleasynccomputationalexpression.html">SampleAsyncComputationalExpression</a></span>
 </p>
 <div class="xmldoc">
 </div>
-
-<!-- Render nested types and modules, if there are any -->
-
-  <h3>Functions and values</h3>
+  <h3>Constructors</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Function or value</td><td>Description</td></tr>
+      <tr><td>Constructor</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '105', 105)" onmouseover="showTip(event, '105', 105)">
-            awaitMail mb
+          <code onmouseout="hideTip(event, '165', 165)" onmouseover="showTip(event, '165', 165)">
+            new()
           </code>
-          <div class="tip" id="105">
-            <strong>Signature:</strong> mb:Mailbox&lt;&#39;?7329&gt; -&gt; Async&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7329          </div>
+          <div class="tip" id="165">
+            <strong>Signature:</strong> unit -&gt; Builder<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L82-82" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L92-92" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>.ctor</code></p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>Instance members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Instance member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '166', 166)" onmouseover="showTip(event, '166', 166)">
+            Bind(ma, f)
+          </code>
+          <div class="tip" id="166">
+            <strong>Signature:</strong> (ma:Sample&lt;Async&lt;&#39;?7241&gt;&gt; * f:(&#39;?7241 -&gt; Sample&lt;Async&lt;&#39;?7242&gt;&gt;)) -&gt; Sample&lt;Async&lt;&#39;?7242&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7241, '?7242          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L95-95" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -72,15 +96,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '106', 106)" onmouseover="showTip(event, '106', 106)">
-            awaitMailTimeout ticks mb
+          <code onmouseout="hideTip(event, '167', 167)" onmouseover="showTip(event, '167', 167)">
+            Combine(m1, m2)
           </code>
-          <div class="tip" id="106">
-            <strong>Signature:</strong> ticks:Ticks -&gt; mb:Mailbox&lt;&#39;?7327&gt; -&gt; Async&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7327          </div>
+          <div class="tip" id="167">
+            <strong>Signature:</strong> (m1:Sample&lt;Async&lt;unit&gt;&gt; * m2:Sample&lt;Async&lt;&#39;?7245&gt;&gt;) -&gt; Sample&lt;Async&lt;&#39;?7245&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7245          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L77-77" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L97-97" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -90,15 +114,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '107', 107)" onmouseover="showTip(event, '107', 107)">
-            createWithExpiration expire clock
+          <code onmouseout="hideTip(event, '168', 168)" onmouseover="showTip(event, '168', 168)">
+            Delay(fm)
           </code>
-          <div class="tip" id="107">
-            <strong>Signature:</strong> expire:Expire -&gt; clock:Clock -&gt; Async&lt;Mailbox&lt;&#39;?7321&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7321          </div>
+          <div class="tip" id="168">
+            <strong>Signature:</strong> (fm:(unit -&gt; Sample&lt;Async&lt;&#39;a&gt;&gt;)) -&gt; Sample&lt;Async&lt;&#39;a&gt;&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L51-51" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L98-98" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -108,15 +132,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '108', 108)" onmouseover="showTip(event, '108', 108)">
-            listenTo eventStream mb
+          <code onmouseout="hideTip(event, '169', 169)" onmouseover="showTip(event, '169', 169)">
+            Return(x)
           </code>
-          <div class="tip" id="108">
-            <strong>Signature:</strong> eventStream:Async&lt;&#39;?7331&gt; -&gt; mb:Mailbox&lt;&#39;?7331&gt; -&gt; Async&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7331          </div>
+          <div class="tip" id="169">
+            <strong>Signature:</strong> x:&#39;T -&gt; Sample&lt;Async&lt;&#39;T&gt;&gt;<br />
+                          <strong>Type parameters:</strong> 'T          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L88-88" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L93-93" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -126,15 +150,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '109', 109)" onmouseover="showTip(event, '109', 109)">
-            post evt m
+          <code onmouseout="hideTip(event, '170', 170)" onmouseover="showTip(event, '170', 170)">
+            ReturnFrom(x)
           </code>
-          <div class="tip" id="109">
-            <strong>Signature:</strong> evt:&#39;?7323 -&gt; m:Mailbox&lt;&#39;?7323&gt; -&gt; Async&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7323          </div>
+          <div class="tip" id="170">
+            <strong>Signature:</strong> x:&#39;?7239 -&gt; &#39;?7239<br />
+                          <strong>Type parameters:</strong> '?7239          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L64-64" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L94-94" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -144,15 +168,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '110', 110)" onmouseover="showTip(event, '110', 110)">
-            read m
+          <code onmouseout="hideTip(event, '171', 171)" onmouseover="showTip(event, '171', 171)">
+            Zero()
           </code>
-          <div class="tip" id="110">
-            <strong>Signature:</strong> m:Mailbox&lt;&#39;e&gt; -&gt; Async&lt;Feed&lt;&#39;e&gt;&gt;<br />
-                          <strong>Type parameters:</strong> 'e          </div>
+          <div class="tip" id="171">
+            <strong>Signature:</strong> unit -&gt; Sample&lt;Async&lt;unit&gt;&gt;<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L70-70" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L96-96" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
