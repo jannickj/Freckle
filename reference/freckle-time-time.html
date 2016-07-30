@@ -41,6 +41,8 @@
   <span>Parent Module: <a href="freckle-time.html">Time</a></span>
 </p>
 <div class="xmldoc">
+<p>Time is the meassurement used for all FRP reasoning</p>
+
 </div>
 
 <!-- Render nested types and modules, if there are any -->
@@ -62,21 +64,24 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L33-33" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L62-62" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Gets the time between two times
+Note: This operation is cumulative</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '136', 136)" onmouseover="showTip(event, '136', 136)">
-            delay t withTime
+            maxValue 
           </code>
           <div class="tip" id="136">
-            <strong>Signature:</strong> t:Time -&gt; withTime:Time -&gt; Time<br />
+            <strong>Signature:</strong> Time<br />
                       </div>
         </td>
         <td class="xmldoc">
@@ -84,125 +89,159 @@
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>The max time, tied to DateTime and is the year 9999.</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '137', 137)" onmouseover="showTip(event, '137', 137)">
-            maxValue 
+            ofDateTime d
           </code>
           <div class="tip" id="137">
-            <strong>Signature:</strong> Time<br />
+            <strong>Signature:</strong> d:DateTime -&gt; Time<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L24-24" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L40-40" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Converts DateTime to Time</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '138', 138)" onmouseover="showTip(event, '138', 138)">
-            minValue 
+            ofDays days
           </code>
           <div class="tip" id="138">
-            <strong>Signature:</strong> Time<br />
+            <strong>Signature:</strong> days:int32 -&gt; Time<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L25-25" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L58-58" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>From days get a time</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '139', 139)" onmouseover="showTip(event, '139', 139)">
-            ofDateTime d
+            ofHours hour
           </code>
           <div class="tip" id="139">
-            <strong>Signature:</strong> d:DateTime -&gt; Time<br />
+            <strong>Signature:</strong> hour:int32 -&gt; Time<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L26-26" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L55-55" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>From hours get a time</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '140', 140)" onmouseover="showTip(event, '140', 140)">
-            ofDays days
+            ofMicroseconds microSec
           </code>
           <div class="tip" id="140">
-            <strong>Signature:</strong> days:int32 -&gt; Time<br />
+            <strong>Signature:</strong> microSec:int32 -&gt; Time<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L32-32" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L43-43" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>From microseconds get a time</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '141', 141)" onmouseover="showTip(event, '141', 141)">
-            ofHours hour
+            ofMilliseconds ms
           </code>
           <div class="tip" id="141">
-            <strong>Signature:</strong> hour:int32 -&gt; Time<br />
+            <strong>Signature:</strong> ms:int32 -&gt; Time<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L31-31" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L46-46" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>From milliseconds get a time</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '142', 142)" onmouseover="showTip(event, '142', 142)">
-            ofMicroseconds ms
+            ofMinutes min
           </code>
           <div class="tip" id="142">
-            <strong>Signature:</strong> ms:int32 -&gt; Time<br />
+            <strong>Signature:</strong> min:int32 -&gt; Time<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L27-27" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L52-52" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>From minutes get a time</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '143', 143)" onmouseover="showTip(event, '143', 143)">
-            ofMilliseconds ms
+            ofSeconds sec
           </code>
           <div class="tip" id="143">
-            <strong>Signature:</strong> ms:int32 -&gt; Time<br />
+            <strong>Signature:</strong> sec:int32 -&gt; Time<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L49-49" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>From seconds get a time</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '144', 144)" onmouseover="showTip(event, '144', 144)">
+            origin 
+          </code>
+          <div class="tip" id="144">
+            <strong>Signature:</strong> Time<br />
                       </div>
         </td>
         <td class="xmldoc">
@@ -216,109 +255,61 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '144', 144)" onmouseover="showTip(event, '144', 144)">
-            ofMinutes min
-          </code>
-          <div class="tip" id="144">
-            <strong>Signature:</strong> min:int32 -&gt; Time<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L30-30" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
           <code onmouseout="hideTip(event, '145', 145)" onmouseover="showTip(event, '145', 145)">
-            ofSeconds sec
+            ticks t
           </code>
           <div class="tip" id="145">
-            <strong>Signature:</strong> sec:int32 -&gt; Time<br />
+            <strong>Signature:</strong> t:Time -&gt; Ticks<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L29-29" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L31-31" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Get the current tick count</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '146', 146)" onmouseover="showTip(event, '146', 146)">
-            origin 
+            time t
           </code>
           <div class="tip" id="146">
-            <strong>Signature:</strong> Time<br />
+            <strong>Signature:</strong> t:Ticks -&gt; Time<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L21-21" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L25-25" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Creates a time</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '147', 147)" onmouseover="showTip(event, '147', 147)">
-            ticks t
-          </code>
-          <div class="tip" id="147">
-            <strong>Signature:</strong> t:Time -&gt; Ticks<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L22-22" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '148', 148)" onmouseover="showTip(event, '148', 148)">
-            time t
-          </code>
-          <div class="tip" id="148">
-            <strong>Signature:</strong> t:Ticks -&gt; Time<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L20-20" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '149', 149)" onmouseover="showTip(event, '149', 149)">
             toDateTime t
           </code>
-          <div class="tip" id="149">
+          <div class="tip" id="147">
             <strong>Signature:</strong> t:Time -&gt; DateTime<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L23-23" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Time.fs#L34-34" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Converts time to dotNet's DateTime</p>
+
+
         </td>
       </tr>
     </tbody>
