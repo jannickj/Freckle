@@ -6,7 +6,6 @@ open FSharp.Helpers
 [<AutoOpen>]
 module Types =
     open System
-    open Clock
 
     type Period = 
         { Finish    : Time

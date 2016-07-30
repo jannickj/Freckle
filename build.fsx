@@ -34,7 +34,7 @@ let pw =
 
 let gitHome =
     if user = ""
-        then "https://github.com/" + gitOwner
+        then "git@github.com:" + gitOwner
         else "https://" + user + ":" + pw + "@" + "github.com/" + gitOwner
 
 // Read additional information from the release notes document
@@ -49,14 +49,14 @@ let describeTag repositoryDir =
             msg |> Seq.head |> Some
     else None
 
-let currentVersionIsAlreadyReleased =
-    let optGetLastTags = (describeTag "")
-    let splited = optGetLastTags |> Option.toList
-    match splited |> Seq.tryHead with
-    | Some lastTag ->
-        printfn "tag: %A, release: %A" lastTag release.NugetVersion
-        lastTag = release.NugetVersion
-    | None -> false
+//let currentVersionIsAlreadyReleased =
+//    let optGetLastTags = (describeTag "")
+//    let splited = optGetLastTags |> Option.toList
+//    match splited |> Seq.tryHead with
+//    | Some lastTag ->
+//        printfn "tag: %A, release: %A" lastTag release.NugetVersion
+//        lastTag = release.NugetVersion
+//    | None -> false
     
 // Helper active pattern for project types
 let (|Fsproj|Csproj|Vbproj|Shproj|) (projFileName:string) =
@@ -132,14 +132,14 @@ Target "Build" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Run the unit tests using test runner
 
-Target "RunTests" (fun _ ->
-    !! testAssemblies
-    |> NUnit (fun p ->
-        { p with
-            DisableShadowCopy = true
-            TimeOut = TimeSpan.FromMinutes 20.
-            OutputFile = "TestResults.xml" })
-)
+//Target "RunTests" (fun _ ->
+//    !! testAssemblies
+//    |> XUnit (fun p ->
+//        { p with
+//            DisableShadowCopy = true
+//            TimeOut = TimeSpan.FromMinutes 20.
+//            OutputFile = "TestResults.xml" })
+//)
 
 #if MONO
 #else
@@ -162,24 +162,24 @@ Target "SourceLink" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
-Target "NuGet" (fun _ ->
-    Paket.Pack(fun p ->
-        { p with
-            OutputPath = "bin"
-            Version = release.NugetVersion
-            ReleaseNotes = toLines release.Notes})
-)
-
-Target "PublishNuget" (fun _ ->
-    if not currentVersionIsAlreadyReleased
-        then
-            Paket.Push(fun p ->
-                { p with
-                    PublishUrl = nugetUrl
-                    EndPoint   = nugetFeed
-                    WorkingDir = "bin" })
-        else trace "Warning: Will not publish nuget, RELEASE_NOTES must be updated first"
-)
+//Target "NuGet" (fun _ ->
+//    Paket.Pack(fun p ->
+//        { p with
+//            OutputPath = "bin"
+//            Version = release.NugetVersion
+//            ReleaseNotes = toLines release.Notes})
+//)
+//
+//Target "PublishNuget" (fun _ ->
+//    if not currentVersionIsAlreadyReleased
+//        then
+//            Paket.Push(fun p ->
+//                { p with
+//                    PublishUrl = nugetUrl
+//                    EndPoint   = nugetFeed
+//                    WorkingDir = "bin" })
+//        else trace "Warning: Will not publish nuget, RELEASE_NOTES must be updated first"
+//)
 
 
 // --------------------------------------------------------------------------------------
@@ -346,28 +346,28 @@ Target "SetupGithubAccess" (fun _ ->
 
 )
 
-Target "ReleaseGithub" (fun _ ->
-    if not currentVersionIsAlreadyReleased
-        then
-            let remote = remote ()
-    
-            StageAll ""
-            Git.Commit.Commit "" (sprintf "Bump version to %s" release.NugetVersion)
-            Branches.pushBranch "" remote (Information.getBranchName "")
-    
-    
-            Branches.tag "" release.NugetVersion
-            Branches.pushTag "" remote release.NugetVersion
-    
-            // release on github
-            createClient user pw
-            |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
-            // TODO: |> uploadFile "PATH_TO_FILE"
-            |> releaseDraft
-            |> Async.RunSynchronously
-        else trace "Warning: Will not make a release tag, RELEASE_NOTES must be updated first"
-
-)
+//Target "ReleaseGithub" (fun _ ->
+//    if not currentVersionIsAlreadyReleased
+//        then
+//            let remote = remote ()
+//    
+//            StageAll ""
+//            Git.Commit.Commit "" (sprintf "Bump version to %s" release.NugetVersion)
+//            Branches.pushBranch "" remote (Information.getBranchName "")
+//    
+//    
+//            Branches.tag "" release.NugetVersion
+//            Branches.pushTag "" remote release.NugetVersion
+//    
+//            // release on github
+//            createClient user pw
+//            |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
+//            // TODO: |> uploadFile "PATH_TO_FILE"
+//            |> releaseDraft
+//            |> Async.RunSynchronously
+//        else trace "Warning: Will not make a release tag, RELEASE_NOTES must be updated first"
+//
+//)
 
 Target "BuildPackage" DoNothing
 
@@ -381,7 +381,7 @@ Target "Release" DoNothing
   ==> "AssemblyInfo"
   ==> "Build"
   ==> "CopyBinaries"
-  ==> "RunTests"
+//  ==> "RunTests"
   ==> "GenerateReferenceDocs"
   ==> "GenerateDocs"
   ==> "All"
@@ -392,7 +392,7 @@ Target "Release" DoNothing
 #else
   =?> ("SourceLink", Pdbstr.tryFind().IsSome )
 #endif
-  ==> "NuGet"
+//  ==> "NuGet"
   ==> "BuildPackage"
 
 "CleanDocs"
@@ -407,14 +407,14 @@ Target "Release" DoNothing
   ==> "KeepRunning"
 
 "ReleaseDocs"
-  ==> "Release"
+//  ==> "Release"
 
-"SetupGithubAccess"
-  ==> "ReleaseGithub"
+//"SetupGithubAccess"
+//  ==> "ReleaseGithub"
 
 "BuildPackage"
-  ==> "PublishNuget"
-  ==> "ReleaseGithub"
-  ==> "Release"
+//  ==> "PublishNuget"
+//  ==> "ReleaseGithub"
+//  ==> "Release"
 
 RunTargetOrDefault "All"

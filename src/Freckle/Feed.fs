@@ -8,19 +8,12 @@ module Feed =
     [<AutoOpen>]
     module Types =
         open System
-
-        type Future<'e> = Time * 'e
-
+        
         type Feed<'e> =
             { Event : LazyList<Time * 'e>
             }
             with override x.ToString() = sprintf "%A" x
-
-
-    module Future = 
-        let map f (t, a) = (t, f a)
-
-    
+                
     module Period =
         let isAfter (p1 : Period) (p2 : Period) =
             p1.Beginning > p2.Beginning

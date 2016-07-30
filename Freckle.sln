@@ -38,7 +38,7 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Freckle.Tests", "tests\Frec
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{1226A70E-7641-453C-95DA-77DE0BBA771C}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AirlockStatemachine", "AirlockStatemachine\AirlockStatemachine.fsproj", "{F473B340-1E3D-47FA-90A6-3F50BA5CA9F9}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AirlockStatemachine", "examples\AirlockStatemachine\AirlockStatemachine.fsproj", "{F473B340-1E3D-47FA-90A6-3F50BA5CA9F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

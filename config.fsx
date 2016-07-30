@@ -22,7 +22,7 @@ let summary = "A Functional Reactive Programming Library for FSharp"
 
 // Longer description of the project
 // (used as a description for NuGet package; line breaks are automatically cleaned up)
-let description = "Functional Reactive Programming library [D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[C[C[C[C[C[C[C[C[C[C[C[C[C[CHandle"
+let description = "Functional Reactive Programming library Handle"
 
 // List of author names (for NuGet package)
 let authors = [ "Jannick Johnsen" ]
