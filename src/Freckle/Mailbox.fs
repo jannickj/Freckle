@@ -1,24 +1,20 @@
 ﻿namespace Freckle
-[<AutoOpen>]
+
+type Expire = Never
+            | After of Time
+            | WhenRead
+
+type Mailbox<'e> = 
+    { LiveEvents  : Ref<Feed<'e> * Feed<'e>>
+      EventLock   : obj
+      MailAwait   : System.Threading.AutoResetEvent
+      Expiration  : Expire
+      Clock       : Clock
+    }
+
 module Mailbox =
     open FSharp.Helpers
-
-    [<AutoOpen>]
-    module Types =
-        open System.Threading
-
-        type Expire = Never
-                    | After of Time
-                    | WhenRead
-
-        type Mailbox<'e> = 
-            { LiveEvents  : Ref<Feed<'e> * Feed<'e>>
-              EventLock   : obj
-              MailAwait   : AutoResetEvent
-              Expiration  : Expire
-              Clock       : Clock
-            }
-
+    open System.Threading
 
     module Internal =
     
@@ -41,54 +37,50 @@ module Mailbox =
                 m.LiveEvents := (Feed.Internal.unsafePush time evt inc, Feed.empty)
             | _ -> m.LiveEvents := (Feed.Internal.unsafePush time evt inc, Feed.empty)
             AutoResetEvent.release m.MailAwait
-
- 
-    [<AutoOpen>]
-    module Core =
-        module Mailbox =
-            open System.Threading
+     
+    
         
-            let createWithExpiration expire clock =
-                async {
-                    let ars = new AutoResetEvent(true)
-                    let mawait = new AutoResetEvent(false)
-                    let! _ = Async.OnCancel (fun () -> ars.Dispose(); mawait.Dispose())
-                    return { LiveEvents = ref (Feed.empty, Feed.empty)
-                             EventLock = ars
-                             Expiration = expire
-                             MailAwait = mawait
-                             Clock = clock
-                           }
-                }
+    let createWithExpiration expire clock =
+        async {
+            let ars = new AutoResetEvent(true)
+            let mawait = new AutoResetEvent(false)
+            let! _ = Async.OnCancel (fun () -> ars.Dispose(); mawait.Dispose())
+            return { LiveEvents = ref (Feed.empty, Feed.empty)
+                     EventLock = ars
+                     Expiration = expire
+                     MailAwait = mawait
+                     Clock = clock
+                    }
+        }
             
-            let post evt (m : Mailbox<_>) : Async<unit> =
-                async {
-                    let! time = Clock.now m.Clock
-                    return lock m.EventLock (Internal.push' time evt m)
-                }
+    let post evt (m : Mailbox<_>) : Async<unit> =
+        async {
+            let! time = Clock.now m.Clock
+            return lock m.EventLock (Internal.push' time evt m)
+        }
         
-            let read (m : Mailbox<'e>) : Async<Feed<'e>> = 
-                async {
-                    match m.Expiration with
-                    | WhenRead -> return lock m.EventLock (Internal.readAndRemove' m)
-                    | _ -> return Internal.read' m 
-                }
+    let read (m : Mailbox<'e>) : Async<Feed<'e>> = 
+        async {
+            match m.Expiration with
+            | WhenRead -> return lock m.EventLock (Internal.readAndRemove' m)
+            | _ -> return Internal.read' m 
+        }
 
-            let awaitMailTimeout (ticks : Ticks) (mb : Mailbox<_>) =
-                async {
-                    return mb.MailAwait.WaitOne(System.TimeSpan(ticks)) |> ignore
-                }
+    let awaitMailTimeout (ticks : Ticks) (mb : Mailbox<_>) =
+        async {
+            return mb.MailAwait.WaitOne(System.TimeSpan(ticks)) |> ignore
+        }
 
-            let awaitMail (mb : Mailbox<_>) =
-                async {
-                    return mb.MailAwait.WaitOne() |> ignore
-                }
+    let awaitMail (mb : Mailbox<_>) =
+        async {
+            return mb.MailAwait.WaitOne() |> ignore
+        }
 
         
-            let listenTo eventStream (mb : Mailbox<_>) =
-                async  {
-                    while true do
-                        let! evt = eventStream
-                        do! post evt mb
-                } |> Async.StartChild
-                  |> Async.map ignore
+    let listenTo eventStream (mb : Mailbox<_>) =
+        async  {
+            while true do
+                let! evt = eventStream
+                do! post evt mb
+        } |> Async.StartChild
+            |> Async.map ignore

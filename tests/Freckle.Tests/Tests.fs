@@ -62,7 +62,7 @@ let ``weave select the correct state when merging`` () =
     let lA = [(time 0L, (1, "1a"));(time 2L, (2, "2a"))] |> Feed.ofList
     let lB = [(time 1L, "1b");(time 2L, "2b");(time 3L, "3b")] |> Feed.ofList
 
-    let lAB = Feed.weave (fun optA b -> ((Option.mapDefault 0 fst optA), b)) lB lA
+    let lAB = Feed.weave (fun a b -> ((fst a), b)) (0, "_") lB lA
                 |> Feed.toList
 
     lAB |> should equal [ (time 3L, (2, "3b"))
@@ -89,29 +89,23 @@ let ``weave select the correct state when merging`` () =
 //        return ()   
 //    } |> Async.StartAsTask
 //
-//[<Fact>]
-//let ``pulse gives correct pulses`` () =
-//    async {
-//        let! mb = Mailbox.create (Clock.alwaysAt 0L)
-//        let! evtSource = Mailbox.receive mb
-//        let! reg, l = Act.pulse 5u
-//                    |> Act.run mb evtSource ({ Current = Time.time TimeSpan.TicksPerSecond; Past = Time.time 0L })
-//        let l' = Feed.toList l
-//        let dist = (TimeSpan.TicksPerSecond / 5L)
-//        l' |> should equal [ (time (dist * 5L), time (dist * 5L))
-//                           ; (time (dist * 4L), time (dist * 4L))
-//                           ; (time (dist * 3L), time (dist * 3L))
-//                           ; (time (dist * 2L), time (dist * 2L))
-//                           ; (time (dist * 1L), time (dist * 1L))
-//                           ]
-//        reg.NextPoll |> should equal (Some dist)
-//        return ()   
-//    } |> Async.StartAsTask
+[<Fact>]
+let ``pulse gives pulses starting from the finish time and does not stop at the beginning time`` () =
+    let l = Feed.pulse 5u (now (TimeSpan.TicksPerSecond / 4L) TimeSpan.TicksPerSecond)
+            |> Feed.toList
+    let dist = (TimeSpan.TicksPerSecond / 5L)
+    l |> should equal [ (time (dist * 5L), time (dist * 5L))
+                      ; (time (dist * 4L), time (dist * 4L))
+                      ; (time (dist * 3L), time (dist * 3L))
+                      ; (time (dist * 2L), time (dist * 2L))
+                      ; (time (dist * 1L), time (dist * 1L))
+                      ; (time (dist * 0L), time (dist * 0L))
+                      ]
 
 let pretty fr = fr |> Feed.toList |> List.map (fun (t, a) -> t.Ticks, a)
 
-let toFeedData feed = 
-    feed.Event
+let toFeedData (Feed feed) = 
+    feed
     |> Feed.Internal.sortSameTime
     |> LazyList.toList
     |> List.map (fun (t, ab) -> (t.Ticks, ab))

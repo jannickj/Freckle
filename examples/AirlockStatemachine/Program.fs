@@ -71,6 +71,6 @@ let main argv =
         let runner = 
             setup mb airlock
             >> SampleAsync.doAsync (Async.Sleep 1)
-        do! Sampling.sampleForever Clock.systemUtc state runner
+        do! Sample.sampleForever Clock.systemUtc runner state
     } |> Async.RunSynchronously
     0 // return an integer exit code

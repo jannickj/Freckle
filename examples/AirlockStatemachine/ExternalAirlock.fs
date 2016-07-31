@@ -44,7 +44,6 @@ let dequeue =
   
 let press =
     async { 
-        //printfn "button pressed"
         do! enqueue "pressbutton"
     } 
 

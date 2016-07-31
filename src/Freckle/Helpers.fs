@@ -1,4 +1,4 @@
-﻿///A helper module used for the libary, use at your own discrestion.
+﻿///A helper module used for the library, use at your own discrestion
 module FSharp.Helpers
 
 let inline undefined<'a> : 'a = failwith "undefined"

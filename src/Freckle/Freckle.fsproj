@@ -52,6 +52,7 @@
     <Compile Include="Sample.fs" />
     <Compile Include="Feed.fs" />
     <Compile Include="Mailbox.fs" />
+    <Compile Include="ComputationExpression.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
