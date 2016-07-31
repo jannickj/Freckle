@@ -40,6 +40,8 @@
   <span>Namespace: Freckle</span><br />
 </p>
 <div class="xmldoc">
+<p>SampleAsync module is designed to help working with samples that specifically returns Async</p>
+
 </div>
 
 <!-- Render nested types and modules, if there are any -->
@@ -54,7 +56,9 @@
           <td class="module-name">
             <a href="freckle-sampleasync-computationalexpression.html">ComputationalExpression</a>
           </td>
-          <td class="xmldoc"></td>
+          <td class="xmldoc"><p>Setup for computational expression(Do Notation in haskell) for SampleAsync</p>
+
+</td>
         </tr>
     </tbody>
   </table>
@@ -70,145 +74,162 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '126', 126)" onmouseover="showTip(event, '126', 126)">
+          <code onmouseout="hideTip(event, '127', 127)" onmouseover="showTip(event, '127', 127)">
             bind f m
           </code>
-          <div class="tip" id="126">
+          <div class="tip" id="127">
             <strong>Signature:</strong> f:(&#39;?7238 -&gt; Sample&lt;Async&lt;&#39;?7239&gt;&gt;) -&gt; m:Sample&lt;Async&lt;&#39;?7238&gt;&gt; -&gt; Sample&lt;Async&lt;&#39;?7239&gt;&gt;<br />
                           <strong>Type parameters:</strong> '?7238, '?7239          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L91-91" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L99-99" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
+          <p>Bind for the monad type class</p>
 
-          <code onmouseout="hideTip(event, '127', 127)" onmouseover="showTip(event, '127', 127)">
-            doAsync das sa
-          </code>
-          <div class="tip" id="127">
-            <strong>Signature:</strong> das:Async&lt;&#39;?7245&gt; -&gt; sa:Sample&lt;Async&lt;&#39;?7246&gt;&gt; -&gt; Sample&lt;Async&lt;&#39;?7246&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7245, '?7246          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L95-95" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '128', 128)" onmouseover="showTip(event, '128', 128)">
-            ignore s
+            doAsync das sa
           </code>
           <div class="tip" id="128">
-            <strong>Signature:</strong> s:Sample&lt;Async&lt;&#39;?7236&gt;&gt; -&gt; Sample&lt;Async&lt;unit&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7236          </div>
+            <strong>Signature:</strong> das:Async&lt;&#39;?7245&gt; -&gt; sa:Sample&lt;Async&lt;&#39;?7246&gt;&gt; -&gt; Sample&lt;Async&lt;&#39;?7246&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7245, '?7246          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L89-89" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L109-109" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Attach an async operation at the end of a SampleAsync without changing it's output.
+Can be useful if you want to add a polling delay</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '129', 129)" onmouseover="showTip(event, '129', 129)">
-            join m p
+            ignore s
           </code>
           <div class="tip" id="129">
-            <strong>Signature:</strong> m:Sample&lt;Async&lt;Sample&lt;Async&lt;&#39;a&gt;&gt;&gt;&gt; -&gt; p:Period -&gt; Async&lt;&#39;a&gt;<br />
-                          <strong>Type parameters:</strong> 'a          </div>
+            <strong>Signature:</strong> s:Sample&lt;Async&lt;&#39;?7236&gt;&gt; -&gt; Sample&lt;Async&lt;unit&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7236          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L86-86" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L96-96" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Discards the result of a SampleAsync</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '130', 130)" onmouseover="showTip(event, '130', 130)">
-            map f m
+            join m p
           </code>
           <div class="tip" id="130">
-            <strong>Signature:</strong> f:(&#39;?7231 -&gt; &#39;?7232) -&gt; m:Sample&lt;Async&lt;&#39;?7231&gt;&gt; -&gt; Sample&lt;Async&lt;&#39;?7232&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7231, '?7232          </div>
+            <strong>Signature:</strong> m:Sample&lt;Async&lt;Sample&lt;Async&lt;&#39;a&gt;&gt;&gt;&gt; -&gt; p:Period -&gt; Async&lt;&#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L85-85" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L92-92" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Joins nested SampleAsync into a single sampleAsync</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '131', 131)" onmouseover="showTip(event, '131', 131)">
-            ofAsync x
+            map f m
           </code>
           <div class="tip" id="131">
-            <strong>Signature:</strong> x:Async&lt;&#39;?7241&gt; -&gt; Sample&lt;Async&lt;&#39;?7241&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7241          </div>
+            <strong>Signature:</strong> f:(&#39;?7231 -&gt; &#39;?7232) -&gt; m:Sample&lt;Async&lt;&#39;?7231&gt;&gt; -&gt; Sample&lt;Async&lt;&#39;?7232&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7231, '?7232          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L93-93" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L89-89" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Maps a SampleAsync from one result to another</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '132', 132)" onmouseover="showTip(event, '132', 132)">
-            ofSample x
+            ofAsync x
           </code>
           <div class="tip" id="132">
-            <strong>Signature:</strong> x:Sample&lt;&#39;?7243&gt; -&gt; Sample&lt;Async&lt;&#39;?7243&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7243          </div>
+            <strong>Signature:</strong> x:Async&lt;&#39;?7241&gt; -&gt; Sample&lt;Async&lt;&#39;?7241&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7241          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L94-94" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L102-102" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Transforms an async type into a SampleAsync</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '133', 133)" onmouseover="showTip(event, '133', 133)">
-            pure&#39; a
+            ofSample x
           </code>
           <div class="tip" id="133">
+            <strong>Signature:</strong> x:Sample&lt;&#39;?7243&gt; -&gt; Sample&lt;Async&lt;&#39;?7243&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7243          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L105-105" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Transforms a Sample type into a SampleAsync</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '134', 134)" onmouseover="showTip(event, '134', 134)">
+            pure&#39; a
+          </code>
+          <div class="tip" id="134">
             <strong>Signature:</strong> a:&#39;?7229 -&gt; Sample&lt;Async&lt;&#39;?7229&gt;&gt;<br />
                           <strong>Type parameters:</strong> '?7229          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L84-84" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L86-86" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Get a SampleAsync from a value</p>
+
+
         </td>
       </tr>
     </tbody>

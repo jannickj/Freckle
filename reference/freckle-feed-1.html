@@ -40,25 +40,29 @@
   <span>Namespace: Freckle</span><br />
 </p>
 <div class="xmldoc">
+<p>The Feed represents an continoues (possibly extremely large) number of events, for this reason the type is Lazy.
+The Feed type is identical to the Event type in traditional FRP.
+However it has been renamed in order to be more intuitive, as it should not be thought of as a single event but rather a continoues stream of events.</p>
+
 </div>
-  <h3>Record Fields</h3>
+  <h3>Union Cases</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Record Field</td><td>Description</td></tr>
+      <tr><td>Union Case</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '160', 160)" onmouseover="showTip(event, '160', 160)">
-            Event
+          <code onmouseout="hideTip(event, '161', 161)" onmouseover="showTip(event, '161', 161)">
+            Feed(LazyList&lt;Time * &#39;e&gt;)
           </code>
-          <div class="tip" id="160">
+          <div class="tip" id="161">
             <strong>Signature:</strong> LazyList&lt;Time * &#39;e&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L4-4" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L6-6" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
