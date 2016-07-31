@@ -40,7 +40,7 @@
   <span>Namespace: Freckle</span><br />
 </p>
 <div class="xmldoc">
-<p>Based on Behavior, Sample generates values from a time span rather than a single time</p>
+<p>Based on Behavior, Sample generates values from a span of time rather than a single time</p>
 
 </div>
 
@@ -80,11 +80,13 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L31-31" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L37-37" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>get the beginning of a period</p>
+
+
         </td>
       </tr>
       <tr>
@@ -98,11 +100,13 @@
                           <strong>Type parameters:</strong> 'a, 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L26-26" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L30-30" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>binds a sample function into another sample</p>
+
+
         </td>
       </tr>
       <tr>
@@ -116,11 +120,13 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L33-33" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L40-40" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>get the finish time of</p>
+
+
         </td>
       </tr>
       <tr>
@@ -134,11 +140,13 @@
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L24-24" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L27-27" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>joins nested samples</p>
+
+
         </td>
       </tr>
       <tr>
@@ -152,11 +160,13 @@
                           <strong>Type parameters:</strong> 'a, 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L22-22" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L24-24" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Maps a sample from one result to another</p>
+
+
         </td>
       </tr>
       <tr>
@@ -170,11 +180,13 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L29-29" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L34-34" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>get the period of sample (it's just the id function)</p>
+
+
         </td>
       </tr>
       <tr>
@@ -188,11 +200,13 @@
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L20-20" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L21-21" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>get a sample from a value (it's just the const function)</p>
+
+
         </td>
       </tr>
       <tr>
@@ -206,7 +220,7 @@
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L35-35" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L42-42" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -220,11 +234,11 @@
             sampleForever clock state sampler
           </code>
           <div class="tip" id="125">
-            <strong>Signature:</strong> clock:Clock -&gt; state:&#39;s -&gt; sampler:(&#39;s -&gt; Sample&lt;Async&lt;&#39;s&gt;&gt;) -&gt; Async&lt;&#39;?7288&gt;<br />
-                          <strong>Type parameters:</strong> 's, '?7288          </div>
+            <strong>Signature:</strong> clock:Clock -&gt; state:&#39;s -&gt; sampler:(&#39;s -&gt; Sample&lt;Async&lt;&#39;s&gt;&gt;) -&gt; Async&lt;&#39;?7285&gt;<br />
+                          <strong>Type parameters:</strong> 's, '?7285          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L37-37" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L44-44" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -242,7 +256,7 @@
                           <strong>Type parameters:</strong> 's          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L49-49" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L56-56" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
