@@ -292,31 +292,38 @@ module Feed =
     ///Partitions the feed into two feeds, the first satisfy the predicate and the second does not satisfy
     let partition (f : 'a -> bool) (fr : Feed<'a>) : (Feed<'a> * Feed<'a>) = (filter f fr, filter (not << f) fr)   
     
+    ///Take events from the feed until the predicate is no longer satisfied
     let takeWhile (f : 'a -> bool) (fr : Feed<'a>) : Feed<'a> =            
         updateEvent (LazyList.delayed << takeWhile' (f << snd)) fr
 
-
+    ///Discard events from the feed until the predicate is no longer satisfied
     let skipWhile (f : 'a -> bool) (fr : Feed<'a>) : Feed<'a> = 
         updateEvent (LazyList.delayed << skipWhile' (f << snd)) fr
             
+    ///Discard events occuring before the specified time, excluding events occuring exactly at the time
     let discardOlderExcl (time : Time)  fr : Feed<'a>=
         updateEvent (discardBeforeExcl time) fr
 
+    ///Discard events occuring before the specified time, including events occuring exactly at the time
     let discardOlderIncl (time : Time)  fr : Feed<'a>=
         updateEvent (discardBeforeIncl time) fr
-
+        
+    ///Discard events occuring after the specified time, including events occuring exactly at the time
     let discardYoungerIncl (time : Time)  fr : Feed<'a>=
         updateEvent (discardAfterIncl time) fr
-
+        
+    ///Discard events occuring after the specified time, excluding events occuring exactly at the time
     let discardYoungerExcl (time : Time)  fr : Feed<'a>=
         updateEvent (discardAfterExcl time) fr
 
+    ///Discard all events occuring after the sample finish time, excluding events occuring exactly at the finish time
     let discardFuture fr =
         sample {
             let! finish = Period.finish
             return fr |> discardYoungerExcl finish
         }
-
+        
+    ///Discard all events occuring before the sample beginning time, including events occuring exactly at the beginning time
     let discardPast fr =
         sample {
             let! beginning = Period.beginning
@@ -329,19 +336,24 @@ module Feed =
             let! fr' = discardFuture fr
             return! discardPast fr'
         }
-                
-    let span (f : 'a -> bool) (fr : Feed<'a>) : (Feed<'a> * Feed<'a>) = 
-        (takeWhile f fr, skipWhile f fr)
-
+        
+    ///Span, applied to a predicate p and a feed, returns a tuple of feed where the first feed  satisfy p and second element is the remainder of the list: 
+    let span (p : 'a -> bool) (fr : Feed<'a>) : (Feed<'a> * Feed<'a>) = 
+        (takeWhile p fr, skipWhile p fr)
+    
+    ///Groups elements together where f is satisfied
     let groupBy (f : 'a -> 'a -> bool) (fr : Feed<'a>) : Feed<Feed<'a>> =
         let mapl l = (fst <| LazyList.head l, ofEvent l)
         updateEvent (fun l -> LazyList.map mapl <| groupBy (fun a b -> f (snd a) (snd b)) l) fr
-                               
+                              
+    ///Return a new feed consisting of the results of applying the given accumulating function to the newests events of the feed
     let scan f s = updateEvent (LazyList.scan (fun (_,s) (t,a) -> (t, f s a)) (Time.origin,s))
 
+    //Combines mapping events and the results of applying the given accumulating function to the newests events of the feed
     let mapScan (f : 's -> 'a -> ('s * 'b)) (s : 's) (fr : Feed<'a>) : Feed<'s * 'b>= 
         updateEvent (LazyList.ofSeq << fst << (Seq.mapFold (fun s (t,a)  -> let (b, s') = f s a in ((t, (b, s'))), b) s) ) fr
 
+    ///Discards all events outside the sample, then scanMaps from the past
     let mapScanPast (f : 's -> 'a -> ('s * 'b)) (state : 's) (fr : Feed<'a>) : (Sample<Feed<'s * 'b>>) =
         sample {
             let! fr' = discardOutsideSample fr
@@ -349,27 +361,32 @@ module Feed =
             return ofEvent (LazyList.ofSeq l')
         }
 
+    ///Discards all events outside the sample, then folds and maps from the past
     let mapFoldPast (f : 's -> 'a -> ('s * 'b)) (state : 's) (fr : Feed<'a>) : (Sample<'s * Feed<'b>>) =
         sample {
             let! fr' = discardOutsideSample fr
             let (l', state') = Seq.mapFoldBack (fun (t,a) s -> let (s', b) = f s a in ((t, b), s')) (toEvent fr') state 
             return (state', ofEvent (LazyList.ofSeq l'))
         }
-
+    
+    ///Discards all events outside the sample, then scans the events from the past by applying the given accumulating function to the oldest events of the feed,
+    ///Returning a feed of the results
     let scanPast (f : 's -> 'a -> 's) (state : 's) (fr : Feed<'a>) : Sample<Feed<'s>> =
         sample {
             let! fr' = discardOutsideSample fr
             let (l, _) = Seq.mapFoldBack (fun (t,a) s -> let s' = f s a in ((t, s'), s')) (toEvent fr') state 
             return ofEvent (LazyList.ofSeq l)
         }
-
+        
+    ///Discards all events outside the sample, then folds the events from the past by applying the given accumulating function to the oldest events of the feed,
+    ///Returning the a the last state as the result
     let foldPast (f : 's -> 'a -> 's) (state : 's) (fr : Feed<'a>) : Sample<'s> =
         sample {
             let! fr' = discardOutsideSample fr
             return Seq.foldBack (fun (_, a) s -> f s a) (toEvent fr') state
         }
 
-
+    ///Discards all events outside the sample, then combine all async computations into a single async computation with the result of a feed of the asyncs' results.
     let plan (fullFeed : Feed<Async<'a>>) : Sample<Async<Feed<'a>>> =
         sample {
             let! fr = discardOutsideSample fullFeed
@@ -383,8 +400,10 @@ module Feed =
             return Async.map ofEvent folded
         }
 
+    ///Same as plan but discard the feed of results
     let plan_ fr = plan fr |> Sample.map Async.Ignore
         
+    ///Discard all events outside the sample, then from the past folds all the events of Feed<'a> using an async state transition into a single state
     let transition (f : 's -> 'a -> Async<'s>) (state : 's) (allFeed : Feed<'a>)  : Sample<Async<'s>> =
         sample {
             let! fr = discardOutsideSample allFeed
@@ -396,10 +415,14 @@ module Feed =
             return! foldPast inner (async.Return state) fr
         }
 
+    ///Provide operator syntax for bind
     module Operator =
     
+        //Identical to bind
         let (>>=) m f = bind f m
 
+     ///Setup for computational expression(Do Notation in haskell) for Feed, to better understand how this works, consider two event streams firing after each other a computation is made each time,
+     //one of the events is fired.
     module ComputationalExpression = 
         type Builder() =
             member inline this.Return(x : 'T) = pure' x
@@ -408,8 +431,14 @@ module Feed =
             member inline this.Zero () = pure' ()
     
         let feed = Builder()
-    
+
+///Debugging functionality for Feed
 module Debug =
+    ///Debugging functions only for feed
     module Feed =
+        
+        ///maps and prints events when they are observered, if they are never observed then print will never occur
         let traceMap f fr = Feed.map (fun (t,v) -> printfn "%A: %A" (Time.toDateTime t) (f v); v) (Feed.timeStamp fr)
+
+        ///Same a traceMap but just tries to print the event
         let trace fr = traceMap id fr
