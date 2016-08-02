@@ -77,6 +77,7 @@ module Feed =
             | Cons((t,a), tail) -> 
                 let res = takeWhile' (fun (t2, _) -> t = t2) tail |> delayed |> map snd |> toList
                 consDelayed (t, a :: res) 
+            | Nil -> (fun _ -> empty)
             
         let rec groupBy f (l : LazyList<'a>) =
             match l with
@@ -127,7 +128,7 @@ module Feed =
             match l with
             | Nil -> empty
             | Cons((_,Nil),rest) -> joinInner rest ()
-            | Cons((t1,(Cons((t2,a),_))),_) -> 
+            | Cons((t1,(Cons((t2,_),_))),_) -> 
                 let (t1', t2', la) = findNext (min t1 t2) (t1,t2,List.empty) l
                 let age = max t1' t2'
                 let l'' = capMax age l

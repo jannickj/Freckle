@@ -78,6 +78,43 @@ module Sample =
     
         let sample = Builder()
 
+///Adds more advanced delays
+module Async =     
+    open System.Threading.Tasks
+    open System.Threading
+    open System
+
+    ///Delays sampling with a pulse.
+    ///NOTICE on most machines running windows you can atmost reach 60 samples per seconds or a thread delay of 15 ms, if you require higher resolution, use pulseDelayBusy instead.
+    let pulseDelay (hz : double) = 
+        let delay = int (1000.0 / hz)
+        let delay' = if delay <= 0 then 1 else delay
+        Async.Sleep delay'
+    
+    let pulseMax = Async.Sleep 1
+
+
+    let pulseDelayBusy hz =
+        let delay = int64 (float TimeSpan.TicksPerSecond / hz)
+        let delay' = if delay <= 0L then 1L else delay
+        async {
+            let watch = Diagnostics.Stopwatch()
+            watch.Start()  
+            while watch.Elapsed.Ticks < delay' do
+                Thread.SpinWait(50000) |> ignore
+        }
+
+    let awaitAny (acs : seq<Async<unit>>) =
+        async {
+            use source = new CancellationTokenSource()
+            let at a = Async.StartAsTask(a, cancellationToken = source.Token)
+            let tasks = Seq.map at acs
+            
+            do! Async.AwaitTask(Task.WhenAny tasks)
+                |> Async.Ignore
+            source.Cancel()
+        } 
+
 ///SampleAsync module is designed to help working with samples that specifically returns Async
 module SampleAsync =
     open FSharp.Helpers
@@ -108,7 +145,8 @@ module SampleAsync =
     ///Can be useful if you want to add a polling delay
     let doAsync das sa =
         Sample.map (Async.bind (fun a -> Async.map (const' a) das)) sa
-               
+             
+     
     ///Setup for computational expression(Do Notation in haskell) for SampleAsync
     module ComputationalExpression =
         open Sample.ComputationalExpression

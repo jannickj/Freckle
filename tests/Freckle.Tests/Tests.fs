@@ -63,7 +63,7 @@ let ``weave select the correct state when merging`` () =
     let lB = [(time 1L, "1b");(time 2L, "2b");(time 3L, "3b")] |> Feed.ofList
 
     let lAB = Feed.weave (fun a b -> ((fst a), b)) (0, "_") lB lA
-                |> Feed.toList
+              |> Feed.toList
 
     lAB |> should equal [ (time 3L, (2, "3b"))
                         ; (time 2L, (2, "2b"))

@@ -44,6 +44,11 @@ module Async =
     let (>>=) ma f = async.Bind(ma, f)
     let ( *>>) ma mb = async.Bind(ma, (fun _ -> mb))
 
+    let startFreeChild a =
+            a
+            |> Async.StartChild
+            |> Async.Ignore
+
     let doNothing = async.Zero()
 
     type Signal<'a> = Continue of 'a

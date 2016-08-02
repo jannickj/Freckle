@@ -1,13 +1,16 @@
 ﻿namespace Freckle
 
+open System
+
 type Expire = Never
             | After of Time
-            | WhenRead
+
+type MailTrigger = delegate of obj * EventArgs -> unit
 
 type Mailbox<'e> = 
     { LiveEvents  : Ref<Feed<'e> * Feed<'e>>
       EventLock   : obj
-      MailAwait   : System.Threading.AutoResetEvent
+      MailEvent   : Event<MailTrigger, EventArgs>
       Expiration  : Expire
       Clock       : Clock
     }
@@ -22,12 +25,6 @@ module Mailbox =
             let (inc, out) = !m.LiveEvents
             Feed.combine inc out
 
-        let inline readAndRemove' (m : Mailbox<'e>) () =
-            let (inc, out) = !m.LiveEvents
-            m.LiveEvents := (Feed.empty, Feed.empty)
-            Feed.combine inc out
-            
-
         let inline push' time evt (m : Mailbox<_>) () : unit =
             let (inc, out) = !m.LiveEvents
             match m.Expiration, Feed.tryHead (Feed.time out) with
@@ -36,19 +33,16 @@ module Mailbox =
             | After t, Some outTime when t.Ticks > time.Ticks - outTime.Ticks -> 
                 m.LiveEvents := (Feed.Internal.unsafePush time evt inc, Feed.empty)
             | _ -> m.LiveEvents := (Feed.Internal.unsafePush time evt inc, Feed.empty)
-            AutoResetEvent.release m.MailAwait
+            m.MailEvent.Trigger(null, null)
      
     
         
     let createWithExpiration expire clock =
         async {
-            let ars = new AutoResetEvent(true)
-            let mawait = new AutoResetEvent(false)
-            let! _ = Async.OnCancel (fun () -> ars.Dispose(); mawait.Dispose())
             return { LiveEvents = ref (Feed.empty, Feed.empty)
-                     EventLock = ars
+                     EventLock = obj()
                      Expiration = expire
-                     MailAwait = mawait
+                     MailEvent = new Event<_,_>()
                      Clock = clock
                     }
         }
@@ -61,20 +55,12 @@ module Mailbox =
         
     let read (m : Mailbox<'e>) : Async<Feed<'e>> = 
         async {
-            match m.Expiration with
-            | WhenRead -> return lock m.EventLock (Internal.readAndRemove' m)
-            | _ -> return Internal.read' m 
+            return Internal.read' m 
         }
-
-    let awaitMailTimeout (ticks : Ticks) (mb : Mailbox<_>) =
-        async {
-            return mb.MailAwait.WaitOne(System.TimeSpan(ticks)) |> ignore
-        }
-
+        
     let awaitMail (mb : Mailbox<_>) =
-        async {
-            return mb.MailAwait.WaitOne() |> ignore
-        }
+        Async.AwaitEvent mb.MailEvent.Publish
+        |> Async.Ignore
 
         
     let listenTo eventStream (mb : Mailbox<_>) =
@@ -84,3 +70,8 @@ module Mailbox =
                 do! post evt mb
         } |> Async.StartChild
             |> Async.map ignore
+
+    let dropAll (mb : Mailbox<_>) =
+        async {
+            return lock mb.EventLock (fun () -> mb.LiveEvents := (Feed.empty, Feed.empty))
+        }

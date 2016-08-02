@@ -31,6 +31,8 @@
           Depressurize  : Async<unit> 
           ShowTerminal  : string -> Async<unit>
           ShowStatus    : string -> Async<unit>
+          SetClock      : Time -> Async<unit>
+          SetFps        : Period -> Async<unit>
         }
      
      type State =
@@ -94,10 +96,16 @@
         }
     
     let setup mb airlock s  =       
-        sampleAsync {
-            let! evts = Mailbox.read mb |> SampleAsync.ofAsync
-            do! status airlock s
+        sampleAsync {           
             let! p = Sample.period |> SampleAsync.ofSample
+            do! status airlock s
+            do! Feed.pulseUpto 10u
+                |> Sample.map (Feed.map (const' <| airlock.SetClock p.Finish))
+                |> Sample.bind Feed.plan_
+            do! Feed.pulseUpto 10u
+                |> Sample.map (Feed.map (const' <| airlock.SetFps p))
+                |> Sample.bind Feed.plan_
+            let! evts = Mailbox.read mb |> SampleAsync.ofAsync
             let! evts' =  doublePress' s.LastDoubleClick evts |> SampleAsync.ofSample
             let! last' = Feed.foldPast (fun s (t,a) -> if a = DoublePressButton then t else s) s.LastDoubleClick (Feed.timeStamp evts') |> SampleAsync.ofSample      
             return! Feed.transition (airlockProg airlock p.Finish.Ticks) { s with LastDoubleClick = last' }  evts'
