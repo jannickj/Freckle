@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Introducing your project
+    <title>Understanding Functional Reactive Programming
 </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A Functional Reactive Programming Library for FSharp"/>
@@ -33,22 +33,84 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="Introducing-your-project" class="anchor" href="#Introducing-your-project">Introducing your project</a></h1>
-<p>Say more</p>
+<h1><a name="Understanding-Functional-Reactive-Programming" class="anchor" href="#Understanding-Functional-Reactive-Programming">Understanding Functional Reactive Programming</a></h1>
+<p>Functional Reactive Programming (or short FRP), is often mired in abstract languge and theoretical functional programming lingo.
+In this tutorial we will attempt to keep it simple and easy to follow.</p>
+<p>To begin with lets define FRP.
+In order for something to be classified as frp it must be:
+<em> Composable and Immutable (i.e. functional)
+</em> Reactive to events
+* Disconnected from sampling resolution</p>
+<p>The first two requirements are fairly easy to understand, i.e. of course it must be functional and be able to react to events occuring in the system.
+However the 3. requirement <strong>Disconnected from sampling resolution</strong>, requires that we understand what sampling resolution is.
+In short the sampling resolution is analogous to the the span of time between each sample, in games(such as CS:GO) this is often refered to as the tick rate.
+However let us see how this function in a real application.
+Imagine we have the following program</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">while</span> <span class="k">true</span> <span class="k">do</span>
+    <span onmouseout="hideTip(event, 'fs1', 2)" onmouseover="showTip(event, 'fs1', 2)" class="f">update</span> ()
+</code></pre></td>
+</tr>
+</table>
+<p>This program updates its state and nothing more, the sampling resolution of this program depends entirely on computer running it and how costly the function <code>update</code> is.
+If we assume that it always takes 16 ms to execute <code>update</code> then we get a sampling resolution at</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="n">1000</span> <span class="o">/</span> <span class="n">16</span> <span class="i">ms</span> <span class="k">~</span> <span class="n">60</span> <span class="i">ticks</span> <span class="i">per</span> <span class="i">seconds</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Meaning that update is called about 60 times per seconds.</p>
+<p>However as is obvious there is no guarantees given that <code>update</code> will take exactly 16 ms to execute. Which might problem if an application needs to update at precise interval,
+old programs have sometimes ignored thus when running them on modern computers they have completely stopped functioning properly.</p>
+<p>The next naive solution to account for a fixed sampling rate would be to delay the update difference. e.g.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 <span class="l">4: </span>
+<span class="l">5: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="prep">#r</span> <span class="s">&quot;Freckle.dll&quot;</span>
-<span class="k">open</span> <span class="i">Freckle</span>
-
-<span class="i">Library</span><span class="o">.</span><span class="i">hello</span> <span class="n">0</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">while</span> <span class="k">true</span> <span class="k">do</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs2', 3)" onmouseover="showTip(event, 'fs2', 3)" class="i">startTime</span> <span class="o">=</span> <span class="i">now</span> ()
+    <span onmouseout="hideTip(event, 'fs1', 4)" onmouseover="showTip(event, 'fs1', 4)" class="f">update</span> ()
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs3', 5)" onmouseover="showTip(event, 'fs3', 5)" class="i">diffTime</span> <span class="o">=</span> <span class="i">now</span> () <span class="o">-</span> <span onmouseout="hideTip(event, 'fs2', 6)" onmouseover="showTip(event, 'fs2', 6)" class="i">startTime</span>
+    <span class="i">wait</span> (<span class="i">desiredDelay</span> <span class="o">-</span> <span onmouseout="hideTip(event, 'fs3', 7)" onmouseover="showTip(event, 'fs3', 7)" class="i">diffTime</span>)
 </code></pre></td>
 </tr>
 </table>
-<p>Some more info</p>
+<p>Initially this provides us with what we required, the program operates consistently at a fixed sampling rate.
+However as you can probably already observe, if for any reason at any point during the life time of the program, <code>update</code> takes longer than expected.
+Meaning that <code>diffTime &gt; desiredDelay</code> i.e. requring us to wait negative, then the program will become out of sync forever.
+If it was because the <code>desiredDelay</code> was set shorter than update is in average, then there is nothing we can do.
+This is because the resolution of the program is too low to support it, much like if we have a picture with a bad resolution we try to show on a large screen, that too will prevent anything meaningful.
+However if in average <code>update</code> is far below the <code>desiredDelay</code> but once in a while goes over <code>desiredDelay</code>, then we essentially skip certain important computations.
+e.g. imagine a program simulating a car but with the expectation that an <code>updateCar</code> function is called 10 times a second, then skipping a couple of calculations can have a huge impact on the result.</p>
+<p>To solve this problem let us propose the next naive solution</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">while</span> <span class="k">true</span> <span class="k">do</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs2', 8)" onmouseover="showTip(event, 'fs2', 8)" class="i">startTime</span> <span class="o">=</span> <span class="i">now</span> ()
+    <span class="k">if</span> <span class="i">lastDiff</span> <span class="o">&lt;</span> <span class="n">0</span> <span class="k">then</span>
+        <span onmouseout="hideTip(event, 'fs1', 9)" onmouseover="showTip(event, 'fs1', 9)" class="f">update</span> ()
+    <span onmouseout="hideTip(event, 'fs1', 10)" onmouseover="showTip(event, 'fs1', 10)" class="f">update</span> ()
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs3', 11)" onmouseover="showTip(event, 'fs3', 11)" class="i">diffTime</span> <span class="o">=</span> <span class="i">now</span> () <span class="o">-</span> <span onmouseout="hideTip(event, 'fs2', 12)" onmouseover="showTip(event, 'fs2', 12)" class="i">startTime</span>
+    <span class="i">wait</span> (<span class="i">desiredDelay</span> <span class="o">-</span> <span onmouseout="hideTip(event, 'fs3', 13)" onmouseover="showTip(event, 'fs3', 13)" class="i">diffTime</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>This solution solves the problem by calling <code>update</code> an extra time in the event</p>
 
+<div class="tip" id="fs1">val update : unit -&gt; unit<br /><br />Full name: Tutorial.update</div>
+<div class="tip" id="fs2">val startTime : obj</div>
+<div class="tip" id="fs3">val diffTime : obj</div>
 
         </div>
         <div class="span3">

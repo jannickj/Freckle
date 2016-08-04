@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Option - Freckle</title>
+    <title>Async - Freckle</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Jannick Johnsen"/>
@@ -35,12 +35,13 @@
 
 
 
-<h1>Option</h1>
+<h1>Async</h1>
 <p>
-  <span>Namespace: FSharp</span><br />
-  <span>Parent Module: <a href="fsharp-helpers.html">Helpers</a></span>
+  <span>Namespace: Freckle</span><br />
 </p>
 <div class="xmldoc">
+<p>Adds more advanced delays</p>
+
 </div>
 
 <!-- Render nested types and modules, if there are any -->
@@ -54,15 +55,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '19', 19)" onmouseover="showTip(event, '19', 19)">
-            ap mf ma
+          <code onmouseout="hideTip(event, '24', 24)" onmouseover="showTip(event, '24', 24)">
+            awaitAny acs
           </code>
-          <div class="tip" id="19">
-            <strong>Signature:</strong> mf:(&#39;?7646 -&gt; &#39;?7647) option -&gt; ma:&#39;?7646 option -&gt; &#39;?7647 option<br />
-                          <strong>Type parameters:</strong> '?7646, '?7647          </div>
+          <div class="tip" id="24">
+            <strong>Signature:</strong> acs:seq&lt;Async&lt;unit&gt;&gt; -&gt; Async&lt;unit&gt;<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Helpers.fs#L108-108" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L107-107" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -72,15 +73,36 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '20', 20)" onmouseover="showTip(event, '20', 20)">
-            bind fm ma
+          <code onmouseout="hideTip(event, '25', 25)" onmouseover="showTip(event, '25', 25)">
+            pulseDelay hz
           </code>
-          <div class="tip" id="20">
-            <strong>Signature:</strong> fm:(&#39;?7649 -&gt; &#39;?7650 option) -&gt; ma:&#39;?7649 option -&gt; &#39;?7650 option<br />
-                          <strong>Type parameters:</strong> '?7649, '?7650          </div>
+          <div class="tip" id="25">
+            <strong>Signature:</strong> hz:double -&gt; Async&lt;unit&gt;<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Helpers.fs#L113-113" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L89-89" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Delays sampling with a pulse.
+NOTICE on most machines running windows you can atmost reach 60 samples per seconds or a thread delay of 15 ms, if you require higher resolution, use pulseDelayBusy instead.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '26', 26)" onmouseover="showTip(event, '26', 26)">
+            pulseDelayBusy hz
+          </code>
+          <div class="tip" id="26">
+            <strong>Signature:</strong> hz:float -&gt; Async&lt;unit&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L97-97" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -90,51 +112,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '21', 21)" onmouseover="showTip(event, '21', 21)">
-            default&#39; x o
+          <code onmouseout="hideTip(event, '27', 27)" onmouseover="showTip(event, '27', 27)">
+            pulseMax 
           </code>
-          <div class="tip" id="21">
-            <strong>Signature:</strong> x:&#39;?7641 -&gt; o:&#39;?7641 option -&gt; &#39;?7641<br />
-                          <strong>Type parameters:</strong> '?7641          </div>
+          <div class="tip" id="27">
+            <strong>Signature:</strong> Async&lt;unit&gt;<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Helpers.fs#L100-100" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '22', 22)" onmouseover="showTip(event, '22', 22)">
-            mapDefault x f o
-          </code>
-          <div class="tip" id="22">
-            <strong>Signature:</strong> x:&#39;?7643 -&gt; f:(&#39;?7644 -&gt; &#39;?7643) -&gt; o:&#39;?7644 option -&gt; &#39;?7643<br />
-                          <strong>Type parameters:</strong> '?7643, '?7644          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Helpers.fs#L105-105" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '23', 23)" onmouseover="showTip(event, '23', 23)">
-            pure&#39; x
-          </code>
-          <div class="tip" id="23">
-            <strong>Signature:</strong> x:&#39;?7639 -&gt; &#39;?7639 option<br />
-                          <strong>Type parameters:</strong> '?7639          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Helpers.fs#L98-98" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Sample.fs#L94-94" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

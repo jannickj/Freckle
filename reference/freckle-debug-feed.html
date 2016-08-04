@@ -41,6 +41,8 @@
   <span>Parent Module: <a href="freckle-debug.html">Debug</a></span>
 </p>
 <div class="xmldoc">
+<p>Debugging functions only for feed</p>
+
 </div>
 
 <!-- Render nested types and modules, if there are any -->
@@ -54,37 +56,41 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '30', 30)" onmouseover="showTip(event, '30', 30)">
+          <code onmouseout="hideTip(event, '35', 35)" onmouseover="showTip(event, '35', 35)">
             trace fr
           </code>
-          <div class="tip" id="30">
+          <div class="tip" id="35">
             <strong>Signature:</strong> fr:Feed&lt;&#39;?7537&gt; -&gt; Feed&lt;&#39;?7537&gt;<br />
                           <strong>Type parameters:</strong> '?7537          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L415-415" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L445-445" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Same a traceMap but just tries to print the event</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '31', 31)" onmouseover="showTip(event, '31', 31)">
+          <code onmouseout="hideTip(event, '36', 36)" onmouseover="showTip(event, '36', 36)">
             traceMap f fr
           </code>
-          <div class="tip" id="31">
+          <div class="tip" id="36">
             <strong>Signature:</strong> f:(&#39;?7534 -&gt; &#39;?7535) -&gt; fr:Feed&lt;&#39;?7534&gt; -&gt; Feed&lt;&#39;?7534&gt;<br />
                           <strong>Type parameters:</strong> '?7534, '?7535          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L414-414" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Feed.fs#L442-442" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>maps and prints events when they are observered, if they are never observed then print will never occur</p>
+
+
         </td>
       </tr>
     </tbody>

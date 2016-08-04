@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Clock - Freckle</title>
+    <title>MailTrigger - Freckle</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Jannick Johnsen"/>
@@ -35,103 +35,35 @@
 
 
 
-<h1>Clock</h1>
+<h1>MailTrigger</h1>
 <p>
   <span>Namespace: Freckle</span><br />
-  <span>Parent Module: <a href="freckle-clock.html">Clock</a></span>
 </p>
 <div class="xmldoc">
-<p>Clock is used to generate the current time</p>
-
 </div>
-
-<!-- Render nested types and modules, if there are any -->
-
-  <h3>Functions and values</h3>
+  <h3>Instance members</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Function or value</td><td>Description</td></tr>
+      <tr><td>Instance member</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '28', 28)" onmouseover="showTip(event, '28', 28)">
-            alwaysAt ticks
+          <code onmouseout="hideTip(event, '165', 165)" onmouseover="showTip(event, '165', 165)">
+            Invoke(arg1, arg2)
           </code>
-          <div class="tip" id="28">
-            <strong>Signature:</strong> ticks:Time -&gt; Clock<br />
+          <div class="tip" id="165">
+            <strong>Signature:</strong> (obj * EventArgs) -&gt; unit<br />
+              <strong>Modifiers:</strong> abstract<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Clock.fs#L40-40" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L8-8" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>A clock that always return the same time, mainly for testing purposes</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '29', 29)" onmouseover="showTip(event, '29', 29)">
-            now arg1
-          </code>
-          <div class="tip" id="29">
-            <strong>Signature:</strong> Clock -&gt; Async&lt;Time&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Clock.fs#L43-43" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Get the current time</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '30', 30)" onmouseover="showTip(event, '30', 30)">
-            ofAsync ma
-          </code>
-          <div class="tip" id="30">
-            <strong>Signature:</strong> ma:Async&lt;Ticks&gt; -&gt; Clock<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Clock.fs#L20-20" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Generates a clock based of async generating a new time.
-If the time generated is the same as last then the time will be incremented by 10μs</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '31', 31)" onmouseover="showTip(event, '31', 31)">
-            systemUtc 
-          </code>
-          <div class="tip" id="31">
-            <strong>Signature:</strong> Clock<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Clock.fs#L37-37" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>A system clock, is recommended to just always use this</p>
-
-
+          
         </td>
       </tr>
     </tbody>
