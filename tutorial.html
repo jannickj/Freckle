@@ -52,7 +52,7 @@ Imagine we have the following program</p>
 <span class="l">2: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">while</span> <span class="k">true</span> <span class="k">do</span>
-    <span onmouseout="hideTip(event, 'fs1', 2)" onmouseover="showTip(event, 'fs1', 2)" class="f">update</span> ()
+    <span onmouseout="hideTip(event, 'fs1', 19)" onmouseover="showTip(event, 'fs1', 19)" class="f">update</span> ()
 </code></pre></td>
 </tr>
 </table>
@@ -73,12 +73,16 @@ old programs have sometimes ignored thus when running them on modern computers t
 <span class="l">3: </span>
 <span class="l">4: </span>
 <span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">while</span> <span class="k">true</span> <span class="k">do</span>
-    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs2', 3)" onmouseover="showTip(event, 'fs2', 3)" class="i">startTime</span> <span class="o">=</span> <span class="i">now</span> ()
-    <span onmouseout="hideTip(event, 'fs1', 4)" onmouseover="showTip(event, 'fs1', 4)" class="f">update</span> ()
-    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs3', 5)" onmouseover="showTip(event, 'fs3', 5)" class="i">diffTime</span> <span class="o">=</span> <span class="i">now</span> () <span class="o">-</span> <span onmouseout="hideTip(event, 'fs2', 6)" onmouseover="showTip(event, 'fs2', 6)" class="i">startTime</span>
-    <span class="i">wait</span> (<span class="i">desiredDelay</span> <span class="o">-</span> <span onmouseout="hideTip(event, 'fs3', 7)" onmouseover="showTip(event, 'fs3', 7)" class="i">diffTime</span>)
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs10', 20)" onmouseover="showTip(event, 'fs10', 20)" class="i">desiredDelay</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs6', 21)" onmouseover="showTip(event, 'fs6', 21)" class="f">time</span> <span class="n">16</span>
+
+<span class="k">while</span> <span class="k">true</span> <span class="k">do</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs11', 22)" onmouseover="showTip(event, 'fs11', 22)" class="i">startTime</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 23)" onmouseover="showTip(event, 'fs5', 23)" class="f">now</span> ()
+    <span onmouseout="hideTip(event, 'fs1', 24)" onmouseover="showTip(event, 'fs1', 24)" class="f">update</span> ()
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs12', 25)" onmouseover="showTip(event, 'fs12', 25)" class="i">diffTime</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 26)" onmouseover="showTip(event, 'fs5', 26)" class="f">now</span> () <span class="o">-</span> <span onmouseout="hideTip(event, 'fs11', 27)" onmouseover="showTip(event, 'fs11', 27)" class="i">startTime</span>
+    <span onmouseout="hideTip(event, 'fs7', 28)" onmouseover="showTip(event, 'fs7', 28)" class="f">wait</span> (<span onmouseout="hideTip(event, 'fs10', 29)" onmouseover="showTip(event, 'fs10', 29)" class="i">desiredDelay</span> <span class="o">-</span> <span onmouseout="hideTip(event, 'fs12', 30)" onmouseover="showTip(event, 'fs12', 30)" class="i">diffTime</span>)
 </code></pre></td>
 </tr>
 </table>
@@ -99,20 +103,42 @@ e.g. imagine a program simulating a car but with the expectation that an <code>u
 <span class="l">7: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">while</span> <span class="k">true</span> <span class="k">do</span>
-    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs2', 8)" onmouseover="showTip(event, 'fs2', 8)" class="i">startTime</span> <span class="o">=</span> <span class="i">now</span> ()
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs11', 31)" onmouseover="showTip(event, 'fs11', 31)" class="i">startTime</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 32)" onmouseover="showTip(event, 'fs5', 32)" class="f">now</span> ()
     <span class="k">if</span> <span class="i">lastDiff</span> <span class="o">&lt;</span> <span class="n">0</span> <span class="k">then</span>
-        <span onmouseout="hideTip(event, 'fs1', 9)" onmouseover="showTip(event, 'fs1', 9)" class="f">update</span> ()
-    <span onmouseout="hideTip(event, 'fs1', 10)" onmouseover="showTip(event, 'fs1', 10)" class="f">update</span> ()
-    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs3', 11)" onmouseover="showTip(event, 'fs3', 11)" class="i">diffTime</span> <span class="o">=</span> <span class="i">now</span> () <span class="o">-</span> <span onmouseout="hideTip(event, 'fs2', 12)" onmouseover="showTip(event, 'fs2', 12)" class="i">startTime</span>
-    <span class="i">wait</span> (<span class="i">desiredDelay</span> <span class="o">-</span> <span onmouseout="hideTip(event, 'fs3', 13)" onmouseover="showTip(event, 'fs3', 13)" class="i">diffTime</span>)
+        <span onmouseout="hideTip(event, 'fs1', 33)" onmouseover="showTip(event, 'fs1', 33)" class="f">update</span> ()
+    <span onmouseout="hideTip(event, 'fs1', 34)" onmouseover="showTip(event, 'fs1', 34)" class="f">update</span> ()
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs12', 35)" onmouseover="showTip(event, 'fs12', 35)" class="i">diffTime</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 36)" onmouseover="showTip(event, 'fs5', 36)" class="f">now</span> () <span class="o">-</span> <span onmouseout="hideTip(event, 'fs11', 37)" onmouseover="showTip(event, 'fs11', 37)" class="i">startTime</span>
+    <span onmouseout="hideTip(event, 'fs7', 38)" onmouseover="showTip(event, 'fs7', 38)" class="f">wait</span> (<span onmouseout="hideTip(event, 'fs10', 39)" onmouseover="showTip(event, 'fs10', 39)" class="i">desiredDelay</span> <span class="o">-</span> <span onmouseout="hideTip(event, 'fs12', 40)" onmouseover="showTip(event, 'fs12', 40)" class="i">diffTime</span>)
 </code></pre></td>
 </tr>
 </table>
-<p>This solution solves the problem by calling <code>update</code> an extra time in the event</p>
+<p>This solution solves the problem by calling <code>update</code> an extra time in the event it becomes out of sync.
+So job done? Not quite... because depending on how long a single execution takes it might still cause update to become out of sync.</p>
+<p>Imagine that <code>update</code> was for a graphical application and looked something like this:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs1', 41)" onmouseover="showTip(event, 'fs1', 41)" class="f">update</span> () <span class="o">=</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs13', 42)" onmouseover="showTip(event, 'fs13', 42)" class="i">state</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs8', 43)" onmouseover="showTip(event, 'fs8', 43)" class="f">updateState</span>() <span class="c">//Fairly fast state update</span>
+    <span onmouseout="hideTip(event, 'fs9', 44)" onmouseover="showTip(event, 'fs9', 44)" class="f">render</span> <span onmouseout="hideTip(event, 'fs13', 45)" onmouseover="showTip(event, 'fs13', 45)" class="i">state</span>              <span class="c">//Expensive graphic render function</span>
+</code></pre></td>
+</tr>
+</table>
 
 <div class="tip" id="fs1">val update : unit -&gt; unit<br /><br />Full name: Tutorial.update</div>
-<div class="tip" id="fs2">val startTime : obj</div>
-<div class="tip" id="fs3">val diffTime : obj</div>
+<div class="tip" id="fs2">Multiple items<br />union case Time.Time: unit -&gt; Time<br /><br />--------------------<br />type Time =<br />&#160;&#160;| Time of unit<br />&#160;&#160;static member ( - ) : &#39;a * &#39;b -&gt; Time<br /><br />Full name: Tutorial.Time</div>
+<div class="tip" id="fs3">type unit = Unit<br /><br />Full name: Microsoft.FSharp.Core.unit</div>
+<div class="tip" id="fs4">val failwith : message:string -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.Operators.failwith</div>
+<div class="tip" id="fs5">val now : unit -&gt; Time<br /><br />Full name: Tutorial.now</div>
+<div class="tip" id="fs6">val time : &#39;a -&gt; Time<br /><br />Full name: Tutorial.time</div>
+<div class="tip" id="fs7">val wait : (Time -&gt; unit)<br /><br />Full name: Tutorial.wait</div>
+<div class="tip" id="fs8">val updateState : unit -&gt; unit<br /><br />Full name: Tutorial.updateState</div>
+<div class="tip" id="fs9">val render : unit -&gt; unit<br /><br />Full name: Tutorial.render</div>
+<div class="tip" id="fs10">val desiredDelay : Time<br /><br />Full name: Tutorial.desiredDelay</div>
+<div class="tip" id="fs11">val startTime : Time</div>
+<div class="tip" id="fs12">val diffTime : Time</div>
+<div class="tip" id="fs13">val state : unit</div>
 
         </div>
         <div class="span3">
