@@ -39,14 +39,14 @@ In this tutorial we will attempt to keep it simple and easy to follow.</p>
 <p>To begin with lets define FRP.
 In order for something to be classified as frp it must be:</p>
 <ul>
-<li>Composable and Immutable (i.e. functional)</li>
-<li>Reactive to events</li>
-<li>Disconnected from sampling resolution</li>
+<li>Composable and Declarative (i.e. functional)</li>
+<li>Reactive</li>
+<li>Sampling Resolution Oblivious</li>
 </ul>
 <p>The first two requirements are fairly easy to understand, i.e. of course it must be functional and be able to react to events occuring in the system.
-However the 3. requirement <strong>Disconnected from sampling resolution</strong>, requires that we understand what sampling resolution is.
-In short the sampling resolution is analogous to the the span of time between each sample, in games(such as CS:GO) this is often refered to as the tick rate.
-However let us see how this function in a real application.
+However the 3. requirement <strong>Sampling Resolution Oblivious</strong>, requires that we understand what sampling resolution is.</p>
+<p>In short the sampling resolution is analogous to the the span of time between each sample, in video games this is often refered to as the tick rate.</p>
+<p>However let us see how this problem plays out in an actual application.
 Imagine we have the following program</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -89,8 +89,8 @@ old programs have sometimes ignored thus when running them on modern computers t
 <p>Initially this provides us with what we required, the program operates consistently at a fixed sampling rate.
 However as you can probably already observe, if for any reason at any point during the life time of the program, <code>update</code> takes longer than expected.
 Meaning that <code>diffTime &gt; desiredDelay</code> i.e. requring us to wait negative, then the program will become out of sync forever.
-If it was because the <code>desiredDelay</code> was set shorter than update is in average, then there is nothing we can do.
-This is because the resolution of the program is too low to support it, much like if we have a picture with a bad resolution we try to show on a large screen, that too will prevent anything meaningful.
+If it was because the <code>desiredDelay</code> was set shorter than update is in average, then there is nothing we can do.</p>
+<p>This is because the resolution of the program is too low to support it, much like if we have a picture with a bad resolution we try to show on a large screen, that too will prevent anything meaningful.
 However if in average <code>update</code> is far below the <code>desiredDelay</code> but once in a while goes over <code>desiredDelay</code>, then we essentially skip certain important computations.
 e.g. imagine a program simulating a car but with the expectation that an <code>updateCar</code> function is called 10 times a second, then skipping a couple of calculations can have a huge impact on the result.</p>
 <p>To solve this problem let us propose the next naive solution</p>
@@ -125,6 +125,20 @@ So job done? Not quite... because depending on how long a single execution takes
 </code></pre></td>
 </tr>
 </table>
+<p>As you might imagine rendering two times in a row doesn't change anything from an application perspective, however it is a huge drain on the resources of the cpu.
+So what we in reality want is something that allows us to define that if we miss an <code>updateState</code> but if we miss a <code>render</code> then that should just be skipped.</p>
+<p>Before we move onto how frp would handle these problems, let's highlight one thing that has been overlooked so far.</p>
+<p>Remember the <strong>Oblivious</strong> in Sampling Resolution Oblivious, thus far the proposed solutions have completely overlooked this aspect.
+All we have achieved is uniform(kinda..) sampling however consider what would happen if we changed the <code>desiredDelay</code> to half its current value.</p>
+<p>Essentially this would mean <code>update</code> is called twice as many times, or in other words the application is <strong>Sampling Resolution Sensitive</strong>.
+However if we consider all the prior problems they have all been the victim of some form of Sampling Resolution Sensitivity.
+This is why <strong>Sampling Resolution Obliviousity</strong> is and must be a property of FRP.</p>
+<p>So far the problems we have shown are</p>
+<p>1 Unpredictable Sampling
+2 Single samplings causing out of sync
+3 Redudant sampling
+4 The root to all of these being <strong>Sampling Resolution Sensitivity</strong></p>
+<h1><a name="Understanding-Functional-Reactive-Programming-1" class="anchor" href="#Understanding-Functional-Reactive-Programming-1">Understanding Functional Reactive Programming</a></h1>
 
 <div class="tip" id="fs1">val update : unit -&gt; unit<br /><br />Full name: Tutorial.update</div>
 <div class="tip" id="fs2">Multiple items<br />union case Time.Time: unit -&gt; Time<br /><br />--------------------<br />type Time =<br />&#160;&#160;| Time of unit<br />&#160;&#160;static member ( - ) : &#39;a * &#39;b -&gt; Time<br /><br />Full name: Tutorial.Time</div>
