@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Understanding Functional Reactive Programming
+    <title>Part 1: Understanding Functional Reactive Programming
 </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A Functional Reactive Programming Library for FSharp"/>
@@ -33,7 +33,7 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="Understanding-Functional-Reactive-Programming" class="anchor" href="#Understanding-Functional-Reactive-Programming">Understanding Functional Reactive Programming</a></h1>
+<h1><a name="Part-1-Understanding-Functional-Reactive-Programming" class="anchor" href="#Part-1-Understanding-Functional-Reactive-Programming">Part 1: Understanding Functional Reactive Programming</a></h1>
 <p>Functional Reactive Programming (or short FRP), is often mired in abstract languge and theoretical functional programming lingo.
 In this tutorial we will attempt to keep it simple and easy to follow.</p>
 <p>To begin with lets define FRP.
@@ -129,9 +129,9 @@ So job done? Not quite... because depending on how long a single execution takes
 So what we in reality want is something that allows us to define that if we miss an <code>updateState</code> but if we miss a <code>render</code> then that should just be skipped.</p>
 <p>Before we move onto how frp would handle these problems, let's highlight one thing that has been overlooked so far.</p>
 <p>Remember the <strong>Oblivious</strong> in Sampling Resolution Oblivious, thus far the proposed solutions have completely overlooked this aspect.
-All we have achieved is uniform(kinda..) sampling however consider what would happen if we changed the <code>desiredDelay</code> to half its current value.</p>
-<p>Essentially this would mean <code>update</code> is called twice as many times, or in other words the application is <strong>Sampling Resolution Sensitive</strong>.
-However if we consider all the prior problems they have all been the victim of some form of Sampling Resolution Sensitivity.
+All we have achieved is uniform(kinda..) sampling however consider what would happen if we changed the <code>desiredDelay</code> to half its current value.
+Essentially this would mean <code>update</code> is called twice as many times, or in other words the application is <strong>Sampling Resolution Sensitive</strong>.</p>
+<p>On reflection if we consider all the prior problems they have all been the victim of some form of Sampling Resolution Sensitivity.
 This is why <strong>Sampling Resolution Obliviousity</strong> is and must be a property of FRP.</p>
 <p>So far the problems we have shown are</p>
 <ol>
@@ -140,7 +140,7 @@ This is why <strong>Sampling Resolution Obliviousity</strong> is and must be a p
 <li>Redudant sampling</li>
 <li>The root to all of these being <strong>Sampling Resolution Sensitivity</strong></li>
 </ol>
-<h1><a name="Understanding-Functional-Reactive-Programming-1" class="anchor" href="#Understanding-Functional-Reactive-Programming-1">Understanding Functional Reactive Programming</a></h1>
+<h1><a name="Part-2" class="anchor" href="#Part-2">Part 2:</a></h1>
 
 <div class="tip" id="fs1">val update : unit -&gt; unit<br /><br />Full name: Tutorial.update</div>
 <div class="tip" id="fs2">Multiple items<br />union case Time.Time: unit -&gt; Time<br /><br />--------------------<br />type Time =<br />&#160;&#160;| Time of unit<br />&#160;&#160;static member ( - ) : &#39;a * &#39;b -&gt; Time<br /><br />Full name: Tutorial.Time</div>
