@@ -66,7 +66,7 @@ If we assume that it always takes 16 ms to execute <code>update</code> then we g
 </table>
 <p>Meaning that update is called about 60 times per seconds.</p>
 <p>However as is obvious there is no guarantees given that <code>update</code> will take exactly 16 ms to execute. Which might problem if an application needs to update at precise interval,
-old programs have sometimes ignored thus when running them on modern computers they have completely stopped functioning properly.</p>
+old programs have sometimes ignored this meaning when executed on modern computers they run extremly fast or have completely stopped functioning properly.</p>
 <p>The next naive solution to account for a fixed sampling rate would be to delay the update difference. e.g.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
