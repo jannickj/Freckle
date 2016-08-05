@@ -244,15 +244,16 @@ This is why <strong>Sampling Resolution Insensitivity</strong> is and must be a 
 <p>So far so good we see that even though we sample 10 times more times than we need our app remains consistent.</p>
 <p>Question: what happens if the resolution is below our needs?
 Let's see what occurs when we set the delay to 2 seconds</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-<span class="l">5: </span>
-<span class="l">6: </span>
-<span class="l">7: </span>
-<span class="l">8: </span>
-<span class="l">9: </span>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs24', 74)" onmouseover="showTip(event, 'fs24', 74)" class="i">boundResolutionApp</span> <span class="i">state</span> <span class="o">=</span> 
     <span onmouseout="hideTip(event, 'fs21', 75)" onmouseover="showTip(event, 'fs21', 75)" class="i">app</span> <span class="i">state</span>
@@ -263,6 +264,7 @@ Let's see what occurs when we set the delay to 2 seconds</p>
 <span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">25</span><span class="o">:</span> <span class="n">4</span>
 <span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">27</span><span class="o">:</span> <span class="n">6</span>
 <span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">29</span><span class="o">:</span> <span class="n">8</span>
+<span class="o">..</span><span class="o">..</span>
 </code></pre></td>
 </tr>
 </table>
