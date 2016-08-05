@@ -41,10 +41,10 @@ In order for something to be classified as frp it must be:</p>
 <ul>
 <li>Composable and Declarative (i.e. functional)</li>
 <li>Reactive</li>
-<li>Sampling Resolution Oblivious</li>
+<li>Sampling Resolution Insensitive</li>
 </ul>
 <p>The first two requirements are fairly easy to understand, i.e. of course it must be functional and be able to react to events occuring in the system.
-However the 3. requirement <strong>Sampling Resolution Oblivious</strong>, requires that we understand what sampling resolution is.</p>
+However the 3. requirement <strong>Sampling Resolution Insensitive</strong>, requires that we understand what sampling resolution is.</p>
 <p>In short the sampling resolution is analogous to the the span of time between each sample, in video games this is often refered to as the tick rate.</p>
 <p>However let us see how this problem plays out in an actual application.
 Imagine we have the following program</p>
@@ -75,8 +75,10 @@ old programs have sometimes ignored thus when running them on modern computers t
 <span class="l">5: </span>
 <span class="l">6: </span>
 <span class="l">7: </span>
+<span class="l">8: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs10', 20)" onmouseover="showTip(event, 'fs10', 20)" class="i">desiredDelay</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs6', 21)" onmouseover="showTip(event, 'fs6', 21)" class="f">time</span> <span class="n">16</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">s</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs10', 20)" onmouseover="showTip(event, 'fs10', 20)" class="i">desiredDelay</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs6', 21)" onmouseover="showTip(event, 'fs6', 21)" class="f">time</span> <span class="n">16</span>
 
 <span class="k">while</span> <span class="k">true</span> <span class="k">do</span>
     <span class="k">let</span> <span onmouseout="hideTip(event, 'fs11', 22)" onmouseover="showTip(event, 'fs11', 22)" class="i">startTime</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 23)" onmouseover="showTip(event, 'fs5', 23)" class="f">now</span> ()
@@ -128,11 +130,11 @@ So job done? Not quite... because depending on how long a single execution takes
 <p>As you might imagine rendering two times in a row doesn't change anything from an application perspective, however it is a huge drain on the resources of the cpu.
 So what we in reality want is something that allows us to define that if we miss an <code>updateState</code> but if we miss a <code>render</code> then that should just be skipped.</p>
 <p>Before we move onto how frp would handle these problems, let's highlight one thing that has been overlooked so far.</p>
-<p>Remember the <strong>Oblivious</strong> in Sampling Resolution Oblivious, thus far the proposed solutions have completely overlooked this aspect.
+<p>Remember the <strong>Insensitive</strong> in Sampling Resolution Insensitive, thus far the proposed solutions have completely overlooked this aspect.
 All we have achieved is uniform(kinda..) sampling however consider what would happen if we changed the <code>desiredDelay</code> to half its current value.
 Essentially this would mean <code>update</code> is called twice as many times, or in other words the application is <strong>Sampling Resolution Sensitive</strong>.</p>
-<p>On reflection if we consider all the prior problems they have all been the victim of some form of Sampling Resolution Sensitivity.
-This is why <strong>Sampling Resolution Obliviousity</strong> is and must be a property of FRP.</p>
+<p>On reflection if we consider all the prior problems they have all been the victim of some form of <strong>Sampling Resolution Sensitivity</strong>.
+This is why <strong>Sampling Resolution Insensitivity</strong> is and must be a property of FRP.</p>
 <p>So far the problems we have shown are</p>
 <ol>
 <li>Unpredictable Sampling</li>
@@ -140,7 +142,136 @@ This is why <strong>Sampling Resolution Obliviousity</strong> is and must be a p
 <li>Redudant sampling</li>
 <li>The root to all of these being <strong>Sampling Resolution Sensitivity</strong></li>
 </ol>
-<h1><a name="Part-2" class="anchor" href="#Part-2">Part 2:</a></h1>
+<h1><a name="Part-2-Using-Freckle-to-write-Sampling-Resolution-Insensitive-programs" class="anchor" href="#Part-2-Using-Freckle-to-write-Sampling-Resolution-Insensitive-programs">Part 2: Using Freckle to write Sampling Resolution Insensitive programs</a></h1>
+<p>Now that we understand the problem of <strong>Sampling Resolution Sensitivity</strong>, let's see how code using freckle would look.</p>
+<p>Lets assume we are building a simple count app, that will count and show the result in the console.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+<span class="l">21: </span>
+<span class="l">22: </span>
+<span class="l">23: </span>
+<span class="l">24: </span>
+<span class="l">25: </span>
+<span class="l">26: </span>
+<span class="l">27: </span>
+<span class="l">28: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">//Simple count function</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs14', 46)" onmouseover="showTip(event, 'fs14', 46)" class="f">updateState</span> <span onmouseout="hideTip(event, 'fs15', 47)" onmouseover="showTip(event, 'fs15', 47)" class="i">s</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs15', 48)" onmouseover="showTip(event, 'fs15', 48)" class="i">s</span> <span class="o">+</span> <span class="n">1</span>
+
+<span class="c">//Wrapping a simple print in async, might seem strange if you are used to C#.</span>
+<span class="c">//However if you tried haskell&#39;s IO syntax this should feel right at home</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs16', 49)" onmouseover="showTip(event, 'fs16', 49)" class="f">render</span> <span onmouseout="hideTip(event, 'fs17', 50)" onmouseover="showTip(event, 'fs17', 50)" class="i">at</span> <span onmouseout="hideTip(event, 'fs18', 51)" onmouseover="showTip(event, 'fs18', 51)" class="i">state</span> <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'fs19', 52)" onmouseover="showTip(event, 'fs19', 52)" class="i">async</span> {
+        <span class="c">//is the time when render was called</span>
+        <span class="k">return</span> <span onmouseout="hideTip(event, 'fs20', 53)" onmouseover="showTip(event, 'fs20', 53)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%A</span><span class="s">: </span><span class="pf">%d</span><span class="s">&quot;</span> (<span onmouseout="hideTip(event, 'fs2', 54)" onmouseover="showTip(event, 'fs2', 54)" class="p">Time</span><span class="o">.</span><span class="i">toDateTime</span> <span onmouseout="hideTip(event, 'fs17', 55)" onmouseover="showTip(event, 'fs17', 55)" class="i">at</span>)<span class="o">.</span><span class="i">TimeOfDay</span> <span onmouseout="hideTip(event, 'fs18', 56)" onmouseover="showTip(event, 'fs18', 56)" class="i">state</span>
+    } 
+
+<span class="c">//The app function is our declarative description of what our application does</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs21', 57)" onmouseover="showTip(event, 'fs21', 57)" class="f">app</span> (<span onmouseout="hideTip(event, 'fs18', 58)" onmouseover="showTip(event, 'fs18', 58)" class="i">state</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs22', 59)" onmouseover="showTip(event, 'fs22', 59)" class="t">int</span>) <span class="o">:</span> <span class="i">Sample</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs23', 60)" onmouseover="showTip(event, 'fs23', 60)" class="i">Async</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs22', 61)" onmouseover="showTip(event, 'fs22', 61)" class="i">int</span><span class="o">&gt;</span><span class="o">&gt;</span><span class="o">=</span>
+    <span class="c">//sampleAsync is the same as Sample&lt;Async&lt;_&gt;&gt;</span>
+    <span class="i">sampleAsync</span> {
+        
+        <span class="k">let!</span> <span class="i">state&#39;</span> <span class="o">=</span> 
+            <span class="i">Feed</span><span class="o">.</span><span class="i">pulse</span> <span class="n">1u</span> <span class="c">//We generate a pulse at one tick per second</span>
+            <span class="o">|&gt;</span> <span class="i">Sample</span><span class="o">.</span><span class="i">bind</span> (<span class="i">Feed</span><span class="o">.</span><span class="i">foldPast</span> (<span class="k">fun</span> <span class="i">s</span> _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs14', 62)" onmouseover="showTip(event, 'fs14', 62)" class="i">updateState</span> <span class="i">s</span>) <span onmouseout="hideTip(event, 'fs18', 63)" onmouseover="showTip(event, 'fs18', 63)" class="i">state</span>) <span class="c">//Fold over all pulses generated in this sample</span>
+            <span class="o">|&gt;</span> <span class="i">SampleAsync</span><span class="o">.</span><span class="i">ofSample</span> <span class="c">//Convert our Sample&lt;int&gt; to Sample&lt;Async&lt;int&gt;&gt;</span>
+        
+        <span class="c">//the Upto suffix inform the sampler that if we miss a pulse then we don&#39;t care</span>
+        <span class="k">do!</span> <span class="i">Feed</span><span class="o">.</span><span class="i">pulseUpto</span> <span class="n">1u</span>
+            <span class="o">|&gt;</span> <span class="i">Sample</span><span class="o">.</span><span class="i">map</span> (<span class="i">Feed</span><span class="o">.</span><span class="i">map</span> (<span class="k">fun</span> <span class="i">at</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs16', 64)" onmouseover="showTip(event, 'fs16', 64)" class="i">render</span> <span class="i">at</span> <span class="i">state&#39;</span>)) <span class="c">//Change the pulses to the render async</span>
+            <span class="o">|&gt;</span> <span class="i">Sample</span><span class="o">.</span><span class="i">bind</span> <span class="i">Feed</span><span class="o">.</span><span class="i">plan_</span> <span class="c">//plan converts a feed of async into an async of feed </span>
+                                      <span class="c">//plan_ is the same but it discards the resulting feed</span>
+        <span class="k">return</span> <span class="i">state&#39;</span>
+    }
+</code></pre></td>
+</tr>
+</table>
+<p>To set a bounded resolution we simply append a delay 100ms ~ 10 ticks per second</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs24', 65)" onmouseover="showTip(event, 'fs24', 65)" class="f">boundResolutionApp</span> <span onmouseout="hideTip(event, 'fs18', 66)" onmouseover="showTip(event, 'fs18', 66)" class="i">state</span> <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'fs21', 67)" onmouseover="showTip(event, 'fs21', 67)" class="f">app</span> <span onmouseout="hideTip(event, 'fs18', 68)" onmouseover="showTip(event, 'fs18', 68)" class="i">state</span>
+    <span class="o">|&gt;</span> <span class="i">SampleAsync</span><span class="o">.</span><span class="i">doAsync</span> (<span onmouseout="hideTip(event, 'fs23', 69)" onmouseover="showTip(event, 'fs23', 69)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs25', 70)" onmouseover="showTip(event, 'fs25', 70)" class="i">Sleep</span> <span class="n">100</span>) 
+</code></pre></td>
+</tr>
+</table>
+<p>With this all that should be left is simply to begin sampling</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">//the sampler needs a clock to meassure time, the app function and a start state in this case zero</span>
+<span class="i">Sample</span><span class="o">.</span><span class="i">sampleForever</span> <span class="i">Clock</span><span class="o">.</span><span class="i">systemUtc</span> <span onmouseout="hideTip(event, 'fs24', 71)" onmouseover="showTip(event, 'fs24', 71)" class="i">boundResolutionApp</span> <span class="n">0</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs23', 72)" onmouseover="showTip(event, 'fs23', 72)" class="t">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs26', 73)" onmouseover="showTip(event, 'fs26', 73)" class="f">RunSynchronously</span>
+
+<span class="c">//Run 1</span>
+<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">48</span><span class="o">:</span> <span class="n">1</span>
+<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">49</span><span class="o">:</span> <span class="n">2</span>
+<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">50</span><span class="o">:</span> <span class="n">3</span>
+<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">51</span><span class="o">:</span> <span class="n">4</span>
+<span class="o">..</span><span class="o">..</span>
+</code></pre></td>
+</tr>
+</table>
+<p>So far so good we see that even though we sample 10 times more times than we need our app remains consistent.</p>
+<p>Question: what happens if the resolution is below our needs?
+Let's see what occurs when we set the delay to 2 seconds</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs24', 74)" onmouseover="showTip(event, 'fs24', 74)" class="i">boundResolutionApp</span> <span class="i">state</span> <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'fs21', 75)" onmouseover="showTip(event, 'fs21', 75)" class="i">app</span> <span class="i">state</span>
+    <span class="o">|&gt;</span> <span class="i">SampleAsync</span><span class="o">.</span><span class="i">doAsync</span> (<span onmouseout="hideTip(event, 'fs23', 76)" onmouseover="showTip(event, 'fs23', 76)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs25', 77)" onmouseover="showTip(event, 'fs25', 77)" class="i">Sleep</span> <span class="n">2000</span>)
+
+<span class="c">//Run 2</span>
+<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">23</span><span class="o">:</span> <span class="n">2</span>
+<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">25</span><span class="o">:</span> <span class="n">4</span>
+<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">27</span><span class="o">:</span> <span class="n">6</span>
+<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">29</span><span class="o">:</span> <span class="n">8</span>
+</code></pre></td>
+</tr>
+</table>
+<p>As we can see the prints (the call to our render function) only happens every other second. However our counting remains correct.
+You could say that our application changed behavior duo to changing of the resolution, and thus is not <strong>Sampling Resolution Insensitive</strong>.
+However this is from the app's perspective completely expected and counted for behavior, as it explicitly <code>pulseUpto</code> for the printout.
+In truth the app only cares about getting a correct count, printout is a secondary concern and it is only interested in it occuring at some point.
+Thus the app maintains its property of being <strong>Insensitive</strong></p>
+<p>For a fun exercise try and run the code yourself!, try and see what happens if the resolution is unbounded.</p>
 
 <div class="tip" id="fs1">val update : unit -&gt; unit<br /><br />Full name: Tutorial.update</div>
 <div class="tip" id="fs2">Multiple items<br />union case Time.Time: unit -&gt; Time<br /><br />--------------------<br />type Time =<br />&#160;&#160;| Time of unit<br />&#160;&#160;static member ( - ) : &#39;a * &#39;b -&gt; Time<br /><br />Full name: Tutorial.Time</div>
@@ -155,6 +286,19 @@ This is why <strong>Sampling Resolution Obliviousity</strong> is and must be a p
 <div class="tip" id="fs11">val startTime : Time</div>
 <div class="tip" id="fs12">val diffTime : Time</div>
 <div class="tip" id="fs13">val state : unit</div>
+<div class="tip" id="fs14">val updateState : s:int -&gt; int<br /><br />Full name: Tutorial.updateState</div>
+<div class="tip" id="fs15">val s : int</div>
+<div class="tip" id="fs16">val render : at:&#39;a -&gt; state:int -&gt; Async&lt;unit&gt;<br /><br />Full name: Tutorial.render</div>
+<div class="tip" id="fs17">val at : &#39;a</div>
+<div class="tip" id="fs18">val state : int</div>
+<div class="tip" id="fs19">val async : AsyncBuilder<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.async</div>
+<div class="tip" id="fs20">val printfn : format:Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.printfn</div>
+<div class="tip" id="fs21">val app : state:int -&gt; &#39;a<br /><br />Full name: Tutorial.app</div>
+<div class="tip" id="fs22">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;</div>
+<div class="tip" id="fs23">Multiple items<br />type Async<br />static member AsBeginEnd : computation:(&#39;Arg -&gt; Async&lt;&#39;T&gt;) -&gt; (&#39;Arg * AsyncCallback * obj -&gt; IAsyncResult) * (IAsyncResult -&gt; &#39;T) * (IAsyncResult -&gt; unit)<br />static member AwaitEvent : event:IEvent&lt;&#39;Del,&#39;T&gt; * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt; (requires delegate and &#39;Del :&gt; Delegate)<br />static member AwaitIAsyncResult : iar:IAsyncResult * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />static member AwaitTask : task:Task -&gt; Async&lt;unit&gt;<br />static member AwaitTask : task:Task&lt;&#39;T&gt; -&gt; Async&lt;&#39;T&gt;<br />static member AwaitWaitHandle : waitHandle:WaitHandle * ?millisecondsTimeout:int -&gt; Async&lt;bool&gt;<br />static member CancelDefaultToken : unit -&gt; unit<br />static member Catch : computation:Async&lt;&#39;T&gt; -&gt; Async&lt;Choice&lt;&#39;T,exn&gt;&gt;<br />static member FromBeginEnd : beginAction:(AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member FromBeginEnd : arg:&#39;Arg1 * beginAction:(&#39;Arg1 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member FromBeginEnd : arg1:&#39;Arg1 * arg2:&#39;Arg2 * beginAction:(&#39;Arg1 * &#39;Arg2 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member FromBeginEnd : arg1:&#39;Arg1 * arg2:&#39;Arg2 * arg3:&#39;Arg3 * beginAction:(&#39;Arg1 * &#39;Arg2 * &#39;Arg3 * AsyncCallback * obj -&gt; IAsyncResult) * endAction:(IAsyncResult -&gt; &#39;T) * ?cancelAction:(unit -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member FromContinuations : callback:((&#39;T -&gt; unit) * (exn -&gt; unit) * (OperationCanceledException -&gt; unit) -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member Ignore : computation:Async&lt;&#39;T&gt; -&gt; Async&lt;unit&gt;<br />static member OnCancel : interruption:(unit -&gt; unit) -&gt; Async&lt;IDisposable&gt;<br />static member Parallel : computations:seq&lt;Async&lt;&#39;T&gt;&gt; -&gt; Async&lt;&#39;T []&gt;<br />static member RunSynchronously : computation:Async&lt;&#39;T&gt; * ?timeout:int * ?cancellationToken:CancellationToken -&gt; &#39;T<br />static member Sleep : millisecondsDueTime:int -&gt; Async&lt;unit&gt;<br />static member Start : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br />static member StartAsTask : computation:Async&lt;&#39;T&gt; * ?taskCreationOptions:TaskCreationOptions * ?cancellationToken:CancellationToken -&gt; Task&lt;&#39;T&gt;<br />static member StartChild : computation:Async&lt;&#39;T&gt; * ?millisecondsTimeout:int -&gt; Async&lt;Async&lt;&#39;T&gt;&gt;<br />static member StartChildAsTask : computation:Async&lt;&#39;T&gt; * ?taskCreationOptions:TaskCreationOptions -&gt; Async&lt;Task&lt;&#39;T&gt;&gt;<br />static member StartImmediate : computation:Async&lt;unit&gt; * ?cancellationToken:CancellationToken -&gt; unit<br />static member StartWithContinuations : computation:Async&lt;&#39;T&gt; * continuation:(&#39;T -&gt; unit) * exceptionContinuation:(exn -&gt; unit) * cancellationContinuation:(OperationCanceledException -&gt; unit) * ?cancellationToken:CancellationToken -&gt; unit<br />static member SwitchToContext : syncContext:SynchronizationContext -&gt; Async&lt;unit&gt;<br />static member SwitchToNewThread : unit -&gt; Async&lt;unit&gt;<br />static member SwitchToThreadPool : unit -&gt; Async&lt;unit&gt;<br />static member TryCancelled : computation:Async&lt;&#39;T&gt; * compensation:(OperationCanceledException -&gt; unit) -&gt; Async&lt;&#39;T&gt;<br />static member CancellationToken : Async&lt;CancellationToken&gt;<br />static member DefaultCancellationToken : CancellationToken<br /><br />Full name: Microsoft.FSharp.Control.Async<br /><br />--------------------<br />type Async&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Control.Async&lt;_&gt;</div>
+<div class="tip" id="fs24">val boundResolutionApp : state:int -&gt; &#39;a<br /><br />Full name: Tutorial.boundResolutionApp</div>
+<div class="tip" id="fs25">static member Async.Sleep : millisecondsDueTime:int -&gt; Async&lt;unit&gt;</div>
+<div class="tip" id="fs26">static member Async.RunSynchronously : computation:Async&lt;&#39;T&gt; * ?timeout:int * ?cancellationToken:System.Threading.CancellationToken -&gt; &#39;T</div>
 
         </div>
         <div class="span3">
