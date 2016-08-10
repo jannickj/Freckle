@@ -214,26 +214,27 @@ This is why <strong>Sampling Resolution Insensitivity</strong> is and must be a 
 </tr>
 </table>
 <p>With this all that should be left is simply to begin sampling</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">//the sampler needs a clock to meassure time, the app function and a start state in this case zero</span>
 <span onmouseout="hideTip(event, 'fs26', 102)" onmouseover="showTip(event, 'fs26', 102)" class="t">Sample</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs43', 103)" onmouseover="showTip(event, 'fs43', 103)" class="f">sampleForever</span> <span onmouseout="hideTip(event, 'fs44', 104)" onmouseover="showTip(event, 'fs44', 104)" class="t">Clock</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs45', 105)" onmouseover="showTip(event, 'fs45', 105)" class="i">systemUtc</span> <span onmouseout="hideTip(event, 'fs40', 106)" onmouseover="showTip(event, 'fs40', 106)" class="f">boundResolutionApp</span> <span class="n">0</span>
 <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs27', 107)" onmouseover="showTip(event, 'fs27', 107)" class="t">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs46', 108)" onmouseover="showTip(event, 'fs46', 108)" class="f">RunSynchronously</span>
-
-<span class="c">//Run 1</span>
-<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">48</span><span class="o">:</span> <span class="n">1</span>
-<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">49</span><span class="o">:</span> <span class="n">2</span>
-<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">50</span><span class="o">:</span> <span class="n">3</span>
-<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">51</span><span class="o">:</span> <span class="n">4</span>
+</code></pre></td>
+</tr>
+</table>
+<p><strong>Run 1</strong></p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">01</span><span class="o">:</span> <span class="n">1</span>
+<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">02</span><span class="o">:</span> <span class="n">2</span>
+<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">03</span><span class="o">:</span> <span class="n">3</span>
+<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">04</span><span class="o">:</span> <span class="n">4</span>
 <span class="o">..</span><span class="o">..</span>
 </code></pre></td>
 </tr>
@@ -241,26 +242,27 @@ This is why <strong>Sampling Resolution Insensitivity</strong> is and must be a 
 <p>So far so good we see that even though we sample 10 times more times than we need our app remains consistent.</p>
 <p>Question: what happens if the resolution is below our needs?
 Let's see what occurs when we set the delay to 2 seconds</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs40', 109)" onmouseover="showTip(event, 'fs40', 109)" class="i">boundResolutionApp</span> <span class="i">state</span> <span class="o">=</span> 
     <span onmouseout="hideTip(event, 'fs24', 110)" onmouseover="showTip(event, 'fs24', 110)" class="i">app</span> <span class="i">state</span>
     <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs34', 111)" onmouseover="showTip(event, 'fs34', 111)" class="i">SampleAsync</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs41', 112)" onmouseover="showTip(event, 'fs41', 112)" class="i">doAsync</span> (<span onmouseout="hideTip(event, 'fs27', 113)" onmouseover="showTip(event, 'fs27', 113)" class="i">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs42', 114)" onmouseover="showTip(event, 'fs42', 114)" class="i">Sleep</span> <span class="n">2000</span>)
-
-<span class="c">//Run 2</span>
-<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">23</span><span class="o">:</span> <span class="n">2</span>
-<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">25</span><span class="o">:</span> <span class="n">4</span>
-<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">27</span><span class="o">:</span> <span class="n">6</span>
-<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">29</span><span class="o">:</span> <span class="n">8</span>
+</code></pre></td>
+</tr>
+</table>
+<p><strong>Run 2</strong></p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">01</span><span class="o">:</span> <span class="n">2</span>
+<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">02</span><span class="o">:</span> <span class="n">4</span>
+<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">03</span><span class="o">:</span> <span class="n">6</span>
+<span class="o">&gt;</span> <span class="n">00</span><span class="o">:</span><span class="n">00</span><span class="o">:</span><span class="n">04</span><span class="o">:</span> <span class="n">8</span>
 <span class="o">..</span><span class="o">..</span>
 </code></pre></td>
 </tr>
@@ -302,12 +304,12 @@ Thus the app maintains its property of being <strong>Insensitive</strong></p>
 <div class="tip" id="fs28">val sampleAsync : SampleAsync.ComputationalExpression.Builder<br /><br />Full name: Freckle.ComputationExpression.sampleAsync</div>
 <div class="tip" id="fs29">val state&#39; : int</div>
 <div class="tip" id="fs30">Multiple items<br />union case Feed.Feed: LazyList&lt;Time * &#39;e&gt; -&gt; Feed&lt;&#39;e&gt;<br /><br />--------------------<br />module Feed<br /><br />from Freckle<br /><br />--------------------<br />type Feed&lt;&#39;e&gt; =<br />&#160;&#160;| Feed of LazyList&lt;Time * &#39;e&gt;<br />&#160;&#160;override ToString : unit -&gt; string<br /><br />Full name: Freckle.Feed&lt;_&gt;</div>
-<div class="tip" id="fs31">val pulse : pulsePerSecond:uint32 -&gt; Sample&lt;Feed&lt;Time&gt;&gt;<br /><br />Full name: Freckle.Feed.pulse</div>
+<div class="tip" id="fs31">val pulse : pulsePerSecond:int -&gt; Sample&lt;Feed&lt;Time&gt;&gt;<br /><br />Full name: Freckle.Feed.pulse</div>
 <div class="tip" id="fs32">val bind : f:(&#39;a -&gt; Sample&lt;&#39;b&gt;) -&gt; m:Sample&lt;&#39;a&gt; -&gt; Sample&lt;&#39;b&gt;<br /><br />Full name: Freckle.Sample.bind</div>
 <div class="tip" id="fs33">val foldPast : f:(&#39;s -&gt; &#39;a -&gt; &#39;s) -&gt; state:&#39;s -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Sample&lt;&#39;s&gt;<br /><br />Full name: Freckle.Feed.foldPast</div>
 <div class="tip" id="fs34">module SampleAsync<br /><br />from Freckle</div>
 <div class="tip" id="fs35">val ofSample : x:Sample&lt;&#39;a&gt; -&gt; Sample&lt;Async&lt;&#39;a&gt;&gt;<br /><br />Full name: Freckle.SampleAsync.ofSample</div>
-<div class="tip" id="fs36">val pulseUpto : pulsePerSecond:uint32 -&gt; Sample&lt;Feed&lt;Time&gt;&gt;<br /><br />Full name: Freckle.Feed.pulseUpto</div>
+<div class="tip" id="fs36">val pulseUpto : pulsePerSecond:int -&gt; Sample&lt;Feed&lt;Time&gt;&gt;<br /><br />Full name: Freckle.Feed.pulseUpto</div>
 <div class="tip" id="fs37">val map : f:(&#39;a -&gt; &#39;b) -&gt; sample:Sample&lt;&#39;a&gt; -&gt; Sample&lt;&#39;b&gt;<br /><br />Full name: Freckle.Sample.map</div>
 <div class="tip" id="fs38">val map : f:(&#39;a -&gt; &#39;b) -&gt; fr:Feed&lt;&#39;a&gt; -&gt; Feed&lt;&#39;b&gt;<br /><br />Full name: Freckle.Feed.map</div>
 <div class="tip" id="fs39">val plan_ : fr:Feed&lt;Async&lt;&#39;a&gt;&gt; -&gt; Sample&lt;Async&lt;unit&gt;&gt;<br /><br />Full name: Freckle.Feed.plan_</div>
