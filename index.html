@@ -34,7 +34,7 @@
         <div class="span9" id="main">
           
 <h1><a name="Freckle" class="anchor" href="#Freckle">Freckle</a></h1>
-<p>Documentation</p>
+<p>Simple monadic Functional Reactive Programming for F#</p>
 <div class="row">
   <div class="span1"></div>
   <div class="span6">
@@ -45,7 +45,7 @@
   </div>
   <div class="span1"></div>
 </div>
-<h2><a name="Quick-guide" class="anchor" href="#Quick-guide">Quick guide</a></h2>
+<h2><a name="Samples-amp-documentation" class="anchor" href="#Samples-amp-documentation">Samples &amp; documentation</a></h2>
 <h3><a name="Namespace-and-referecing" class="anchor" href="#Namespace-and-referecing">Namespace and referecing</a></h3>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
@@ -54,6 +54,7 @@
 </tr>
 </table>
 <h3><a name="Setting-up-a-sampler-and-running" class="anchor" href="#Setting-up-a-sampler-and-running">Setting up a sampler and running</a></h3>
+<p>Create a sampler that prints the timespan it samples over</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -81,6 +82,7 @@
 </tr>
 </table>
 <h3><a name="Guaranteed-Fixed-interval-updates" class="anchor" href="#Guaranteed-Fixed-interval-updates">Guaranteed Fixed interval updates</a></h3>
+<p>Create a sampler that counts every second from 0 and is resistentent to computer lagspike</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -102,6 +104,7 @@
 </tr>
 </table>
 <h3><a name="Best-attempt-Fixed-interval-updates" class="anchor" href="#Best-attempt-Fixed-interval-updates">Best attempt Fixed interval updates</a></h3>
+<p>Creates a sampler that does something every second, but doesn't care if a step is skipped due to a lagspike</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -133,6 +136,7 @@
 </tr>
 </table>
 <h3><a name="Listening-to-events" class="anchor" href="#Listening-to-events">Listening to events</a></h3>
+<p>Listen to external events and print their content to the console</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -156,9 +160,10 @@
 <span class="l">21: </span>
 <span class="l">22: </span>
 <span class="l">23: </span>
+<span class="l">24: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">//Use an event queue of your choice(not included)</span>
-<span class="k">let</span> <span onmouseout="hideTip(event, 'fs37', 76)" onmouseover="showTip(event, 'fs37', 76)" class="i">eventQueue</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs38', 77)" onmouseover="showTip(event, 'fs38', 77)" class="i">BufferBlock</span>() <span class="c">//Here I will use BufferBlock but use whatever you want</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs37', 76)" onmouseover="showTip(event, 'fs37', 76)" class="i">eventQueue</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs38', 77)" onmouseover="showTip(event, 'fs38', 77)" class="i">BufferBlock</span>() <span class="c">//Here we will use BufferBlock but use whatever you want</span>
 
 <span class="k">let</span> <span onmouseout="hideTip(event, 'fs39', 78)" onmouseover="showTip(event, 'fs39', 78)" class="i">dequeue</span> <span class="o">=</span>
     <span onmouseout="hideTip(event, 'fs33', 79)" onmouseover="showTip(event, 'fs33', 79)" class="i">async</span> {
@@ -173,18 +178,17 @@
     <span class="k">let</span> <span onmouseout="hideTip(event, 'fs49', 99)" onmouseover="showTip(event, 'fs49', 99)" class="f">renderingSampler</span> <span onmouseout="hideTip(event, 'fs42', 100)" onmouseover="showTip(event, 'fs42', 100)" class="i">mb</span> () <span class="o">=</span>
         <span onmouseout="hideTip(event, 'fs50', 101)" onmouseover="showTip(event, 'fs50', 101)" class="i">sampleAsync</span> {
             <span class="k">let!</span> <span onmouseout="hideTip(event, 'fs51', 102)" onmouseover="showTip(event, 'fs51', 102)" class="i">events</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs43', 103)" onmouseover="showTip(event, 'fs43', 103)" class="t">Mailbox</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs52', 104)" onmouseover="showTip(event, 'fs52', 104)" class="f">read</span> <span onmouseout="hideTip(event, 'fs42', 105)" onmouseover="showTip(event, 'fs42', 105)" class="i">mb</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 106)" onmouseover="showTip(event, 'fs19', 106)" class="t">SampleAsync</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs53', 107)" onmouseover="showTip(event, 'fs53', 107)" class="f">ofAsync</span>
-            <span class="k">return!</span> <span onmouseout="hideTip(event, 'fs28', 108)" onmouseover="showTip(event, 'fs28', 108)" class="t">Feed</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs30', 109)" onmouseover="showTip(event, 'fs30', 109)" class="f">foldPast</span> (<span class="k">fun</span> _ <span onmouseout="hideTip(event, 'fs40', 110)" onmouseover="showTip(event, 'fs40', 110)" class="i">msg</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs18', 111)" onmouseover="showTip(event, 'fs18', 111)" class="f">printfn</span> <span class="s">&quot;revieved </span><span class="pf">%s</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs40', 112)" onmouseover="showTip(event, 'fs40', 112)" class="i">msg</span>) () <span onmouseout="hideTip(event, 'fs51', 113)" onmouseover="showTip(event, 'fs51', 113)" class="i">events</span>
-                    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 114)" onmouseover="showTip(event, 'fs19', 114)" class="t">SampleAsync</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs20', 115)" onmouseover="showTip(event, 'fs20', 115)" class="f">ofSample</span>
+            <span class="k">do!</span> <span onmouseout="hideTip(event, 'fs43', 108)" onmouseover="showTip(event, 'fs43', 108)" class="t">Mailbox</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs54', 109)" onmouseover="showTip(event, 'fs54', 109)" class="f">clear</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 110)" onmouseover="showTip(event, 'fs19', 110)" class="t">SampleAsync</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs53', 111)" onmouseover="showTip(event, 'fs53', 111)" class="f">ofAsync</span>
+            <span class="k">return!</span> <span onmouseout="hideTip(event, 'fs28', 112)" onmouseover="showTip(event, 'fs28', 112)" class="t">Feed</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs30', 113)" onmouseover="showTip(event, 'fs30', 113)" class="f">foldPast</span> (<span class="k">fun</span> _ <span onmouseout="hideTip(event, 'fs40', 114)" onmouseover="showTip(event, 'fs40', 114)" class="i">msg</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs18', 115)" onmouseover="showTip(event, 'fs18', 115)" class="f">printfn</span> <span class="s">&quot;revieved </span><span class="pf">%s</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs40', 116)" onmouseover="showTip(event, 'fs40', 116)" class="i">msg</span>) () <span onmouseout="hideTip(event, 'fs51', 117)" onmouseover="showTip(event, 'fs51', 117)" class="i">events</span>
+                    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 118)" onmouseover="showTip(event, 'fs19', 118)" class="t">SampleAsync</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs20', 119)" onmouseover="showTip(event, 'fs20', 119)" class="f">ofSample</span>
         }
 
-    <span class="k">do!</span> <span onmouseout="hideTip(event, 'fs10', 116)" onmouseover="showTip(event, 'fs10', 116)" class="t">Sample</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs21', 117)" onmouseover="showTip(event, 'fs21', 117)" class="f">sampleForever</span> <span onmouseout="hideTip(event, 'fs22', 118)" onmouseover="showTip(event, 'fs22', 118)" class="t">Clock</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs23', 119)" onmouseover="showTip(event, 'fs23', 119)" class="i">systemUtc</span> (<span onmouseout="hideTip(event, 'fs49', 120)" onmouseover="showTip(event, 'fs49', 120)" class="f">renderingSampler</span> <span onmouseout="hideTip(event, 'fs42', 121)" onmouseover="showTip(event, 'fs42', 121)" class="i">mb</span>) ()
+    <span class="k">do!</span> <span onmouseout="hideTip(event, 'fs10', 120)" onmouseover="showTip(event, 'fs10', 120)" class="t">Sample</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs21', 121)" onmouseover="showTip(event, 'fs21', 121)" class="f">sampleForever</span> <span onmouseout="hideTip(event, 'fs22', 122)" onmouseover="showTip(event, 'fs22', 122)" class="t">Clock</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs23', 123)" onmouseover="showTip(event, 'fs23', 123)" class="i">systemUtc</span> (<span onmouseout="hideTip(event, 'fs49', 124)" onmouseover="showTip(event, 'fs49', 124)" class="f">renderingSampler</span> <span onmouseout="hideTip(event, 'fs42', 125)" onmouseover="showTip(event, 'fs42', 125)" class="i">mb</span>) ()
 }
-<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs24', 122)" onmouseover="showTip(event, 'fs24', 122)" class="t">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs25', 123)" onmouseover="showTip(event, 'fs25', 123)" class="f">RunSynchronously</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs24', 126)" onmouseover="showTip(event, 'fs24', 126)" class="t">Async</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs25', 127)" onmouseover="showTip(event, 'fs25', 127)" class="f">RunSynchronously</span>
 </code></pre></td>
 </tr>
 </table>
-<p>Some more info</p>
-<h2><a name="Samples-amp-documentation" class="anchor" href="#Samples-amp-documentation">Samples &amp; documentation</a></h2>
 <ul>
 <li><p><a href="tutorial.html">Tutorial</a> contains a further explanation of this sample library.</p></li>
 <li>
@@ -255,6 +259,7 @@ redistribution for both commercial and non-commercial purposes. For more informa
 <div class="tip" id="fs51">val events : Feed&lt;string&gt;</div>
 <div class="tip" id="fs52">val read : m:Mailbox&lt;&#39;e&gt; -&gt; Async&lt;Feed&lt;&#39;e&gt;&gt;<br /><br />Full name: Freckle.Mailbox.read</div>
 <div class="tip" id="fs53">val ofAsync : x:Async&lt;&#39;a&gt; -&gt; Sample&lt;Async&lt;&#39;a&gt;&gt;<br /><br />Full name: Freckle.SampleAsync.ofAsync</div>
+<div class="tip" id="fs54">val clear : m:Mailbox&lt;&#39;e&gt; -&gt; Async&lt;unit&gt;<br /><br />Full name: Freckle.Mailbox.clear</div>
 
         </div>
         <div class="span3">
