@@ -44,6 +44,23 @@
 </div>
 
 <!-- Render nested types and modules, if there are any -->
+  <h2>Nested types and modules</h2>
+  <div>
+      <table class="table table-bordered type-list">
+    <thead>
+      <tr><td>Type</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="type-name">
+            <a href="freckle-mailbox-internal-mailtrigger.html">MailTrigger</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
 
   <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
@@ -55,14 +72,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '121', 121)" onmouseover="showTip(event, '121', 121)">
-            push&#39; time evt m ()
+            awaitMail evtTrigger
           </code>
           <div class="tip" id="121">
-            <strong>Signature:</strong> time:Time -&gt; evt:&#39;?7326 -&gt; m:Mailbox&lt;&#39;?7326&gt; -&gt; unit -&gt; unit<br />
-                          <strong>Type parameters:</strong> '?7326          </div>
+            <strong>Signature:</strong> evtTrigger:Event&lt;MailTrigger,EventArgs&gt; -&gt; Async&lt;unit&gt;<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L28-28" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L53-53" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -73,14 +90,68 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '122', 122)" onmouseover="showTip(event, '122', 122)">
-            read&#39; m
+            dropAll mLock evts
           </code>
           <div class="tip" id="122">
-            <strong>Signature:</strong> m:Mailbox&lt;&#39;e&gt; -&gt; Feed&lt;&#39;e&gt;<br />
+            <strong>Signature:</strong> mLock:&#39;?7331 -&gt; evts:Ref&lt;Feed&lt;&#39;e&gt; * Feed&lt;&#39;e&gt;&gt; -&gt; Async&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> '?7331, 'e          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L50-50" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '123', 123)" onmouseover="showTip(event, '123', 123)">
+            post mLock clock trigger expire evts evt
+          </code>
+          <div class="tip" id="123">
+            <strong>Signature:</strong> mLock:&#39;?7328 -&gt; clock:Clock -&gt; trigger:Event&lt;MailTrigger,EventArgs&gt; -&gt; expire:Expire -&gt; evts:Ref&lt;Feed&lt;&#39;?7329&gt; * Feed&lt;&#39;?7329&gt;&gt; -&gt; evt:&#39;?7329 -&gt; Async&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> '?7328, '?7329          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L44-44" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '124', 124)" onmouseover="showTip(event, '124', 124)">
+            push&#39; time evt trigger expire m ()
+          </code>
+          <div class="tip" id="124">
+            <strong>Signature:</strong> time:Time -&gt; evt:&#39;e -&gt; trigger:Event&lt;MailTrigger,EventArgs&gt; -&gt; expire:Expire -&gt; m:Ref&lt;Feed&lt;&#39;e&gt; * Feed&lt;&#39;e&gt;&gt; -&gt; unit -&gt; unit<br />
                           <strong>Type parameters:</strong> 'e          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L24-24" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L34-34" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '125', 125)" onmouseover="showTip(event, '125', 125)">
+            read&#39; m
+          </code>
+          <div class="tip" id="125">
+            <strong>Signature:</strong> m:Ref&lt;Feed&lt;&#39;e&gt; * Feed&lt;&#39;e&gt;&gt; -&gt; Async&lt;Feed&lt;&#39;e&gt;&gt;<br />
+                          <strong>Type parameters:</strong> 'e          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L28-28" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

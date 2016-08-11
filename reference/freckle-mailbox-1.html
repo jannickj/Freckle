@@ -40,6 +40,9 @@
   <span>Namespace: Freckle</span><br />
 </p>
 <div class="xmldoc">
+<p>The mailbox is the concept of messages passed from external parts of the system
+A mailbox should preferably should only have one consumer and one or more producers</p>
+
 </div>
   <h3>Record Fields</h3>
   <table class="table table-bordered member-list">
@@ -50,11 +53,29 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '167', 167)" onmouseover="showTip(event, '167', 167)">
-            Clock
+          <code onmouseout="hideTip(event, '170', 170)" onmouseover="showTip(event, '170', 170)">
+            AwaitMail
           </code>
-          <div class="tip" id="167">
-            <strong>Signature:</strong> Clock<br />
+          <div class="tip" id="170">
+            <strong>Signature:</strong> Async&lt;unit&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L16-16" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '171', 171)" onmouseover="showTip(event, '171', 171)">
+            Clear
+          </code>
+          <div class="tip" id="171">
+            <strong>Signature:</strong> Async&lt;unit&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
@@ -68,69 +89,33 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '168', 168)" onmouseover="showTip(event, '168', 168)">
-            EventLock
+          <code onmouseout="hideTip(event, '172', 172)" onmouseover="showTip(event, '172', 172)">
+            Post
           </code>
-          <div class="tip" id="168">
-            <strong>Signature:</strong> obj<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L12-12" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '169', 169)" onmouseover="showTip(event, '169', 169)">
-            Expiration
-          </code>
-          <div class="tip" id="169">
-            <strong>Signature:</strong> Expire<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L14-14" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '170', 170)" onmouseover="showTip(event, '170', 170)">
-            LiveEvents
-          </code>
-          <div class="tip" id="170">
-            <strong>Signature:</strong> Ref&lt;Feed&lt;&#39;e&gt; * Feed&lt;&#39;e&gt;&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L11-11" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '171', 171)" onmouseover="showTip(event, '171', 171)">
-            MailEvent
-          </code>
-          <div class="tip" id="171">
-            <strong>Signature:</strong> Event&lt;MailTrigger,EventArgs&gt;<br />
+          <div class="tip" id="172">
+            <strong>Signature:</strong> &#39;e -&gt; Async&lt;unit&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L13-13" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '173', 173)" onmouseover="showTip(event, '173', 173)">
+            Read
+          </code>
+          <div class="tip" id="173">
+            <strong>Signature:</strong> Async&lt;Feed&lt;&#39;e&gt;&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L14-14" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

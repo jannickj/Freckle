@@ -40,6 +40,8 @@
   <span>Namespace: Freckle</span><br />
 </p>
 <div class="xmldoc">
+<p>The Mailbox module contains all functions to work with external events, such as post, read and suc.</p>
+
 </div>
 
 <!-- Render nested types and modules, if there are any -->
@@ -74,33 +76,37 @@
             awaitMail mb
           </code>
           <div class="tip" id="114">
-            <strong>Signature:</strong> mb:Mailbox&lt;&#39;?7316&gt; -&gt; Async&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7316          </div>
+            <strong>Signature:</strong> mb:Mailbox&lt;&#39;?7319&gt; -&gt; Async&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> '?7319          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L61-61" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L87-87" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>wait until a mailbox recieves an event</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '115', 115)" onmouseover="showTip(event, '115', 115)">
-            clear m
+            clear mb
           </code>
           <div class="tip" id="115">
-            <strong>Signature:</strong> m:Mailbox&lt;&#39;e&gt; -&gt; Async&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> 'e          </div>
+            <strong>Signature:</strong> mb:Mailbox&lt;&#39;?7317&gt; -&gt; Async&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> '?7317          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L65-65" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L84-84" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Discard all events currently in mailbox</p>
+
+
         </td>
       </tr>
       <tr>
@@ -110,87 +116,97 @@
             createWithExpiration expire clock
           </code>
           <div class="tip" id="116">
-            <strong>Signature:</strong> expire:Expire -&gt; clock:Clock -&gt; Async&lt;Mailbox&lt;&#39;?7310&gt;&gt;<br />
-                          <strong>Type parameters:</strong> '?7310          </div>
+            <strong>Signature:</strong> expire:Expire -&gt; clock:Clock -&gt; Async&lt;Mailbox&lt;&#39;?7309&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7309          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L40-40" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L58-58" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Creates a mailbox used for sending and recieving events between different samplers and/or outside state</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '117', 117)" onmouseover="showTip(event, '117', 117)">
-            dropAll mb
+            listenTo eventStream mb
           </code>
           <div class="tip" id="117">
-            <strong>Signature:</strong> mb:Mailbox&lt;&#39;?7322&gt; -&gt; Async&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7322          </div>
+            <strong>Signature:</strong> eventStream:Async&lt;&#39;?7321&gt; -&gt; mb:Mailbox&lt;&#39;?7321&gt; -&gt; Async&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> '?7321          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L75-75" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L90-90" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>setup a mailbox for listening to an external event stream</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '118', 118)" onmouseover="showTip(event, '118', 118)">
-            listenTo eventStream mb
+            post evt mb
           </code>
           <div class="tip" id="118">
-            <strong>Signature:</strong> eventStream:Async&lt;&#39;?7320&gt; -&gt; mb:Mailbox&lt;&#39;?7320&gt; -&gt; Async&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7320          </div>
+            <strong>Signature:</strong> evt:&#39;?7311 -&gt; mb:Mailbox&lt;&#39;?7311&gt; -&gt; Async&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> '?7311          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L67-67" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L71-71" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Post an event to a mailbox</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '119', 119)" onmouseover="showTip(event, '119', 119)">
-            post evt m
+            postMany evt mbs
           </code>
           <div class="tip" id="119">
-            <strong>Signature:</strong> evt:&#39;?7312 -&gt; m:Mailbox&lt;&#39;?7312&gt; -&gt; Async&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?7312          </div>
+            <strong>Signature:</strong> evt:&#39;?7313 -&gt; mbs:seq&lt;Mailbox&lt;&#39;?7313&gt;&gt; -&gt; Async&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> '?7313          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L50-50" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L74-74" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Post an event to many mailboxes</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '120', 120)" onmouseover="showTip(event, '120', 120)">
-            read m
+            read mb
           </code>
           <div class="tip" id="120">
-            <strong>Signature:</strong> m:Mailbox&lt;&#39;e&gt; -&gt; Async&lt;Feed&lt;&#39;e&gt;&gt;<br />
-                          <strong>Type parameters:</strong> 'e          </div>
+            <strong>Signature:</strong> mb:Mailbox&lt;&#39;?7315&gt; -&gt; Async&lt;Feed&lt;&#39;?7315&gt;&gt;<br />
+                          <strong>Type parameters:</strong> '?7315          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L56-56" class="github-link">
+            <a href="http://github.com/jannickj/Freckle/tree/master/src/Freckle/Mailbox.fs#L81-81" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Read all events from a mailbox</p>
+
+
         </td>
       </tr>
     </tbody>
