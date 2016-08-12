@@ -94,18 +94,18 @@ let main argv =
     async {
         printfn "Hi! and welcome to the Airlock example, to start double press enter."
         let! _ = readConsole |> Async.StartChild
-        let! mb = Mailbox.createWithExpiration (Never) Clock.systemUtc
+        let syncUtcClock = Clock.synchronized Clock.systemUtc
+        let! mb = Mailbox.createWithExpiration (Never) syncUtcClock
         do! Mailbox.listenTo events mb
         let state = {  Airlock = AirLockState.IsDepressurized; ActionAt = None; LastDoubleClick = Time.origin }
 
         let resolution = 
-            Async.pulseDelayBusy 200.0
-//            Async.awaitAny [ Async.pulseMax
-//                             Mailbox.awaitMail mb
-//                           ]
+            Async.awaitAny [ Async.pulseMax
+                             Mailbox.awaitMail mb
+                           ]
         let runner = 
             setup mb airlock
             >> SampleAsync.doAsync resolution
-        do! Sample.sampleForever Clock.systemUtc runner state
+        do! Sample.sampleForever syncUtcClock runner state
     } |> Async.RunSynchronously
     0
