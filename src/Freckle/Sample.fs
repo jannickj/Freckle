@@ -75,6 +75,8 @@ module Sample =
             member inline this.ReturnFrom(x) = x
             member inline this.Bind(ma, f) = bind f ma
             member inline this.Zero () = pure' ()
+            member inline this.Combine(m1, m2) = bind (fun () -> m2) m1
+            member inline this.Delay(fm : unit -> Sample<'a>) : Sample<'a> = fun p -> fm () p
     
         let sample = Builder()
 

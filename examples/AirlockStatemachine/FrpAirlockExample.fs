@@ -105,6 +105,7 @@
             do! Feed.pulseUpto 10
                 |> Sample.map (Feed.map (const' <| airlock.SetFps p))
                 |> Sample.bind Feed.plan_
+
             let! evts = Mailbox.read mb |> SampleAsync.ofAsync
             let! evts' =  doublePress' s.LastDoubleClick evts |> SampleAsync.ofSample
             let! last' = Feed.foldPast (fun s (t,a) -> if a = DoublePressButton then t else s) s.LastDoubleClick (Feed.timeStamp evts') |> SampleAsync.ofSample      

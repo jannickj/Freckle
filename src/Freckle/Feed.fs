@@ -430,6 +430,10 @@ module Feed =
             member inline this.ReturnFrom(x) = x
             member inline this.Bind(ma, f) = bind f ma
             member inline this.Zero () = pure' ()
+            member inline this.Yield x = pure' x
+            member inline this.YieldFrom x = x
+            member inline this.Combine(f1,f2) = combine f1 f2
+            member inline this.Delay f = Internal.ofEvent (LazyList.delayed (Internal.toEvent << f))
     
         let feed = Builder()
 
