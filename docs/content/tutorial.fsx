@@ -1,7 +1,6 @@
 (*** hide ***)
 // This block of code is omitted in the generated HTML documentation. Use 
 // it to define helpers that you do not want to show in the documentation.
-#I "..\\..\\bin\\Freckle\\"
 let update () = ()
 type Time = Time of unit
     with static member (-) (_,_) : Time = failwith ""
@@ -11,14 +10,13 @@ let wait : Time -> unit = failwith ""
 let updateState () = ()
 let render () = ()
 #I __SOURCE_DIRECTORY__
-#load "load-references-debug.fsx"
-#load "../Helpers.fs"
-      "../Time.fs"
-      "../Clock.fs"
-      "../Sample.fs"
-      "../Feed.fs"
-      "../Mailbox.fs"
-      "../ComputationExpression.fs"
+#r "../../packages/FSPowerPack.Core.Community/Lib/Net40/FSharp.PowerPack.dll"
+#r "System.Core.dll"
+#r "System.dll"
+#r "System.Numerics.dll"
+#r "../../bin/Freckle/Freckle.dll"
+open Freckle
+
 (**
 # Part 1: Understanding Functional Reactive Programming
 
@@ -52,10 +50,10 @@ If we assume that it always takes 16 ms to execute `update` then we get a sampli
 ```
 Meaning that update is called about 60 times per seconds.
 
-However as is obvious there is no guarantees given that `update` will take exactly 16 ms to execute. Which might problem if an application needs to update at precise interval, 
-old programs have sometimes ignored this meaning when executed on modern computers they run extremly fast or have completely stopped functioning properly.
+However as is obvious there is no guarantees given that `update` will take exactly 16 ms to execute. Which might be a problem if an application needs to update at precise interval, 
+old programs have sometimes ignored, and thus when executed on modern computers they run extremly fast or have completely stopped functioning properly.
 
-The next naive solution to account for a fixed sampling rate would be to delay the update difference. e.g.
+The a naive solution to account for a fixed sampling rate, would be to delay after the update. e.g.
 *)
 let desiredDelay = time 16
 
@@ -69,13 +67,16 @@ while true do
 Initially this provides us with what we required, the program operates consistently at a fixed sampling rate.
 However as you can probably already observe, if for any reason at any point during the life time of the program, `update` takes longer than expected.
 Meaning that `diffTime > desiredDelay` i.e. requring us to wait negative, then the program will become out of sync forever.
-If it was because the `desiredDelay` was set shorter than update is in average, then there is nothing we can do.
 
-This is because the resolution of the program is too low to support it, much like if we have a picture with a bad resolution we try to show on a large screen, that too will prevent anything meaningful.
-However if in average `update` is far below the `desiredDelay` but once in a while goes over `desiredDelay`, then we essentially skip certain important computations.
-e.g. imagine a program simulating a car but with the expectation that an `updateCar` function is called 10 times a second, then skipping a couple of calculations can have a huge impact on the result.
+If `diffTime > desiredDelay` happens consistenly on average, then there is nothing we can do, from a development perspective that can be done.
+This is because the resolution supported by the system is too low to support the resolution required. In the same way that if we have a picture with a high resolution, showing it on a small screen doesn't show any more details.
+The resolution required and the resolution supported must always follow each other, however they need not necessarily perfectly match, which is why we must design our programs to accomondate this.
 
-To solve this problem let us propose the next naive solution
+Otherwise If `diffTime > desiredDelay` happens only on rare occasions, then on those occasions we will forever delay all feature updates.
+e.g. Imagine a program simulating a car but with the expectation that an `updateCar` function is called 10 times a second, then skipping a couple of calculations can have a huge impact on the result.
+
+
+To solve the second of the two problems let us propose the another naive solution
 *)
 while true do
     let startTime = now ()
@@ -97,7 +98,7 @@ let update () =
 
 (**
 As you might imagine rendering two times in a row doesn't change anything from an application perspective, however it is a huge drain on the resources of the cpu.
-So what we in reality want is something that allows us to define that if we miss an `updateState` but if we miss a `render` then that should just be skipped.
+So what we in reality want is something that allows us to define that if we miss an `updateState` then we guarantee that we calculate it but if we miss a `render` then will just be skipped.
 
 Before we move onto how frp would handle these problems, let's highlight one thing that has been overlooked so far.
 
@@ -140,14 +141,13 @@ let render at state =
 let app (state : int) : Sample<Async<int>>=
     //sampleAsync is the same as Sample<Async<_>>
     sampleAsync {
-        
         let! state' = 
-            Feed.pulse 1u //We generate a pulse at one tick per second
+            Feed.pulse 1 //We generate a pulse at one tick per second
             |> Sample.bind (Feed.foldPast (fun s _ -> updateState s) state) //Fold over all pulses generated in this sample
             |> SampleAsync.ofSample //Convert our Sample<int> to Sample<Async<int>>
         
         //the Upto suffix inform the sampler that if we miss a pulse then we don't care
-        do! Feed.pulseUpto 1u
+        do! Feed.pulseUpto 1
             |> Sample.map (Feed.map (fun at -> render at state')) //Change the pulses to the render async
             |> Sample.bind Feed.plan_ //plan converts a feed of async into an async of feed 
                                       //plan_ is the same but it discards the resulting feed
@@ -171,11 +171,13 @@ With this all that should be left is simply to begin sampling
 Sample.sampleForever Clock.systemUtc boundResolutionApp 0
 |> Async.RunSynchronously
 
-//Run 1
-> 00:00:48: 1
-> 00:00:49: 2
-> 00:00:50: 3
-> 00:00:51: 4
+(**
+**Run 1**
+*)
+> 00:00:01: 1
+> 00:00:02: 2
+> 00:00:03: 3
+> 00:00:04: 4
 ....
 
 (**
@@ -188,12 +190,13 @@ Let's see what occurs when we set the delay to 2 seconds
 let boundResolutionApp state = 
     app state
     |> SampleAsync.doAsync (Async.Sleep 2000)
-
-//Run 2
-> 00:00:23: 2
-> 00:00:25: 4
-> 00:00:27: 6
-> 00:00:29: 8
+(**
+**Run 2**
+*)
+> 00:00:01: 2
+> 00:00:02: 4
+> 00:00:03: 6
+> 00:00:04: 8
 ....
 
 

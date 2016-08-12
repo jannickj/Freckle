@@ -1,13 +1,20 @@
 (*** hide ***)
 // This block of code is omitted in the generated HTML documentation. Use 
 // it to define helpers that you do not want to show in the documentation.
-#I "../../bin"
+#I __SOURCE_DIRECTORY__
+#r "../../packages/FSPowerPack.Core.Community/Lib/Net40/FSharp.PowerPack.dll"
+#r "System.Core.dll"
+#r "System.dll"
+#r "System.Numerics.dll"
+#r "../../bin/Freckle/Freckle.dll"
+#r "../../packages/example/Microsoft.Tpl.Dataflow/lib/portable-net45+win8+wpa81/System.Threading.Tasks.Dataflow.dll"
+open System.Threading.Tasks.Dataflow
 
 (**
 Freckle
 ======================
 
-Documentation
+Simple monadic Functional Reactive Programming for F#
 
 <div class="row">
   <div class="span1"></div>
@@ -20,26 +27,95 @@ Documentation
   <div class="span1"></div>
 </div>
 
-Example
--------
-
-This example demonstrates using a function defined in this sample library.
-
 *)
-#r "Freckle.dll"
-open Freckle
-
-printfn "hello = %i" <| 0
 
 (**
-Some more info
 
-Samples & documentation
+Quick Introduction
 -----------------------
 
-The library comes with comprehensible documentation. 
-It can include tutorials automatically generated from `*.fsx` files in [the content folder][content]. 
-The API reference is automatically generated from Markdown comments in the library implementation.
+### Namespace and referecing
+
+*)
+open Freckle
+
+(**
+### Setting up a sampler and running
+Create a sampler that prints the timespan it samples over
+*)
+
+let sampler count =
+    sample {
+        let! currentSpan = Sample.period
+        let startedAt = (Time.toDateTime currentSpan.Beginning)
+        let endedAt = (Time.toDateTime currentSpan.Finish)
+        printfn "%d: Sampling %A -> %A" count startedAt endedAt
+        return count + 1
+    } |> SampleAsync.ofSample
+
+Sample.sampleForever Clock.systemUtc sampler 0
+|> Async.RunSynchronously
+
+
+(**
+### Guaranteed Fixed interval updates
+Create a sampler that counts every second from 0 and is resistentent to computer lagspike
+*)
+
+let countSecondsSampler count =
+    sample {
+        let! pulses = Feed.pulse 1
+        return! Feed.foldPast (fun c _ -> c + 1) count pulses
+    } |> SampleAsync.ofSample
+
+Sample.sampleForever Clock.systemUtc countSecondsSampler 0
+|> Async.RunSynchronously
+
+(**
+### Best attempt Fixed interval updates
+Creates a sampler that does something every second, but doesn't care if a step is skipped due to a lagspike
+*)
+let render =
+    async {
+        return printfn "Pretend like this is graphic rendering" 
+    }
+
+let renderingSampler () =
+    sample {
+        let! pulses = Feed.pulseUpto 1 //Notice it's pulseUpto
+        return! Feed.transition (fun _ _ -> render) () pulses
+    }
+
+Sample.sampleForever Clock.systemUtc renderingSampler ()
+|> Async.RunSynchronously
+
+
+(**
+### Listening to events
+Listen to external events and print their content to the console
+
+*)
+
+async {
+    let syncClock = Clock.synchronized Clock.systemUtc
+    let! mb = Mailbox.createWithExpiration (Expire.After (Time.ofSeconds 30))  syncClock
+
+    let renderingSampler mb () =
+        sampleAsync {
+            let! events = Mailbox.read mb |> SampleAsync.ofAsync
+            do! Mailbox.clear |> SampleAsync.ofAsync
+            return! Feed.foldPast (fun _ msg -> printfn "revieved %s" msg) () events
+                    |> SampleAsync.ofSample
+        }
+
+    do! Sample.sampleForever syncClock (renderingSampler mb) ()
+}
+|> Async.RunSynchronously
+
+(**
+
+Further Reading
+---------------
 
  * [Tutorial](tutorial.html) contains a further explanation of this sample library.
 
