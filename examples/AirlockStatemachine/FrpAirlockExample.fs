@@ -89,7 +89,7 @@
             match s.ActionAt with
             | Some ticks when s.Airlock = Pressurizing || s.Airlock = Depressurizing ->
                 let pctDone t = min 100.0 <| (float (t - ticks) * 100.0 ) / float (TimeSpan.TicksPerSecond * 9L)
-                do! Feed.pulseUpto 30u
+                do! Feed.pulseUpto 30
                     |> Sample.map (Feed.map (fun t -> airlock.ShowStatus <| sprintf "%A %.2f%%   " s.Airlock (pctDone (Time.ticks t))))
                     |> Sample.bind Feed.plan_                       
             | _ -> return ()
@@ -99,10 +99,10 @@
         sampleAsync {           
             let! p = Sample.period |> SampleAsync.ofSample
             do! status airlock s
-            do! Feed.pulseUpto 10u
+            do! Feed.pulseUpto 10
                 |> Sample.map (Feed.map (const' <| airlock.SetClock p.Finish))
                 |> Sample.bind Feed.plan_
-            do! Feed.pulseUpto 10u
+            do! Feed.pulseUpto 10
                 |> Sample.map (Feed.map (const' <| airlock.SetFps p))
                 |> Sample.bind Feed.plan_
             let! evts = Mailbox.read mb |> SampleAsync.ofAsync

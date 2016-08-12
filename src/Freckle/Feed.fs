@@ -233,7 +233,7 @@ module Feed =
 
     ///Get a feed with events firing using the frequency of pulsePerSecond, starting from the finish time of a Sample, continuing until origin Time.
     ///This is useful for making pull-based events.
-    let pulse (pulsePerSecond : uint32) : Sample<Feed<Time>> =
+    let pulse (pulsePerSecond : int) : Sample<Feed<Time>> =
         sample {
             let! finish = Period.finish
             let rec inner dist time ()  = 

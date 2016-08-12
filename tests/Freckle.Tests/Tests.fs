@@ -91,7 +91,7 @@ let ``weave select the correct state when merging`` () =
 //
 [<Fact>]
 let ``pulse gives pulses starting from the finish time and does not stop at the beginning time`` () =
-    let l = Feed.pulse 5u (now (TimeSpan.TicksPerSecond / 4L) TimeSpan.TicksPerSecond)
+    let l = Feed.pulse 5 (now (TimeSpan.TicksPerSecond / 4L) TimeSpan.TicksPerSecond)
             |> Feed.toList
     let dist = (TimeSpan.TicksPerSecond / 5L)
     l |> should equal [ (time (dist * 5L), time (dist * 5L))
