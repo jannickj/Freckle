@@ -1,5 +1,9 @@
 init:
   - git config --global core.autocrlf input
+
+cache:
+  - packages
+  
 build_script:
   - cmd: build.cmd
 test: off
