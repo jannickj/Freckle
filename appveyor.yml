@@ -7,7 +7,7 @@ cache:
 build_script:
   - cmd: build.cmd
 test: off
-version: 0.0.1.{build}
+version: 1.0.0.{build}
 artifacts:
-  - path: bin
+  - path: 'bin\*.nupkg'
     name: bin
