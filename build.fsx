@@ -145,7 +145,7 @@ Target "Build" (fun _ ->
 
 Target "RunTests" (fun _ ->
     !! testAssemblies
-    |> xUnit  (fun p ->
+    |> xUnit2  (fun p ->
         { p with
             TimeOut = TimeSpan.FromMinutes 20.
             NUnitXmlOutputPath  = Some "TestResults.xml" })
