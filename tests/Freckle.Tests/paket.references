@@ -5,3 +5,4 @@ xunit
 FsUnit.xUnit
 FsCheck
 FsCheck.Xunit
+xunit.runner.visualstudio
