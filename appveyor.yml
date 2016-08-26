@@ -9,7 +9,8 @@ version: 1.0.{build}
 build_script:
 - cmd: "build.cmd All"
 
-
+cache:
+  - packages
 
 
 # uncomment to debug will stop the build server for 1 hour
