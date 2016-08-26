@@ -10,4 +10,3 @@ test: off
 version: 1.0.0.{build}
 artifacts:
   - path: 'bin\*.nupkg'
-    name: bin
