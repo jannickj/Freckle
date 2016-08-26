@@ -24,7 +24,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
     modules/Octokit/Octokit.fsx (7faaaf53e4a8fbe04a4d2b4c1bfc5d09bd82eed6)
-      Octokit (>= 0.20)
+      Octokit
 GROUP Example
 NUGET
   remote: https://www.nuget.org/api/v2
