@@ -21,7 +21,6 @@ group Test
   
   nuget xunit ~> 2.1
   nuget xunit.runner.console
-  nuget xunit.runner.visualstudio
   nuget FsUnit.xUnit
   nuget FsCheck
   nuget FsCheck.Xunit
