@@ -55,6 +55,7 @@ let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
 // The profile where the project is posted
 let gitOwner = "jannickj"
 let gitHome = sprintf "%s/%s" "https://github.com" gitOwner
+let gitSSHHome = sprintf "%s:%s" "git@github.com" gitOwner
 
 // The name of the project on GitHub
 let gitName = "Freckle"
@@ -324,7 +325,7 @@ Target "AddLangDocs" (fun _ ->
 Target "ReleaseDocs" (fun _ ->
     let tempDocsDir = "temp/gh-pages"
     CleanDir tempDocsDir
-    Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
+    Repository.cloneSingleBranch "" (gitSSHHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
 
     CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"
     StageAll tempDocsDir
