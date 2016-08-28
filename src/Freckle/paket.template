@@ -12,12 +12,12 @@ licenseUrl
 requireLicenseAcceptance
     false
 copyright
-    Copyright 2015
+    Copyright 2016
 tags
-    FRP reactive ui event behavior functional freckle
+    FRP reactive event behavior functional freckle
 summary
     A Functional Reactive Programming Library for FSharp
 description
-    Functional Reactive Programming library Handle
+    Functional Reactive Programming library, push-pull model, a modern approach to event handling and model sampling.
 
 

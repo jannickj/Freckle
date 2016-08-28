@@ -15,7 +15,7 @@ Documentation: http://jannickj.github.io/Freckle
 
 ## Build Status
 
-[![Build status](###Appvery-badge-link###)
+[![Build status](https://ci.appveyor.com/api/projects/status/m03a4k9sj5xlge3h?svg=true)](https://ci.appveyor.com/project/jannickj/freckle)
 
 ## Maintainer(s)
 

@@ -3,8 +3,6 @@
 // --------------------------------------------------------------------------------------
 
 #r @"packages/build/FAKE/tools/FakeLib.dll"
-#load "config.fsx"
-open Config
 open Fake
 open Fake.Git
 open Fake.AssemblyInfoFile
@@ -12,52 +10,65 @@ open Fake.ReleaseNotesHelper
 open Fake.UserInputHelper
 open System
 open System.IO
+open Fake.Testing
 #if MONO
 #else
 #load "packages/build/SourceLink.Fake/tools/Fake.fsx"
 open SourceLink
 #endif
 
+// --------------------------------------------------------------------------------------
+// START TODO: Provide project-specific details below
+// --------------------------------------------------------------------------------------
 
-let gitRawDefault = sprintf "https://raw.github.com/%s" gitOwner
+// Information about the project are used
+//  - for version and project name in generated AssemblyInfo file
+//  - by the generated NuGet package
+//  - to run tests and to publish documentation on GitHub gh-pages
+//  - for documentation, you also need to edit info in "docs/tools/generate.fsx"
 
-let gitRaw = environVarOrDefault "gitRaw" gitRawDefault
+// The name of the project
+// (used by attributes in AssemblyInfo, name of a NuGet package and directory in 'src')
+let project = "Freckle"
 
-let user =
-    match getBuildParam "github-user" with
-    | s when not (String.IsNullOrWhiteSpace s) -> s
-    | _ -> ""
-let pw =
-    match getBuildParam "github-pw" with
-    | s when not (String.IsNullOrWhiteSpace s) -> s
-    | _ -> ""
+// Short summary of the project
+// (used as description in AssemblyInfo and as a short summary for NuGet package)
+let summary = "A Functional Reactive Programming Library for FSharp"
 
-let gitHome =
-    if user = ""
-        then "git@github.com:" + gitOwner
-        else "https://" + user + ":" + pw + "@" + "github.com/" + gitOwner
+// Longer description of the project
+// (used as a description for NuGet package; line breaks are automatically cleaned up)
+let description = "Functional Reactive Programming library, push-pull model, a modern approach to event handling and model sampling."
+
+// List of author names (for NuGet package)
+let authors = [ "Jannick Johnsen" ]
+
+// Tags for your project (for NuGet package)
+let tags = "FRP reactive event behavior functional freckle"
+
+// File system information
+let solutionFile  = "Freckle.sln"
+
+// Pattern specifying assemblies to be tested using NUnit
+let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
+
+// Git configuration (used for publishing documentation in gh-pages branch)
+// The profile where the project is posted
+let gitOwner = "jannickj"
+let gitHome = sprintf "%s/%s" "https://github.com" gitOwner
+
+// The name of the project on GitHub
+let gitName = "Freckle"
+
+// The url for the raw files hosted
+let gitRaw = environVarOrDefault "gitRaw" "https://raw.githubusercontent.com/jannickj"
+
+// --------------------------------------------------------------------------------------
+// END TODO: The rest of the file includes standard build steps
+// --------------------------------------------------------------------------------------
 
 // Read additional information from the release notes document
 let release = LoadReleaseNotes "RELEASE_NOTES.md"
 
-let describeTag repositoryDir =
-    let _,tagHash,errorHash = runGitCommand repositoryDir "rev-list --tags --max-count=1"
-    if Seq.length tagHash = 1
-        then
-            let _,msg,error = runGitCommand repositoryDir <| sprintf "describe --tags %s" (tagHash |> Seq.head)
-            if error <> "" then failwithf "git describe failed: %s" error
-            msg |> Seq.head |> Some
-    else None
-
-//let currentVersionIsAlreadyReleased =
-//    let optGetLastTags = (describeTag "")
-//    let splited = optGetLastTags |> Option.toList
-//    match splited |> Seq.tryHead with
-//    | Some lastTag ->
-//        printfn "tag: %A, release: %A" lastTag release.NugetVersion
-//        lastTag = release.NugetVersion
-//    | None -> false
-    
 // Helper active pattern for project types
 let (|Fsproj|Csproj|Vbproj|Shproj|) (projFileName:string) =
     match projFileName with
@@ -132,14 +143,13 @@ Target "Build" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Run the unit tests using test runner
 
-//Target "RunTests" (fun _ ->
-//    !! testAssemblies
-//    |> XUnit (fun p ->
-//        { p with
-//            DisableShadowCopy = true
-//            TimeOut = TimeSpan.FromMinutes 20.
-//            OutputFile = "TestResults.xml" })
-//)
+Target "RunTests" (fun _ ->
+    !! testAssemblies
+    |> xUnit2  (fun p ->
+        { p with
+            TimeOut = TimeSpan.FromMinutes 20.
+            NUnitXmlOutputPath  = Some "TestResults.xml" })
+)
 
 #if MONO
 #else
@@ -162,24 +172,19 @@ Target "SourceLink" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
-//Target "NuGet" (fun _ ->
-//    Paket.Pack(fun p ->
-//        { p with
-//            OutputPath = "bin"
-//            Version = release.NugetVersion
-//            ReleaseNotes = toLines release.Notes})
-//)
-//
-//Target "PublishNuget" (fun _ ->
-//    if not currentVersionIsAlreadyReleased
-//        then
-//            Paket.Push(fun p ->
-//                { p with
-//                    PublishUrl = nugetUrl
-//                    EndPoint   = nugetFeed
-//                    WorkingDir = "bin" })
-//        else trace "Warning: Will not publish nuget, RELEASE_NOTES must be updated first"
-//)
+Target "NuGet" (fun _ ->
+    Paket.Pack(fun p ->
+        { p with
+            OutputPath = "bin"
+            Version = release.NugetVersion
+            ReleaseNotes = toLines release.Notes})
+)
+
+Target "PublishNuget" (fun _ ->
+    Paket.Push(fun p ->
+        { p with
+            WorkingDir = "bin" })
+)
 
 
 // --------------------------------------------------------------------------------------
@@ -318,56 +323,47 @@ Target "AddLangDocs" (fun _ ->
 
 Target "ReleaseDocs" (fun _ ->
     let tempDocsDir = "temp/gh-pages"
-    let docsOutDir = "docs/output"
     CleanDir tempDocsDir
     Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
 
-    ensureDirectory docsOutDir
-    CopyRecursive docsOutDir tempDocsDir true |> tracefn "%A"
+    CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"
     StageAll tempDocsDir
     Git.Commit.Commit tempDocsDir (sprintf "Update generated documentation for version %s" release.NugetVersion)
-    Branches.pushBranch tempDocsDir "origin" "gh-pages"
+    Branches.push tempDocsDir
 )
 
 #load "paket-files/build/fsharp/FAKE/modules/Octokit/Octokit.fsx"
 open Octokit
 
-let remote () =
-    Git.CommandHelper.getGitResult "" "remote -v"
-    |> Seq.filter (fun (s: string) -> s.EndsWith("(push)"))
-    |> Seq.tryFind (fun (s: string) -> s.Contains(gitOwner + "/" + gitName))
-    |> function None -> gitHome + "/" + gitName | Some (s: string) -> s.Split().[0]
+Target "Release" (fun _ ->
+    let user =
+        match getBuildParam "github-user" with
+        | s when not (String.IsNullOrWhiteSpace s) -> s
+        | _ -> getUserInput "Username: "
+    let pw =
+        match getBuildParam "github-pw" with
+        | s when not (String.IsNullOrWhiteSpace s) -> s
+        | _ -> getUserPassword "Password: "
+    let remote =
+        Git.CommandHelper.getGitResult "" "remote -v"
+        |> Seq.filter (fun (s: string) -> s.EndsWith("(push)"))
+        |> Seq.tryFind (fun (s: string) -> s.Contains(gitOwner + "/" + gitName))
+        |> function None -> gitHome + "/" + gitName | Some (s: string) -> s.Split().[0]
 
-Target "SetupGithubAccess" (fun _ ->
-    
-    let remote = remote () 
-    runGitCommand "" <| sprintf "config remote.%s.url %s/%s" remote gitHome gitName
-    |> ignore
+    StageAll ""
+    Git.Commit.Commit "" (sprintf "Bump version to %s" release.NugetVersion)
+    Branches.pushBranch "" remote (Information.getBranchName "")
 
+    Branches.tag "" release.NugetVersion
+    Branches.pushTag "" remote release.NugetVersion
+
+    // release on github
+    createClient user pw
+    |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
+    // TODO: |> uploadFile "PATH_TO_FILE"
+    |> releaseDraft
+    |> Async.RunSynchronously
 )
-
-//Target "ReleaseGithub" (fun _ ->
-//    if not currentVersionIsAlreadyReleased
-//        then
-//            let remote = remote ()
-//    
-//            StageAll ""
-//            Git.Commit.Commit "" (sprintf "Bump version to %s" release.NugetVersion)
-//            Branches.pushBranch "" remote (Information.getBranchName "")
-//    
-//    
-//            Branches.tag "" release.NugetVersion
-//            Branches.pushTag "" remote release.NugetVersion
-//    
-//            // release on github
-//            createClient user pw
-//            |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
-//            // TODO: |> uploadFile "PATH_TO_FILE"
-//            |> releaseDraft
-//            |> Async.RunSynchronously
-//        else trace "Warning: Will not make a release tag, RELEASE_NOTES must be updated first"
-//
-//)
 
 Target "BuildPackage" DoNothing
 
@@ -375,25 +371,22 @@ Target "BuildPackage" DoNothing
 // Run all targets by default. Invoke 'build <Target>' to override
 
 Target "All" DoNothing
-Target "Release" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
   ==> "Build"
   ==> "CopyBinaries"
-//  ==> "RunTests"
+  ==> "RunTests"
   ==> "GenerateReferenceDocs"
   ==> "GenerateDocs"
-  ==> "All"
-  =?> ("ReleaseDocs",isLocalBuild)
-
-"All"
 #if MONO
 #else
   =?> ("SourceLink", Pdbstr.tryFind().IsSome )
 #endif
-//  ==> "NuGet"
+  ==> "NuGet"
   ==> "BuildPackage"
+  ==> "All"
+  =?> ("ReleaseDocs",isLocalBuild)
 
 "CleanDocs"
   ==> "GenerateHelp"
@@ -406,15 +399,11 @@ Target "Release" DoNothing
 "GenerateHelpDebug"
   ==> "KeepRunning"
 
-"ReleaseDocs"
-//  ==> "Release"
-
-//"SetupGithubAccess"
-//  ==> "ReleaseGithub"
-
 "BuildPackage"
-//  ==> "PublishNuget"
-//  ==> "ReleaseGithub"
-//  ==> "Release"
+  ==> "PublishNuget"
+  ==> "Release"
 
+"ReleaseDocs"
+  ==> "Release"
+  
 RunTargetOrDefault "All"
