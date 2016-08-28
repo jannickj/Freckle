@@ -72,25 +72,19 @@ let ``weave select the correct state when merging`` () =
                         ; (time 0L, (1, "1a"))
                         ]
 
-//[<Fact>]
-//let ``transitionNow correctly transitions between async states`` () =
-//    async {
-//        let! mb = Mailbox.create (Clock.alwaysAt 0L)
-//        let! evtSource = Mailbox.receive mb
-//        let! _, l = List.map (fun i -> (time (int64 i), i)) [ 1 .. 5 ]
-//                    |> Feed.ofList
-//                    |> Feed.transitionNow (fun s a -> act { return s + a } ) 0
-//                    |> Act.run mb evtSource ({ Current = Time.time 4L; Past = Time.time 1L })
-//        let l' = Feed.toList l
-//        l' |> should equal [ (time 4L, 9)
-//                           ; (time 3L, 5)
-//                           ; (time 2L, 2)
-//                           ]
-//        return ()   
-//    } |> Async.StartAsTask
-//
 [<Fact>]
-let ``pulse gives pulses starting from the finish time and does not stop at the beginning time`` () =
+let ``transition correctly transitions between async states`` () =
+    async {
+        let! l = List.map (fun i -> (time (int64 i), i)) [ 1 .. 5 ]
+                    |> Feed.ofList
+                    |> Feed.transition (fun s a -> async { return s + a } ) 0
+                    |> Sample.realise (now 1L 4L)
+
+        return l |> should equal 9
+    } |> Async.StartAsTask
+    
+[<Fact>]
+let ``pulse gives correct pulses starting from the finish time and does not stop at the beginning time`` () =
     let l = Feed.pulse 5 (now (TimeSpan.TicksPerSecond / 4L) TimeSpan.TicksPerSecond)
             |> Feed.toList
     let dist = (TimeSpan.TicksPerSecond / 5L)
