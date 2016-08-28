@@ -102,6 +102,19 @@ let ``pulse gives pulses starting from the finish time and does not stop at the 
                       ; (time (dist * 0L), time (dist * 0L))
                       ]
 
+[<Fact>]
+let ``every gives correct pulses starting from the finish time and does not stop at the beginning time`` () =
+    let l = Feed.every (Time.ofMinutes 2) (now Time.origin.Ticks (Time.ofMinutes 10 |> Time.ticks))
+            |> Feed.toList
+    let dist = (TimeSpan.TicksPerMinute * 2L)
+    l |> should equal [ (time (dist * 5L), time (dist * 5L))
+                      ; (time (dist * 4L), time (dist * 4L))
+                      ; (time (dist * 3L), time (dist * 3L))
+                      ; (time (dist * 2L), time (dist * 2L))
+                      ; (time (dist * 1L), time (dist * 1L))
+                      ; (time (dist * 0L), time (dist * 0L))
+                      ]
+
 let pretty fr = fr |> Feed.toList |> List.map (fun (t, a) -> t.Ticks, a)
 
 let toFeedData (Feed feed) = 

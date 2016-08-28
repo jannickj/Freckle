@@ -151,6 +151,20 @@ module Feed =
     
         let inline feed event = Feed event
 
+        let everyTicks (pulseDistance : Ticks) : Sample<Feed<Time>> =
+            sample {
+                let! finish = Period.finish
+                let rec inner dist time ()  = 
+                    if time < Time.origin
+                    then LazyList.empty 
+                    else LazyList.consDelayed (time, time) (inner dist (Time.time (time.Ticks - dist)))
+                let finalticks = Time.ticks finish
+                let ticksSincePulse = (finalticks % pulseDistance)
+                let lastPulse = finalticks - ticksSincePulse
+                
+                return feed (LazyList.delayed (inner pulseDistance (Time.time lastPulse)))
+            }
+
     open Internal
 
     ///Provides an empty feed with no events
@@ -184,7 +198,7 @@ module Feed =
     let inline stick (a : 'a) (fr : Feed<'b>) : Feed<'a * 'b> = map (tuple a) fr 
             
     ///Attempt to get lastest event from the feed
-    let tryHead fr =
+    let inline tryHead fr =
         match (toEvent fr) with
         | LazyList.Cons ((_,h), _) -> Some h
         | _ -> None
@@ -196,16 +210,16 @@ module Feed =
         | Nil -> Empty
                   
     ///Take upto the first n events in a feed and return them in a new feed
-    let take n fr = 
+    let inline take n fr = 
         updateEvent (fun l -> take n l) fr
     
     ///Skip the first n events in feed and return the remaining events in a new feed
-    let skip n fr = 
+    let inline skip n fr = 
         updateEvent (fun l -> skip n l) fr
 
     ///Test the if a new have a certain count of events.
     ///This will return upto the specified count, depending on the actual count.
-    let testLength n fr = take n fr |> toEvent |> length
+    let inline testLength n fr = take n fr |> toEvent |> length
     
     ///Transforms a feed to list.
     ///Be careful when using this function as list is strict, and given Feeds can be possible trillions of events long when fully evaluated, this can lead to inefficient code.
@@ -214,12 +228,12 @@ module Feed =
     ///Transforms a list into a feed
     let inline ofList l = ofEvent (LazyList.ofList (List.sortByDescending fst l))
     
-    let combine (frA : Feed<'a>) (frB : Feed<'a>) : Feed<'a> = 
+    let inline combine (frA : Feed<'a>) (frB : Feed<'a>) : Feed<'a> = 
         ofEvent (merge' (toEvent frA) (toEvent frB))
 
     ///A special combine function that takes the last event of Feed<'a> that is not older than an event from Feed<'b> and maps it with 'b. 
     ///If no event in Feed<'a> is found then initA is used instead.
-    let weave (f : 'a -> 'b -> 'a) (initA : 'a) (frB : Feed<'b>) (frA : Feed<'a>) : Feed<'a> = 
+    let inline weave (f : 'a -> 'b -> 'a) (initA : 'a) (frB : Feed<'b>) (frA : Feed<'a>) : Feed<'a> = 
         let rec inner lb la =
             match lb, la with
             | (Cons ((tb,_), _), Cons ((ta,va), rest)) when ta > tb -> LazyList.consDelayed (ta,va) (fun () -> inner lb rest)
@@ -229,56 +243,55 @@ module Feed =
         ofEvent (inner (toEvent frB) (toEvent frA))
 
     ///Push an event with a specified time onto a feed. This function is safe and will maintain Temporal Monotonicity.
-    let push t a fr = combine (singleton t a) fr
-
+    let inline push t a fr = combine (singleton t a) fr
+    
     ///Get a feed with events firing using the frequency of pulsePerSecond, starting from the finish time of a Sample, continuing until origin Time.
     ///This is useful for making pull-based events.
-    let pulse (pulsePerSecond : int) : Sample<Feed<Time>> =
-        sample {
-            let! finish = Period.finish
-            let rec inner dist time ()  = 
-                if time < Time.origin
-                then LazyList.empty 
-                else LazyList.consDelayed (time, time) (inner dist (Time.time (time.Ticks - dist)))
-            let ticks = Time.ticks finish
-            let tps = System.TimeSpan.TicksPerSecond
-            let pulseDistance = tps / (int64 pulsePerSecond)
-            let ticksSincePulse = (ticks % pulseDistance)
-            let lastPulse = ticks - ticksSincePulse
-                
-            return feed (LazyList.delayed (inner pulseDistance (Time.time lastPulse)))
-        }
+    let inline pulse (pulsePerSecond : int) : Sample<Feed<Time>> =
+        let tps = System.TimeSpan.TicksPerSecond
+        let pulseDistance = tps / (int64 pulsePerSecond)
+        everyTicks pulseDistance
 
     ///Identical to pulse except events outside the sampling resolution are ignored
     ///This is useful if old events that came about due to lag aren't necessary for operations to continue.
     ///e.g. when drawing the screen in a graphical application it would be wasteful to do multiple times. Just because of internal lag that prevented drawing last two updates.
-    let pulseUpto pulsePerSecond =
+    let inline pulseUpto pulsePerSecond =
         pulse pulsePerSecond
         |> Sample.map (take 1)
 
+    ///Get a feed with events firing with an interval of the specified time, starting from the finish time of a Sample, continuing until origin Time.
+    ///This is useful for making pull-based events.
+    let inline every time : Sample<Feed<Time>> =
+        everyTicks (Time.ticks time)
+
+    ///Identical to every except does not guarantee all events are fired, if for instance a lagspike occurs.
+    let inline everyUpto time : Sample<Feed<Time>> =
+        every time
+        |> Sample.map (take 1)
+
     ///delays events to an later sampling, it is recommended to be used together with discardFuture, as these events will still be present in the feed but just ignored by the sampling.
-    let delay t fr = 
+    let inline delay t fr = 
         updateEvent (fun l -> LazyList.map (fun (t',a) -> (t' + t, a)) l) fr
 
     ///Overwrites the event value with the time of the event
-    let time (fr : Feed<'a>) : Feed<Time> = 
+    let inline time (fr : Feed<'a>) : Feed<Time> = 
         updateEvent (LazyList.map (fun (t,_) -> (t,t))) fr
 
     ///Timestamps all event with their arrival time, changing the timestamp will not have an impact of their arrival time, see delay for this.
-    let timeStamp (fr : Feed<'a>) : Feed<Time * 'a> = 
+    let inline timeStamp (fr : Feed<'a>) : Feed<Time * 'a> = 
         updateEvent (LazyList.map (fun (t,a) -> (t,(t,a)))) fr
 
     ///Same as timeStamp but provides the time in ticks
-    let timeStampAsTicks fr =
+    let inline timeStampAsTicks fr =
         map (fun (t,a) -> (Time.ticks t,a)) (timeStamp fr)
 
         
     ///Same as timeStamp but provides the time in DateTime
-    let dateTimed fr =
+    let inline dateTimed fr =
         map (fun (t,a) -> (Time.toDateTime t,a)) (timeStamp fr)
 
     ///Get a new feed where all event values satisfy the predicate
-    let filter (predicate: 'a -> bool) (fr : Feed<'a>) : Feed<'a> =
+    let inline filter (predicate: 'a -> bool) (fr : Feed<'a>) : Feed<'a> =
         let rec inner l =
             match l with
             | LazyList.Cons((t,a), rest) when predicate a -> LazyList.consDelayed (t,a) (fun () -> inner rest)
@@ -287,75 +300,75 @@ module Feed =
         updateEvent inner fr
     
     ///Selects all events with the Value of Some
-    let choose (f : 'a -> 'b option): Feed<'a> -> Feed<'b> = 
+    let inline choose (f : 'a -> 'b option): Feed<'a> -> Feed<'b> = 
         map f >> filter (Option.isSome) >> map Option.get
 
     ///Partitions the feed into two feeds, the first satisfy the predicate and the second does not satisfy
-    let partition (f : 'a -> bool) (fr : Feed<'a>) : (Feed<'a> * Feed<'a>) = (filter f fr, filter (not << f) fr)   
+    let inline partition (f : 'a -> bool) (fr : Feed<'a>) : (Feed<'a> * Feed<'a>) = (filter f fr, filter (not << f) fr)   
     
     ///Take events from the feed until the predicate is no longer satisfied
-    let takeWhile (f : 'a -> bool) (fr : Feed<'a>) : Feed<'a> =            
+    let inline takeWhile (f : 'a -> bool) (fr : Feed<'a>) : Feed<'a> =            
         updateEvent (LazyList.delayed << takeWhile' (f << snd)) fr
 
     ///Discard events from the feed until the predicate is no longer satisfied
-    let skipWhile (f : 'a -> bool) (fr : Feed<'a>) : Feed<'a> = 
+    let inline skipWhile (f : 'a -> bool) (fr : Feed<'a>) : Feed<'a> = 
         updateEvent (LazyList.delayed << skipWhile' (f << snd)) fr
             
     ///Discard events occuring before the specified time, excluding events occuring exactly at the time
-    let discardOlderExcl (time : Time)  fr : Feed<'a>=
+    let inline discardOlderExcl (time : Time)  fr : Feed<'a>=
         updateEvent (discardBeforeExcl time) fr
 
     ///Discard events occuring before the specified time, including events occuring exactly at the time
-    let discardOlderIncl (time : Time)  fr : Feed<'a>=
+    let inline discardOlderIncl (time : Time)  fr : Feed<'a>=
         updateEvent (discardBeforeIncl time) fr
         
     ///Discard events occuring after the specified time, including events occuring exactly at the time
-    let discardYoungerIncl (time : Time)  fr : Feed<'a>=
+    let inline discardYoungerIncl (time : Time)  fr : Feed<'a>=
         updateEvent (discardAfterIncl time) fr
         
     ///Discard events occuring after the specified time, excluding events occuring exactly at the time
-    let discardYoungerExcl (time : Time)  fr : Feed<'a>=
+    let inline discardYoungerExcl (time : Time)  fr : Feed<'a>=
         updateEvent (discardAfterExcl time) fr
 
     ///Discard all events occuring after the sample finish time, excluding events occuring exactly at the finish time
-    let discardFuture fr =
+    let inline discardFuture fr =
         sample {
             let! finish = Period.finish
             return fr |> discardYoungerExcl finish
         }
         
     ///Discard all events occuring before the sample beginning time, including events occuring exactly at the beginning time
-    let discardPast fr =
+    let inline discardPast fr =
         sample {
             let! beginning = Period.beginning
             return fr |> discardOlderIncl beginning
         }
                 
     ///Discards all events before the sample (inclusive) and all events after the sample (Exclusive)
-    let discardOutsideSample fr =
+    let inline discardOutsideSample fr =
         sample {
             let! fr' = discardFuture fr
             return! discardPast fr'
         }
         
     ///Span, applied to a predicate p and a feed, returns a tuple of feed where the first feed  satisfy p and second element is the remainder of the list: 
-    let span (p : 'a -> bool) (fr : Feed<'a>) : (Feed<'a> * Feed<'a>) = 
+    let inline span (p : 'a -> bool) (fr : Feed<'a>) : (Feed<'a> * Feed<'a>) = 
         (takeWhile p fr, skipWhile p fr)
     
     ///Groups elements together where f is satisfied
-    let groupBy (f : 'a -> 'a -> bool) (fr : Feed<'a>) : Feed<Feed<'a>> =
+    let inline groupBy (f : 'a -> 'a -> bool) (fr : Feed<'a>) : Feed<Feed<'a>> =
         let mapl l = (fst <| LazyList.head l, ofEvent l)
         updateEvent (fun l -> LazyList.map mapl <| groupBy (fun a b -> f (snd a) (snd b)) l) fr
                               
     ///Return a new feed consisting of the results of applying the given accumulating function to the newests events of the feed
-    let scan f s = updateEvent (LazyList.scan (fun (_,s) (t,a) -> (t, f s a)) (Time.origin,s))
+    let inline scan f s = updateEvent (LazyList.scan (fun (_,s) (t,a) -> (t, f s a)) (Time.origin,s))
 
     //Combines mapping events and the results of applying the given accumulating function to the newests events of the feed
-    let mapScan (f : 's -> 'a -> ('s * 'b)) (s : 's) (fr : Feed<'a>) : Feed<'s * 'b>= 
+    let inline mapScan (f : 's -> 'a -> ('s * 'b)) (s : 's) (fr : Feed<'a>) : Feed<'s * 'b>= 
         updateEvent (LazyList.ofSeq << fst << (Seq.mapFold (fun s (t,a)  -> let (b, s') = f s a in ((t, (b, s'))), b) s) ) fr
 
     ///Discards all events outside the sample, then scanMaps from the past
-    let mapScanPast (f : 's -> 'a -> ('s * 'b)) (state : 's) (fr : Feed<'a>) : (Sample<Feed<'s * 'b>>) =
+    let inline mapScanPast (f : 's -> 'a -> ('s * 'b)) (state : 's) (fr : Feed<'a>) : (Sample<Feed<'s * 'b>>) =
         sample {
             let! fr' = discardOutsideSample fr
             let (l', _) = Seq.mapFoldBack (fun (t,a) s -> let (s', b) = f s a in ((t, (s', b))), s') (toEvent fr') state 
@@ -363,7 +376,7 @@ module Feed =
         }
 
     ///Discards all events outside the sample, then folds and maps from the past
-    let mapFoldPast (f : 's -> 'a -> ('s * 'b)) (state : 's) (fr : Feed<'a>) : (Sample<'s * Feed<'b>>) =
+    let inline mapFoldPast (f : 's -> 'a -> ('s * 'b)) (state : 's) (fr : Feed<'a>) : (Sample<'s * Feed<'b>>) =
         sample {
             let! fr' = discardOutsideSample fr
             let (l', state') = Seq.mapFoldBack (fun (t,a) s -> let (s', b) = f s a in ((t, b), s')) (toEvent fr') state 
@@ -372,7 +385,7 @@ module Feed =
     
     ///Discards all events outside the sample, then scans the events from the past by applying the given accumulating function to the oldest events of the feed,
     ///Returning a feed of the results
-    let scanPast (f : 's -> 'a -> 's) (state : 's) (fr : Feed<'a>) : Sample<Feed<'s>> =
+    let inline scanPast (f : 's -> 'a -> 's) (state : 's) (fr : Feed<'a>) : Sample<Feed<'s>> =
         sample {
             let! fr' = discardOutsideSample fr
             let (l, _) = Seq.mapFoldBack (fun (t,a) s -> let s' = f s a in ((t, s'), s')) (toEvent fr') state 
@@ -388,7 +401,7 @@ module Feed =
         }
 
     ///Discards all events outside the sample, then combine all async computations into a single async computation with the result of a feed of the asyncs' results.
-    let plan (fullFeed : Feed<Async<'a>>) : Sample<Async<Feed<'a>>> =
+    let inline plan (fullFeed : Feed<Async<'a>>) : Sample<Async<Feed<'a>>> =
         sample {
             let! fr = discardOutsideSample fullFeed
             let folder (t,ma) (newV) =
@@ -402,10 +415,10 @@ module Feed =
         }
 
     ///Same as plan but discard the feed of results
-    let plan_ fr = plan fr |> Sample.map Async.Ignore
+    let inline plan_ fr = plan fr |> Sample.map Async.Ignore
         
     ///Discard all events outside the sample, then from the past folds all the events of Feed<'a> using an async state transition into a single state
-    let transition (f : 's -> 'a -> Async<'s>) (state : 's) (allFeed : Feed<'a>)  : Sample<Async<'s>> =
+    let inline transition (f : 's -> 'a -> Async<'s>) (state : 's) (allFeed : Feed<'a>)  : Sample<Async<'s>> =
         sample {
             let! fr = discardOutsideSample allFeed
             let inner ms a =
@@ -420,7 +433,7 @@ module Feed =
     module Operator =
     
         //Identical to bind
-        let (>>=) m f = bind f m
+        let inline (>>=) m f = bind f m
 
      ///Setup for computational expression(Do Notation in haskell) for Feed, to better understand how this works, consider two event streams firing after each other a computation is made each time,
      //one of the events is fired.
@@ -443,7 +456,7 @@ module Debug =
     module Feed =
         
         ///maps and prints events when they are observered, if they are never observed then print will never occur
-        let traceMap f fr = Feed.map (fun (t,v) -> printfn "%A: %A" (Time.toDateTime t) (f v); v) (Feed.timeStamp fr)
+        let inline traceMap f fr = Feed.map (fun (t,v) -> printfn "%A: %A" (Time.toDateTime t) (f v); v) (Feed.timeStamp fr)
 
         ///Same a traceMap but just tries to print the event
-        let trace fr = traceMap id fr
+        let inline trace fr = traceMap id fr
