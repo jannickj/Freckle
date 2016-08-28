@@ -1,4 +1,7 @@
-### 1.0.0.0 - Initial Release
+### 1.0.1 - Support for longer pulses
+* Added the Feed.every function
+
+### 1.0.0 - Initial Release
 * Support for sampling
 * Support event messaging (mailbox)
 * Monadic event stream (Feed)
