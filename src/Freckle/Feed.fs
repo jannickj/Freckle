@@ -209,9 +209,15 @@ module Feed =
         | Cons(a, rest) -> Head(snd a, ofEvent rest)
         | Nil -> Empty
                   
+    ///Leading debounce, that prevents more than one event occuring for each sampling
+    let inline debouncing fr = 
+        updateEvent (take 1) fr
+
     ///Take upto the first n events in a feed and return them in a new feed
+    [<System.Obsolete("use deboucing, this name makes no sense")>]
     let inline take n fr = 
-        updateEvent (fun l -> take n l) fr
+        updateEvent (take n) fr
+
     
     ///Skip the first n events in feed and return the remaining events in a new feed
     let inline skip n fr = 
