@@ -422,11 +422,25 @@ module Feed =
 
     ///Same as plan but discard the feed of results
     let inline plan_ fr = plan fr |> Sample.map Async.Ignore
+
+    ///Discards all events outside the sample, then combine all lazy computations into a single computation with the result of a feed of the asyncs' results.
+    let inline planSynced (fullFeed : Feed<unit -> 'a>) : Sample<Feed<'a>> =
+        sample {
+            let! fr = discardOutsideSample fullFeed
+            let folder (t,ma) newV =
+                    let a = ma ()
+                    LazyList.cons (t,a) newV
+            let folded =  (Seq.foldBack folder (toEvent fr)) (LazyList.empty)
+            return ofEvent folded
+        }
+
     ///Splits a Feed into components of length upto k
     let chunkBy n feed = 
         let giveTime l = (fst <| Array.head l, l)
         ofEvent (LazyList.ofSeq (Seq.chunkBySize n (toEvent feed) |> Seq.map giveTime))
 
+    ///Same as planSynced but discard the feed of results
+    let inline planSynced_ fr = planSynced fr |> Sample.map ignore
         
     ///Discard all events outside the sample, then from the past folds all the events of Feed<'a> using an async state transition into a single state
     let inline transition (f : 's -> 'a -> Async<'s>) (state : 's) (allFeed : Feed<'a>)  : Sample<Async<'s>> =
@@ -439,6 +453,24 @@ module Feed =
                 }
             return! foldPast inner (async.Return state) fr
         }
+
+    //Perform an action when an event is sampled with lead debouncing
+    let actionSynced f feed =
+        feed
+        |> map (fun e -> fun () -> f e)
+        |> debouncing
+        |> planSynced
+
+    let actionSynced_ f feed= actionSynced f feed |> Sample.map ignore
+
+    //Perform an asynchronized action when an event is sampled with lead debouncing
+    let action f feed =
+        feed
+        |> map (fun e -> f e)
+        |> debouncing
+        |> plan
+
+    let action_ f feed = action f feed |> SampleAsync.map ignore
 
     //Fire an event each time this feed is fired, but ignore the feed's output
     let then' m feed = bind_ (fun _ -> m |> map ignore) feed 
