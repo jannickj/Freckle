@@ -422,6 +422,11 @@ module Feed =
 
     ///Same as plan but discard the feed of results
     let inline plan_ fr = plan fr |> Sample.map Async.Ignore
+    ///Splits a Feed into components of length upto k
+    let chunkBy n feed = 
+        let giveTime l = (fst <| Array.head l, l)
+        ofEvent (LazyList.ofSeq (Seq.chunkBySize n (toEvent feed) |> Seq.map giveTime))
+
         
     ///Discard all events outside the sample, then from the past folds all the events of Feed<'a> using an async state transition into a single state
     let inline transition (f : 's -> 'a -> Async<'s>) (state : 's) (allFeed : Feed<'a>)  : Sample<Async<'s>> =
