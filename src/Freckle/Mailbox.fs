@@ -10,8 +10,8 @@ type Expire = Never
 ///The mailbox is the concept of messages passed from external parts of the system
 ///A mailbox should preferably should only have one consumer and one or more producers
 type Mailbox<'e> = 
-    { Post : 'e -> Async<unit>
-      Read : Async<Feed<'e>>
+    { Post : 'e -> unit
+      Read : unit -> Feed<'e>
       Clear : Async<unit>
       AwaitMail : Async<unit>
     }
@@ -27,13 +27,11 @@ module Mailbox =
         
         type MailTrigger = delegate of obj * EventArgs -> unit
 
-        let inline read' (m : Ref<Feed<'e> * Feed<'e>>) =
-            async {
-                let (inc, out) = !m
-                return Feed.combine inc out
-            }
+        let inline read' mLock (m : Ref<Feed<'e> * Feed<'e>>) () =
+            let (inc, out) = lock mLock (fun _ -> !m)
+            Feed.combine inc out
 
-        let inline push' time evt (trigger : Event<MailTrigger, EventArgs>) (expire : Expire)  (m : Ref<Feed<'e> * Feed<'e>>) () : unit =
+        let inline push' time evt (trigger : Event<MailTrigger, EventArgs>) (expire : Expire)  (m : Ref<Feed<'e> * Feed<'e>>) : unit =
             let (inc, out) = !m
             match expire, Feed.tryHead (Feed.time out) with
             | After _, None -> 
@@ -43,11 +41,8 @@ module Mailbox =
             | _ -> m := (Feed.Internal.unsafePush time evt inc, Feed.empty)
             trigger.Trigger(null, null)
                     
-        let post mLock clock trigger expire evts evt : Async<unit> =
-            async {
-                let! time = Clock.now clock
-                return lock mLock (push' time evt trigger expire evts)
-            }
+        let post mLock clock trigger expire evts evt =
+            lock mLock (fun () -> let time = Clock.nowSynced clock in push' time evt trigger expire evts)
 
         let dropAll mLock (evts : Ref<Feed<'e> * Feed<'e>>) =
             async { return lock mLock (fun () -> evts := (Feed.empty, Feed.empty)) }
@@ -63,14 +58,20 @@ module Mailbox =
             let mlock = new obj()
             let evtTrigger = new Event<_,_>()
             return { Post = Internal.post mlock clock evtTrigger expire evts
-                     Read = Internal.read' evts
+                     Read = Internal.read' mlock evts
                      Clear = Internal.dropAll mlock evts
                      AwaitMail = Internal.awaitMail evtTrigger
                    }
-        }        
+        }
+
+    // Reads from an mailbox synchronized
+    let inline readSync (mb : Mailbox<_>) = mb.Read ()  |> Feed.discardFuture
 
     /// Post an event to a mailbox
-    let post evt (mb : Mailbox<_>) = mb.Post evt
+    let postSync evt (mb : Mailbox<_>) = mb.Post evt
+        
+    let post evt (mb : Mailbox<_>) = async { return mb.Post evt }
+    
 
     /// Post an event to many mailboxes
     let postMany evt mbs = 
@@ -80,7 +81,7 @@ module Mailbox =
         }
 
     /// Read all events from a mailbox
-    let read (mb : Mailbox<_>) = mb.Read
+    let read (mb : Mailbox<_>) = async { return  mb.Read () |> Feed.discardFuture }
 
     /// Discard all events currently in mailbox
     let clear (mb : Mailbox<_>) = mb.Clear
