@@ -20,6 +20,7 @@ type Mailbox<'e> =
 module Mailbox =
     open FSharp.Helpers
     open System.Threading
+    open SampleAsync.ComputationalExpression
 
     ///This module contains internally used functions, these are suceptible to change even with minor updates. 
     ///Is not recommended for use in a production environment.
@@ -91,7 +92,12 @@ module Mailbox =
         }
 
     /// Read all events from a mailbox
-    let read (mb : Mailbox<_>) = async { return  mb.Read () |> Feed.discardFuture }
+    let read (mb : Mailbox<_>) = 
+        sampleAsync {
+            return! mb.Read () 
+                    |> Feed.discardFuture 
+                    |> SampleAsync.ofSample
+        }
 
     /// Discard all events currently in mailbox
     let clear (mb : Mailbox<_>) = mb.Clear
