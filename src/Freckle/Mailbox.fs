@@ -72,6 +72,16 @@ module Mailbox =
         
     let post evt (mb : Mailbox<_>) = async { return mb.Post evt }
     
+    // Post an event not yet realized
+    let postPromise (ma : Async<_>) mb =
+        async {
+            let! a = ma
+            do! post a mb
+        } |> Async.StartChild |> Async.Ignore
+
+    // Post an event not yet realized, but start immidately
+    let postPromiseSilent (ma : Async<_>) mb =
+        postPromise ma mb |> Async.StartImmediate
 
     /// Post an event to many mailboxes
     let postMany evt mbs = 
