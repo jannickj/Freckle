@@ -11,6 +11,7 @@ module Feed =
     open FSharp.Helpers
     open LazyList
     open Sample.ComputationalExpression
+    open SampleAsync.ComputationalExpression
     
     ///This module contains internally used functions, these are suceptible to change even with minor updates. 
     ///Is not recommended for use in a production environment.
@@ -453,6 +454,13 @@ module Feed =
                 }
             return! foldPast inner (async.Return state) fr
         }
+
+    //Groups events that within the same time difference
+    let groupByTime time feed =
+        feed
+        |> timeStamp
+        |> groupBy (fun (t1,_) (t2,_) -> Time.between t1 t2 <= time)
+        |> map (map snd)
 
     //Perform an action when an event is sampled with lead debouncing
     let actionSynced f feed =
