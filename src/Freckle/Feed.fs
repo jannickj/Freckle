@@ -440,6 +440,9 @@ module Feed =
             return! foldPast inner (async.Return state) fr
         }
 
+    //Fire an event each time this feed is fired, but ignore the feed's output
+    let then' m feed = bind_ (fun _ -> m |> map ignore) feed 
+
     ///Provide operator syntax for bind
     module Operator =
     
