@@ -9,9 +9,11 @@ type Period =
       Beginning : Time
     }
     with ///get the beginning time
-         static member beginning (p : Period) = p.Beginning        
+         static member beginning (p : Period) = p.Beginning
          ///get the finish time 
          static member finish (p : Period) = p.Finish
+         ///Creates a period from two times, the order is irrelevant as the younger of the two is picked as finish time and vice verse
+         static member period t1 t2 = if t1 > t2 then { Finish = t1; Beginning = t2 } else { Finish = t2; Beginning = t1 }
 
 ///Sample is a function from Period to some value.
 ///you can think of Sample as (Time -> Behavior)
