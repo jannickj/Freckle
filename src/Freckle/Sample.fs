@@ -62,6 +62,19 @@ module Sample =
             return! Async.forever inner (time, state)
         }
 
+    ///Provides iterative sampling where time and state has to be stored and set manually
+    let sampleOnce clock sampler  (lastTime, state) =
+        let now = Clock.nowSynced clock
+        let state' = sampler state
+                     |> realise ({ Finish = now;  Beginning = lastTime })
+        (now, state')
+
+    ///Provides iterative sampling where time has to be stored and set manually
+    let sampleOnce_ clock sampler  lastTime =
+        let now = Clock.nowSynced clock
+        sampler |> realise ({ Finish = now;  Beginning = lastTime })
+        now
+
     ///Samples the sample function until the stop function is satisfied, then returns the last state
     let sampleUntil (clock : Clock) (stopFunc : 's -> bool) (sampler : 's -> Sample<Async<'s>>) state : Async<'s> =
         let inner (last, s) =
