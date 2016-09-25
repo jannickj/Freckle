@@ -38,6 +38,12 @@ module Sample =
         
     ///Get the period of sample (it's just the id function)
     let period : Sample<Period> = id
+
+    ///Get the finish of sample
+    let finish : Sample<Time> = fun p -> p.Finish
+
+    ///Get the beginning of sample
+    let begining : Sample<Time> = fun p -> p.Beginning
         
     ///Provided a period a Sample will generate a value.
     ///Remember for impure Samples, if the period finishes in the past then the program can't magically go back in time and undo things.
