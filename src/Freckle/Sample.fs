@@ -9,9 +9,11 @@ type Period =
       Beginning : Time
     }
     with ///get the beginning time
-         static member beginning (p : Period) = p.Beginning        
+         static member beginning (p : Period) = p.Beginning
          ///get the finish time 
          static member finish (p : Period) = p.Finish
+         ///Creates a period from two times, the order is irrelevant as the younger of the two is picked as finish time and vice verse
+         static member period t1 t2 = if t1 > t2 then { Finish = t1; Beginning = t2 } else { Finish = t2; Beginning = t1 }
 
 ///Sample is a function from Period to some value.
 ///you can think of Sample as (Time -> Behavior)
@@ -36,6 +38,12 @@ module Sample =
         
     ///Get the period of sample (it's just the id function)
     let period : Sample<Period> = id
+
+    ///Get the finish of sample
+    let finish : Sample<Time> = fun p -> p.Finish
+
+    ///Get the beginning of sample
+    let begining : Sample<Time> = fun p -> p.Beginning
         
     ///Provided a period a Sample will generate a value.
     ///Remember for impure Samples, if the period finishes in the past then the program can't magically go back in time and undo things.
@@ -53,6 +61,19 @@ module Sample =
             let! time = Clock.now clock
             return! Async.forever inner (time, state)
         }
+
+    ///Provides iterative sampling where time and state has to be stored and set manually
+    let sampleOnce clock sampler  (lastTime, state) =
+        let now = Clock.nowSynced clock
+        let state' = sampler state
+                     |> realise ({ Finish = now;  Beginning = lastTime })
+        (now, state')
+
+    ///Provides iterative sampling where time has to be stored and set manually
+    let sampleOnce_ clock sampler  lastTime =
+        let now = Clock.nowSynced clock
+        sampler |> realise ({ Finish = now;  Beginning = lastTime })
+        now
 
     ///Samples the sample function until the stop function is satisfied, then returns the last state
     let sampleUntil (clock : Clock) (stopFunc : 's -> bool) (sampler : 's -> Sample<Async<'s>>) state : Async<'s> =

@@ -1,3 +1,7 @@
+### 1.0.0-rc3 - Update mailbox and sample api
+* Mailbox: Replaced createWithExpiration with create and createWithTTL
+* Sample: Added function for iterative sampling
+
 ### 1.0.0-rc2 - Breaking changes to mailbox 
 * Clock: Optimize and removed the excessive use of async
 * Mailbox: Fix bug where future events could be sampled

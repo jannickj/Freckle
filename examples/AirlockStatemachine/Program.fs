@@ -95,7 +95,7 @@ let main argv =
         printfn "Hi! and welcome to the Airlock example, to start double press enter."
         let! _ = readConsole |> Async.StartChild
         let syncUtcClock = Clock.synchronized Clock.systemUtc
-        let! mb = Mailbox.createWithExpiration (Never) syncUtcClock
+        let mb = Mailbox.create syncUtcClock
         do! Mailbox.listenTo events mb
         let state = {  Airlock = AirLockState.IsDepressurized; ActionAt = None; LastDoubleClick = Time.origin }
 
