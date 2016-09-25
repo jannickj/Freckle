@@ -3,7 +3,11 @@ init:
 
 cache:
   - packages
-  
+
+branches:
+  only:
+    - master
+
 build_script:
   - cmd: build.cmd
 test: off
