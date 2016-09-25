@@ -378,8 +378,6 @@ Target "All" DoNothing
   ==> "Build"
   ==> "CopyBinaries"
   ==> "RunTests"
-  ==> "GenerateReferenceDocs"
-  ==> "GenerateDocs"
 #if MONO
 #else
   =?> ("SourceLink", Pdbstr.tryFind().IsSome )
@@ -387,6 +385,11 @@ Target "All" DoNothing
   ==> "NuGet"
   ==> "BuildPackage"
   ==> "All"
+
+"Clean"
+  ==> "CopyBinaries"
+  ==> "GenerateReferenceDocs"
+  ==> "GenerateDocs"
   =?> ("ReleaseDocs",isLocalBuild)
 
 "CleanDocs"
