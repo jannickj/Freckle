@@ -1,3 +1,6 @@
+### 1.0.0-rc4 - Fix bug that stops Mailbox from working correctly
+* Mailbox: fix bug that cause TTL on event to be trigger immediately
+
 ### 1.0.0-rc3 - Update mailbox and sample api
 * Mailbox: Replaced createWithExpiration with create and createWithTTL
 * Sample: Added function for iterative sampling
