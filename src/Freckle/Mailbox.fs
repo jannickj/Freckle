@@ -37,9 +37,9 @@ module Mailbox =
             match expire, Feed.tryHead (Feed.time out) with
             | After _, None -> 
                 m := (Feed.empty, Feed.Internal.unsafePush time evt inc)
-            | After t, Some outTime when t.Ticks > time.Ticks - outTime.Ticks -> 
+            | After t, Some outTime when t.Ticks < time.Ticks - outTime.Ticks -> 
                 m := (Feed.Internal.unsafePush time evt inc, Feed.empty)
-            | _ -> m := (Feed.Internal.unsafePush time evt inc, Feed.empty)
+            | _ -> m := (Feed.Internal.unsafePush time evt inc, out)
             trigger.Trigger(null, null)
                     
         let post mLock clock trigger expire evts evt =
