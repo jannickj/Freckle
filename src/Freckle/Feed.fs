@@ -465,7 +465,7 @@ module Feed =
     //Perform an action when an event is sampled with lead debouncing
     let actionSynced f feed =
         feed
-        |> map (fun e -> fun () -> f e)
+        |> map (fun e () -> f e)
         |> debouncing
         |> planSynced
 
